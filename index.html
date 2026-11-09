@@ -77,6 +77,12 @@ td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 /* Bảng danh sách: căn TOP để mọi ô thẳng hàng với dòng nội dung đầu tiên (ô Nội dung cao 1–3 dòng) */
 .tablewrap th{position:sticky;top:0;z-index:2;box-shadow:inset 0 -1px 0 var(--line);border-bottom:none}
 .tablewrap th{padding:10px 8px}
+/* Dòng bảng danh sách cao khoảng 49px như CI (Hưng 09/11; đo CI: 49 đến 53px, mockup cũ 35px). Chỉ bảng danh sách, không đổi bảng nhóm ở Chi tiết. */
+.tablewrap td{padding-top:13px;padding-bottom:13px}
+.tablewrap td.act,.tablewrap td.callcol{padding-top:11px;padding-bottom:11px}
+.tablewrap td.nd .it:first-child{padding-top:13px}
+.tablewrap td.nd .it:last-child{padding-bottom:13px}
+.tablewrap td.nd .it.nd-txt{padding-top:14px;padding-bottom:14px}
 .tablewrap td{padding-left:8px;padding-right:8px;vertical-align:top;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid #dfe3ea}
 .tablewrap .fl,.tablewrap .fr{position:sticky;z-index:1;background:#fff}
 .tablewrap th.fl,.tablewrap th.fr{z-index:3;background:#eef3fb}
