@@ -428,7 +428,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
   <div class="dgrid">
     <div class="card">
       <div class="sec"><h3>Thông tin liên hệ <span>⌄</span></h3>
-        <dl class="kv"><dt>Tên khách hàng</dt><dd id="dName"></dd><dt>Số điện thoại</dt><dd class="mask" id="dPhone"></dd></dl>
+        <dl class="kv"><dt>Mã khách hàng</dt><dd id="dCust"></dd><dt>Tên khách hàng</dt><dd id="dName"></dd><dt>Số điện thoại</dt><dd class="mask" id="dPhone"></dd></dl>
       </div>
       <div class="sec"><h3>Thông tin ticket <span>⌄</span></h3>
         <dl class="kv" id="dInfo"></dl>
@@ -2771,6 +2771,8 @@ function render(){
 }
 
 /* ---------- DETAIL ---------- */
+// Mã khách hàng: dữ liệu mẫu không có customerId nên sinh 6 số cố định theo 6 số cuối SĐT (cùng SĐT thì cùng mã). Dữ liệu mẫu.
+const custCode = t => t.customerId || ((d=>d?String(100000+(+d%900000)):'—')(String(t.phone||'').replace(/\D/g,'').slice(-6)));
 function go(id){
   vList.classList.toggle('hidden', !!id); vDetail.classList.toggle('hidden', !id);
   if(!id){ render(); return; }
@@ -2778,6 +2780,7 @@ function go(id){
   dCode.innerHTML = 'Mã yêu cầu  '+short(t.id)+copyIc(t.id,'mã yêu cầu');
   dStatus.innerHTML = `<span class="tag st-${t.status}">${STATUS[t.status]}</span>`;
   dActs.innerHTML = actions(t).replace('Nhận','Nhận');
+  dCust.innerHTML = `<span class="link">${custCode(t)}</span>`+copyIc(custCode(t),'mã khách hàng'); // CI có dòng Mã khách hàng (ảnh CI Hưng gửi 09/11)
   dName.textContent = t.customerName; dPhone.innerHTML = maskPhone(t.phone)+copyIc(MODE==='tobe' ? (tbNorm(t.phone)||t.phone) : t.phone,'SĐT'); // To-Be copy số đã chuẩn hoá, giống danh sách
   dInfo.innerHTML = [
     ['Công việc', flow.name], ['Mã tham chiếu', `<span class="link">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>${copyIc(t.externalRef,'mã tham chiếu')}`],
