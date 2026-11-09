@@ -2317,7 +2317,7 @@ function tbPaintBar(){
       <span>Phân trang kéo dài đủ nhóm ${tbBadge('page')}</span>
       <a onclick="document.getElementById('tbPend').scrollIntoView({behavior:'smooth'})">Điểm chưa chốt (${TB_PEND.length})</a></div>
     <div class="tb-bar-row"><span>Gom khác công việc ${tbBadge('cross_def')} ${tbBadge('cross_off')}: ${cross}</span>
-      <span>Giả lập: <label><input type="checkbox" ${ctkm?'checked':''} onchange="tbSimCtkm(this.checked)"> Nhắc CTKM tắt đóng tay</label></span></div>
+      </div>
     <div class="tb-bar-row tb-legend"><span>Chú giải:</span>
       <span><span class="tb-b tb-b-chot">BA CHỐT, CHỜ BU</span> Hưng đã chốt, BU chưa xác nhận</span>
       <span><span class="tb-b tb-b-ba">BA SUY RA</span> chưa ai xác nhận</span>
@@ -2337,8 +2337,8 @@ function tbPaintSim(){
   if(!el){ el = document.createElement('span'); el.id='tbSim'; el.className='tb-simx'; document.querySelector('#vList .head .sim').appendChild(el); }
   const crossOn = !FLOWS.some(f=>TB.cross[f.id]===false);
   const ctkm = ((FLOWS.find(f=>f.id==='PHARMA-NHAC_CTKM').operationConfig||{}).closure_policy||{}).manual_close === false;
-  el.innerHTML = `<label><input type="checkbox" ${crossOn?'checked':''} onchange="tbCrossAll(this.checked)"> Gom khác công việc</label>`
-    + `<label><input type="checkbox" ${ctkm?'checked':''} onchange="tbSimCtkm(this.checked)"> Nhắc CTKM tắt đóng tay</label>`;
+  // Bỏ ô "Nhắc CTKM tắt đóng tay" khỏi Giả lập (Hưng 09/11). Hàm tbSimCtkm giữ lại, không còn nút gọi tới.
+  el.innerHTML = `<label><input type="checkbox" ${crossOn?'checked':''} onchange="tbCrossAll(this.checked)"> Gom khác công việc</label>`;
 }
 function tbCrossAll(on){ FLOWS.forEach(f=>{ if(on) delete TB.cross[f.id]; else TB.cross[f.id]=false; }); TB.snap=null; state.page=1; render(); }
 function tbCross(id,on){ if(on) delete TB.cross[id]; else TB.cross[id]=false; TB.snap=null; state.page=1; render(); }
