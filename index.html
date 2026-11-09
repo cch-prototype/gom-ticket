@@ -2224,16 +2224,24 @@ const tbPhoneCell = g => g.norm ? `<span class="mask">${maskPhone(g.norm)}</span
 // Nút Gọi nằm trong cột "Gọi" cố định bên phải, ngay trước Thao tác (tiêu đề Thao tác trải hai cột). Nhóm từ 2 dòng gộp ô theo nhóm.
 // Dòng riêng và nhóm một dòng có nút Gọi ở chính dòng đó. Bỏ nút Gọi khỏi ô Thao tác ở To-Be.
 const tbCallable = x => x.assignedAgentId===ME.id && x.status!=='OPEN' && x.status!=='CLOSED';
+// Gọi chung chỉ tính ticket thuộc công việc đang nhận tự động (Hưng 09/11, decisions D-22).
+// Nhóm không có ticket nào như vậy thì tính mọi ticket mình giữ, để ticket nhận tay vẫn gọi được (Đề xuất, chờ Hưng).
+function tbCallScope(key){
+  const all = TICKETS.filter(x=>tbKey(x)===key && tbCallable(x));
+  if(!auto.on) return all;
+  const inS = all.filter(x=>auto.flows.includes(x.businessFlowId));
+  return inS.length ? inS : all;
+}
 // Ticket hiện trên widget: ticket mình giữ có ngày cần gọi sớm nhất, bằng ngày thì theo thứ tự CTKM, thuốc mãn tính, voucher
 function tbRep(g){
-  const c = g.tickets.filter(tbCallable);
-  // Hưng chốt 09/11 (decisions D-19): khung tổng đài mở cho ticket nằm trên cùng nhóm trong số ticket mình giữ
+  const c = tbCallScope(g.key);
+  // Hưng chốt 09/11 (decisions D-19): khung tổng đài mở cho ticket nằm trên cùng nhóm trong số ticket được tính
   return c.length ? c.slice().sort(tbInGroup)[0] : null;
 }
 function tbCallBtn(g){
   const merged = !g.key.startsWith('solo|') && g.tickets.length>=2;
   const rep = tbRep(g); if(!rep) return '';
-  const n = TICKETS.filter(x=>tbKey(x)===g.key && tbCallable(x)).length;
+  const n = tbCallScope(g.key).length;
   const why = !SIM.mptLoggedIn ? 'Chưa đăng nhập tổng đài' : (CALL.state!=='IDLE' ? 'Đang có cuộc gọi' : '');
   return `<div class="tb-callg"><span class="btn pri split${why?' is-dis':''}" title="${tbEsc(why || (n>1 ? 'Gọi một lần, tính cho '+n+' ticket mình giữ trong nhóm' : 'Gọi'))}"><span data-act="call" data-id="${rep.id}">Gọi</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span>${merged||n>1 ? `<div class="tb-calln">Cho ${n} ticket</div>` : ''}</div>`;
 }
@@ -2343,12 +2351,12 @@ function tbOnCall(t){
   const key = tbKey(t);
   TB.undo = {key, hadCalled:TB.called.has(key), pending:TB.pending, list:[]}; // để trả lại nếu gọi không thành công
   TB.called.add(key);
-  const held = TICKETS.filter(x=>tbKey(x)===key && x.assignedAgentId===ME.id && x.status!=='CLOSED');
+  const scope = tbCallScope(key), held = scope.some(x=>x.id===t.id) ? scope : [t];
   TB.pending = {key, ids:new Set(held.map(x=>x.id))};
   // Gọi một lần tính cho mọi ticket mình giữ trong nhóm: ghi cuộc gọi vào từng ticket còn lại, tăng số lượt gọi, Đã phân công chuyển Đang xử lý.
   // Bản ghi dùng chung trạng thái, thời lượng của cuộc gọi gốc (Object.create). Kết quả xử lý ghi riêng từng ticket nên không thừa hưởng.
   const at = CALL.attempt;
-  if(at) TICKETS.filter(x=>x.id!==t.id && tbKey(x)===key && tbCallable(x)).forEach(x=>{
+  if(at) held.filter(x=>x.id!==t.id).forEach(x=>{
     const own = v => ({value:v, writable:true, enumerable:true});
     const cp = Object.create(at, {dispositionCode:own(undefined), dispositionLabel:own(undefined), dispositionBehavior:own(undefined), dispositionNote:own(undefined), sharedCall:own(true)});
     TB.undo.list.push({x, status:x.status, count:x.attemptCount||0, updatedAt:x.updatedAt, cp});
@@ -2371,7 +2379,7 @@ function tbOnCallFail(){
 const tbDialPhone = t => (MODE==='tobe' && tbNorm(t.phone)) ? tbNorm(t.phone) : t.phone;
 function tbWidgetFor(t){
   if(MODE!=='tobe') return '';
-  const others = TICKETS.filter(x=>x.id!==t.id && tbKey(x)===tbKey(t) && x.assignedAgentId===ME.id && x.status!=='CLOSED').length;
+  const others = TB.pending && TB.pending.key===tbKey(t) ? [...TB.pending.ids].filter(id=>id!==t.id).length : 0;
   return others ? `<div class="cw-for">Kết quả chọn ở đây ghi cho ticket <b>${short(t.id)}</b> · ${flowName(t.businessFlowId)}. ${others} ticket còn lại của khách: bấm Xử lý sau khi đóng khung này.</div>` : '';
 }
 function tbOnResult(t){
@@ -2509,13 +2517,19 @@ function tbAutoModalText(){
 }
 function tbAutoInstall(){
   const op = autoPaint, ot = autoToggle, oc = autoConfirm;
-  autoPaint = function(){ op(); tbAutoChips(); };
+  autoPaint = function(){
+    if(MODE==='tobe' && !auto.on && TB.fltBak){ MS.fFlow.val=[...TB.fltBak]; TB.fltBak=null; MS.fFlow.repaint(); applyFilters(); } // tắt nhận tự động: trả ô lọc Công việc như trước khi bật
+    op(); tbAutoChips(); };
   autoToggle = function(){ if(MODE==='tobe' && !auto.on) return tbAutoOpen(); ot(); };
   autoConfirm = function(){
     if(MODE!=='tobe') return oc();
     const sel = tbAutoBoxes().filter(i=>i.checked).map(i=>i.value);
     if(!sel.length){ autoErr.textContent='Vui lòng chọn ít nhất 1 loại công việc'; return; }
-    const was = auto.on; auto.on=true; auto.flows=sel; state.page=1; autoModal.classList.add('hidden'); autoPaint();
+    const was = auto.on; auto.on=true; auto.flows=sel; state.page=1; autoModal.classList.add('hidden');
+    // Hưng 09/11 (decisions D-23): ô lọc Công việc tự chọn theo công việc nhận tự động, nhân viên vẫn đổi lại được
+    if(!TB.fltBak) TB.fltBak=[...MS.fFlow.val];
+    MS.fFlow.val=[...sel]; MS.fFlow.repaint(); applyFilters();
+    autoPaint();
     toast('success', was ? 'Đã cập nhật công việc nhận tự động' : 'Đã bật nhận phiếu tự động');
     if(!was) setTimeout(tbAutoAssignDemo, 1500);
   };
