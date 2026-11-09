@@ -422,7 +422,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
       </div>
       <div class="sec"><h3><span>Lịch sử phân công (<span id="dAsgN">0</span>)</span><span>⌄</span></h3><div id="dAsg"></div></div>
       <div class="sec" style="border:none"><h3><span>Lịch sử cuộc gọi (<span id="dAttN">0</span>)</span><span>⌄</span></h3><div id="dAtt"></div>
-        <div class="note">Data từ API attempts[] trên CI. Vị trí khối này trên UI thật chưa kiểm.</div></div>
+        </div><!-- Hưng 09/11: bỏ ghi chú nội bộ "Data từ API attempts[]..." khỏi màn hình; dữ liệu theo attempts[] trên CI, vị trí khối chưa kiểm trên UI thật -->
     </div>
 
     <div class="card">
@@ -2797,7 +2797,7 @@ function tab(btn, name){
   } else if(name==='Bán hàng'){
     // CI: tab này là iframe màn /sell-ecom (Bán hàng RSA), truyền mobilePhone + layout. Dựng lại tĩnh, không bán được.
     const sec=(h,b)=>`<div class="pos-sec"><b>${h}</b>${b}</div>`;
-    rPanel.innerHTML = `<div class="note" style="margin:-6px 0 8px">iframe: /sell-ecom?mobilePhone=…&amp;layout=…</div>
+    rPanel.innerHTML = `<!-- Hưng 09/11: bỏ ghi chú nội bộ đường dẫn iframe sell-ecom khỏi màn hình -->
     <div class="pos-tabs"><span class="pos-cart">63 - 05/11/2026 ✕</span><span class="pos-add">+</span></div>
     <div class="pos-bar"><input placeholder="Nhập tên, barcode hoặc mã thuốc (F1)"><button class="btn pri">🔍</button>
       <label><input type="radio" checked> Bán ngay</label><label><input type="radio"> Bán nợ</label>
