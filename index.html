@@ -2318,19 +2318,8 @@ function tbDetail(t){
   if(MODE!=='tobe'){ g.classList.add('hidden'); b.classList.add('hidden'); return; }
   document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; if(dt.textContent==='Thời gian hẹn gọi') dt.textContent='Ngày cần gọi'; }); // thống nhất label với US-3
   const key = tbKey(t), grp = TICKETS.filter(x=>tbKey(x)===key && (tbCanSee(x) || x.id===t.id)).sort(tbInGroup);
-  if(grp.length<2){ g.classList.add('hidden'); g.innerHTML=''; }
-  else {
-    g.classList.remove('hidden');
-    g.innerHTML = `<div class="tb-gh">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</div><table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
-      + grp.map(x=>`<tr class="${x.id===t.id?'tb-cur':''}"><td><span class="link" onclick="go('${x.id}')">${short(x.id)}</span>${x.id===t.id?'<span class="tb-cur-tag">Đang xem</span>':''}${tbMine(x)}</td>
-        <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
-        <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}</td>
-        <td class="nd">${tbContent(x)}</td>
-        <td><span class="tag st-${x.status}">${STATUS[x.status]}</span></td>
-        <td>${resultOf(x).label}</td><td>${vn(x.callScheduledDate)}</td><td>${vnt(x.expiredTime)}</td>
-        <td class="act">${(TB.inGroupTable=true, actions(x))}</td></tr>`).join('') + `</tbody></table>`;
-    TB.inGroupTable = false;
-  }
+  TB.curId = t.id;
+  tbPaintGroup(t);
   if(grp.length>1){ // Đầu trang: [Gọi cho N ticket] | Cho ticket <mã đang xem>: các nút còn lại của ticket đang xem (Hưng 09/11)
     const da=document.getElementById('dActs');
     const sp=da.querySelector('[data-act="call"]'); if(sp) sp.closest('.split').remove();
