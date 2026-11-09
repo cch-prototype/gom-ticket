@@ -264,6 +264,10 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-simpop .sim>label,.tb-simpop #tbSim label{display:block}
 .tb-simpop #tbSim{display:flex !important;flex-direction:column;gap:6px}
 .tb-for{font-size:12px;color:var(--muted);margin-right:6px}
+.tb-callhd{display:inline-block;margin-right:14px;padding-right:14px;border-right:1px solid var(--line);vertical-align:middle}
+.tb-callhd .tb-callg{display:flex;align-items:center;gap:6px}.tb-callhd .tb-calln{margin:0;font-size:12px}
+.tb-on .tb-gt .it{grid-template-columns:auto minmax(0,1fr)}.tb-gt .it-d{text-align:left} /* Hưng 09/11: bảng nhóm hiện ngày trước tên, không dính chữ */
+.cw-for{font-size:12px;color:var(--muted);margin:-4px 0 8px}
 .tb-banner .tb-bl{display:inline-flex;align-items:center;gap:6px;margin:4px 10px 0 0;background:#fff;border:1px solid #f5c98c;border-radius:6px;padding:2px 4px 2px 8px}
 .tb-noph{font-size:11.5px;color:#9ca3af}
 /* Nội dung: ngày nằm bên trái để không bị cột Thao tác che (CI đang bị che ở màn 1440px) */
@@ -2223,7 +2227,8 @@ const tbCallable = x => x.assignedAgentId===ME.id && x.status!=='OPEN' && x.stat
 // Ticket hiện trên widget: ticket mình giữ có ngày cần gọi sớm nhất, bằng ngày thì theo thứ tự CTKM, thuốc mãn tính, voucher
 function tbRep(g){
   const c = g.tickets.filter(tbCallable);
-  return c.length ? c.slice().sort((a,b)=>{ const da=tbT(a.callScheduledDate), db=tbT(b.callScheduledDate); return da!==db ? (da<db?-1:1) : tbInGroup(a,b); })[0] : null;
+  // Hưng chốt 09/11 (decisions D-19): khung tổng đài mở cho ticket nằm trên cùng nhóm trong số ticket mình giữ
+  return c.length ? c.slice().sort(tbInGroup)[0] : null;
 }
 function tbCallBtn(g){
   const merged = !g.key.startsWith('solo|') && g.tickets.length>=2;
@@ -2285,21 +2290,28 @@ function tbInvalidate(){ TB.snap = null; }
 function tbDetail(t){
   const g = document.getElementById('tbGroup'), b = document.getElementById('tbBanner');
   if(MODE!=='tobe'){ g.classList.add('hidden'); b.classList.add('hidden'); return; }
-  document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; }); // US-3 v3: thống nhất label
+  document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; if(dt.textContent==='Thời gian hẹn gọi') dt.textContent='Ngày cần gọi'; }); // thống nhất label với US-3
   const key = tbKey(t), grp = TICKETS.filter(x=>tbKey(x)===key && (tbCanSee(x) || x.id===t.id)).sort(tbInGroup);
   if(grp.length<2){ g.classList.add('hidden'); g.innerHTML=''; }
   else {
     g.classList.remove('hidden');
-    g.innerHTML = `<div class="tb-gh">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</div><table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Hạn xử lý','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
+    g.innerHTML = `<div class="tb-gh">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</div><table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
       + grp.map(x=>`<tr class="${x.id===t.id?'tb-cur':''}"><td><span class="link" onclick="go('${x.id}')">${short(x.id)}</span>${x.id===t.id?'<span class="tb-cur-tag">Đang xem</span>':''}${tbMine(x)}</td>
         <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
         <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}</td>
         <td class="nd">${tbContent(x)}</td>
         <td><span class="tag st-${x.status}">${STATUS[x.status]}</span></td>
         <td>${resultOf(x).label}</td><td>${vn(x.callScheduledDate)}</td><td>${vnt(x.expiredTime)}</td>
-        <td class="act">${actions(x)}</td></tr>`).join('') + `</tbody></table>`;
+        <td class="act">${(TB.inGroupTable=true, actions(x))}</td></tr>`).join('') + `</tbody></table>`;
+    TB.inGroupTable = false;
   }
-  if(grp.length>1){ const da=document.getElementById('dActs'); if(da.innerHTML.trim() && !da.querySelector('.tb-for')) da.insertAdjacentHTML('afterbegin', `<span class="tb-for">Cho ticket ${short(t.id)}:</span>`); }
+  if(grp.length>1){ // Đầu trang: [Gọi cho N ticket] | Cho ticket <mã đang xem>: các nút còn lại của ticket đang xem (Hưng 09/11)
+    const da=document.getElementById('dActs');
+    const sp=da.querySelector('[data-act="call"]'); if(sp) sp.closest('.split').remove();
+    const cb = tbCallBtn({key, tickets:grp});
+    const rest = da.innerHTML.trim() && !da.querySelector('.tb-for') ? `<span class="tb-for">Cho ticket ${short(t.id)}:</span>` : '';
+    da.insertAdjacentHTML('afterbegin', (cb ? `<span class="tb-callhd">${cb}</span>` : '') + rest);
+  }
   const ids = (TB.pending && TB.pending.key===key) ? [...TB.pending.ids] : [], n = ids.length;
   if(n>0){ b.classList.remove('hidden');
     const busy = CALL.state!=='IDLE';
@@ -2311,7 +2323,7 @@ function tbDetail(t){
 /* ---------- Gọi theo nhóm và ghi kết quả từng ticket ---------- */
 // Sau cuộc gọi trong nhóm, công việc tắt đóng tay vẫn hiện nút Xử lý cho ticket mình giữ (US-3 v3, mục 5.5 dòng 6)
 function tbActions(t,out){
-  if(MODE==='tobe' && TB.inList){ // Trên danh sách To-Be, nút Gọi nằm ở cột Gọi bên cạnh, không lặp trong Thao tác
+  if(MODE==='tobe' && (TB.inList || TB.inGroupTable)){ // Danh sách: Gọi nằm ở cột Gọi. Bảng nhóm ở Chi tiết: Gọi nằm ở đầu trang (Hưng 09/11)
     const k = out.findIndex(h=>h.includes('data-act="call"')); if(k>=0) out.splice(k,1);
   }
   if(MODE==='tobe'){ // Nút Nhận bị khoá vì đang nhận tự động: thay bằng chữ, đỡ khó hiểu
@@ -2328,7 +2340,9 @@ function tbActions(t,out){
 }
 function tbOnCall(t){
   if(MODE!=='tobe') return;
-  const key = tbKey(t); TB.called.add(key);
+  const key = tbKey(t);
+  TB.undo = {key, hadCalled:TB.called.has(key), pending:TB.pending, list:[]}; // để trả lại nếu gọi không thành công
+  TB.called.add(key);
   const held = TICKETS.filter(x=>tbKey(x)===key && x.assignedAgentId===ME.id && x.status!=='CLOSED');
   TB.pending = {key, ids:new Set(held.map(x=>x.id))};
   // Gọi một lần tính cho mọi ticket mình giữ trong nhóm: ghi cuộc gọi vào từng ticket còn lại, tăng số lượt gọi, Đã phân công chuyển Đang xử lý.
@@ -2337,11 +2351,28 @@ function tbOnCall(t){
   if(at) TICKETS.filter(x=>x.id!==t.id && tbKey(x)===key && tbCallable(x)).forEach(x=>{
     const own = v => ({value:v, writable:true, enumerable:true});
     const cp = Object.create(at, {dispositionCode:own(undefined), dispositionLabel:own(undefined), dispositionBehavior:own(undefined), dispositionNote:own(undefined), sharedCall:own(true)});
+    TB.undo.list.push({x, status:x.status, count:x.attemptCount||0, updatedAt:x.updatedAt, cp});
     (ATTEMPTS[x.id] = ATTEMPTS[x.id]||[]).push(cp);
     x.attemptCount = (x.attemptCount||0)+1;
     if(x.status==='ASSIGNED') x.status='IN_PROGRESS';
     x.updatedAt = nowIso();
   });
+}
+// Gọi không thành công (Hưng 09/11): ticket bấm Gọi giữ hành vi CI; các ticket khác không bị tính lượt, không bị đòi ghi kết quả
+function tbOnCallFail(){
+  if(MODE!=='tobe' || !TB.undo) return;
+  const u = TB.undo; TB.undo = null;
+  u.list.forEach(r=>{ const a=ATTEMPTS[r.x.id]||[], i=a.indexOf(r.cp); if(i>=0) a.splice(i,1);
+    r.x.attemptCount=r.count; r.x.status=r.status; r.x.updatedAt=r.updatedAt; });
+  if(!u.hadCalled) TB.called.delete(u.key);
+  TB.pending = u.pending;
+}
+// Khung tổng đài: quay SĐT đã chuẩn hoá của nhóm, và ghi rõ kết quả chọn ở đây chỉ cho một ticket
+const tbDialPhone = t => (MODE==='tobe' && tbNorm(t.phone)) ? tbNorm(t.phone) : t.phone;
+function tbWidgetFor(t){
+  if(MODE!=='tobe') return '';
+  const others = TICKETS.filter(x=>x.id!==t.id && tbKey(x)===tbKey(t) && x.assignedAgentId===ME.id && x.status!=='CLOSED').length;
+  return others ? `<div class="cw-for">Kết quả chọn ở đây ghi cho ticket <b>${short(t.id)}</b> · ${flowName(t.businessFlowId)}. ${others} ticket còn lại của khách: bấm Xử lý sau khi đóng khung này.</div>` : '';
 }
 function tbOnResult(t){
   if(MODE!=='tobe') return;
@@ -2783,6 +2814,7 @@ function callHangup(){ // Hủy gọi
 function callFail(){ // makeCall lỗi sau khi đã tạo attempt → attempt nằm lại ở DIALING
   if(CALL.state!=='DIALING') return;
   clearInterval(CALL.timer); toast('error','Không thể thực hiện cuộc gọi');
+  tbOnCallFail(); /*TOBE-HOOK*/
   Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh();
 }
 function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh(); }
@@ -2807,11 +2839,11 @@ function paintCall(){
   const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED:'⛔ Đã kết thúc - Kết thúc cuộc gọi'}[CALL.state];
   const codes = ALLOWED[t.businessFlowId]||[];
   const keepNote = document.getElementById('cwNote')?.value || '';
-  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><span class="cw-ph">☎ ${t.phone}</span><span>${mm}</span>
+  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span>${mm}</span>
       ${CALL.state==='DIALING'?'<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>':''}
       <button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':'Hủy gọi'}</button></div>
     <div class="cw-body"><div><div class="cw-h">📋 KỊCH BẢN GỢI Ý</div><div class="cw-script">${(SCRIPTS[t.businessFlowId]||'Chưa có kịch bản cho công việc này.').replace(/\n/g,'<br>')}</div></div>
-      <div><div class="cw-h">✅ KẾT QUẢ</div><div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';paintCall()">${d.label}</button>`}).join('')}</div>
+      <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetFor(t)}<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';paintCall()">${d.label}</button>`}).join('')}</div>
       <div class="cw-h" style="margin-top:10px">✍ GHI CHÚ CUỘC GỌI</div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách...">${keepNote}</textarea>
       <button class="btn pri cw-save" onclick="callSave()">Lưu</button></div></div>`;
 }
