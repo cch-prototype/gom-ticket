@@ -80,6 +80,8 @@ td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 /* Dòng bảng danh sách cao khoảng 49px như CI (Hưng 09/11; đo CI: 49 đến 53px, mockup cũ 35px). Chỉ bảng danh sách, không đổi bảng nhóm ở Chi tiết. */
 .tablewrap td{padding-top:13px;padding-bottom:13px}
 .tablewrap td.act,.tablewrap td.callcol{padding-top:11px;padding-bottom:11px}
+/* Tên khách dài xuống dòng thay vì bị cắt khi chữ chính 14px (Hưng 09/11). Không đổi độ rộng cột. */
+.tablewrap td.cust{white-space:normal;text-overflow:clip}
 .tablewrap td.nd .it:first-child{padding-top:13px}
 .tablewrap td.nd .it:last-child{padding-bottom:13px}
 .tablewrap td.nd .it.nd-txt{padding-top:14px;padding-bottom:14px}
