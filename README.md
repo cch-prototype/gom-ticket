@@ -1,5 +1,5 @@
-# CCH mockup To-Be (gom ticket)
+# CCH · Gom ticket theo khách (To-Be)
 
-Mở: https://hungng2810.github.io/cch-mockup/#tobe
+Bản demo bấm thử: https://cch-prototype.github.io/gom-ticket/
 
-Nguồn: 08-brainstorm/ui-demo/CCH-khung_TO-BE_v1.html trong folder CCH. Không sửa trực tiếp file ở repo này.
+Nguồn: 08-brainstorm/ui-demo/CCH-khung_TO-BE_v1.html trong folder dự án CCH. Không sửa trực tiếp file ở repo này.

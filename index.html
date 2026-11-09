@@ -3,7 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CCH · Gom ticket (To-Be)</title><script>if(!location.hash)history.replaceState(null,"","#tobe")</script>
+<title>CCH · Gom ticket theo khách (To-Be)</title>
+<meta name="description" content="Bản demo bấm thử của Call Center Hub: gom ticket theo SĐT khách, gọi một lần cho cả nhóm, ghi kết quả từng ticket. Dữ liệu mẫu, không phải hệ thống thật.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CCH · Gom ticket theo khách (To-Be)">
+<meta property="og:description" content="Bản demo bấm thử: gom ticket theo SĐT khách, gọi một lần cho cả nhóm, ghi kết quả từng ticket. Dữ liệu mẫu.">
+<meta property="og:image" content="https://cch-prototype.github.io/gom-ticket/og-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://cch-prototype.github.io/gom-ticket/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231f4fd8'/><text x='32' y='41' font-family='Arial,Helvetica,sans-serif' font-size='22' font-weight='700' fill='white' text-anchor='middle'>CCH</text></svg>">
+<script>if(!location.hash)history.replaceState(null,"","#tobe")</script>
+
 <!-- Bản demo, đăng tự động lên https://hungng2810.github.io/cch-mockup/ khi file được lưu -->
 <!--
   KHUNG MOCKUP — Call Center Hub (dựng lại từ CI v8.6.31, 05/11/2026)
@@ -433,7 +445,7 @@ const FLOWS = [
   {id:'PHARMA-NHAC_THUOC_MAN_TINH', name:'Nhắc mua thuốc mãn tính', tabs:['Tài khoản gia đình','Bán hàng'], itemDateLabel:'Ngày mua hàng', cls:'flow flow-g', operationConfig:{
     routing_policy:{self_claim_enabled:true, manual_assign:true, auto_assign_enabled:true}, // GIẢ ĐỊNH, tabs cũng tạm giống voucher
     closure_policy:{manual_close:true}}},
-  {id:'PHARMA-NHAC_CTKM', name:'Nhắc CTKM', tabs:['Tài khoản gia đình','Bán hàng'], itemDateLabel:'', cls:'flow flow-b', operationConfig:{
+  {id:'PHARMA-NHAC_CTKM', name:'Nhắc CTKM', tabs:['Tài khoản gia đình','Bán hàng'], itemDateLabel:'Ngày mua hàng', cls:'flow flow-b', operationConfig:{ // Nội dung CTKM = sản phẩm + ngày mua, như thuốc mãn tính (tài liệu Data Ecom, Confluence 352551627)
     routing_policy:{self_claim_enabled:true, manual_assign:true, auto_assign_enabled:true}, // có trong filter mockup BU nhưng 0 phiếu; nhãn ngày + config chưa có → GIẢ ĐỊNH
     closure_policy:{manual_close:true}}}
 ];
@@ -2075,7 +2087,9 @@ const NOASG = {assignedAgentId:null, assignedAgentName:null, assignedBy:null, as
 const TOBE_EXTRA = [
   // Nhóm 3 ticket, 3 công việc, SĐT viết 3 kiểu (0987654321, +84 987 654 321, 0987.654.321): 1 ticket Mới, 2 ticket do ME giữ
   mk(901,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'0987654321', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
-    description:'Nhắc CTKM (mẫu nội dung chờ BU)', callScheduledDate:'2026-11-05T17:00:00Z', createdAt:'2026-11-04T08:10:00Z', updatedAt:'2026-11-04T08:10:00Z'}),
+    // Mẫu nội dung CTKM (Hưng chốt 09/11, tài liệu Data Ecom): danh sách sản phẩm khách đã mua kèm Ngày mua hàng. Ngày mua = ngày cần gọi trừ 27. Tên sản phẩm là dữ liệu minh hoạ.
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'10/10/2026'}]},
+    callScheduledDate:'2026-11-05T17:00:00Z', createdAt:'2026-11-04T08:10:00Z', updatedAt:'2026-11-04T08:10:00Z'}),
   mk(902,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'+84 987 654 321', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
     businessData:{items:[{name:'Amlodipin 5mg x 30 viên', date:'12/10/2026'},{name:'Metformin 500mg x 60 viên', date:'12/10/2026'}]},
     callScheduledDate:'2026-11-04T17:00:00Z', createdAt:'2026-11-03T08:00:00Z', updatedAt:'2026-11-03T08:00:00Z'}),
@@ -2105,7 +2119,8 @@ const TOBE_EXTRA = [
   // ===== Bổ sung 09/11 (Hưng): đủ case để bấm thử. Ngày dựng quanh mốc 09/11/2026, tự dời theo ngày mở trang (tbShiftDates).
   // Hai ticket cùng công việc khác ngày cần gọi; CTKM ngày muộn nhưng voucher ngày sớm (CTKM vẫn nằm trên, cả nhóm được đẩy lên theo ngày voucher)
   mk(911,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_CTKM', status:'ASSIGNED',
-    description:'Nhắc CTKM (mẫu nội dung chờ BU)', callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-06T02:00:00Z', updatedAt:'2026-11-06T02:00:00Z'}),
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'19/10/2026'},{name:'EFFERALGAN 500MG HỘP 16 VIÊN', date:'19/10/2026'}]},
+    callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-06T02:00:00Z', updatedAt:'2026-11-06T02:00:00Z'}),
   mk(912,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
     businessData:{items:[{name:'Losartan 50mg x 30 viên', date:'19/10/2026'}]}, callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-02T02:00:00Z', updatedAt:'2026-11-02T02:00:00Z'}),
   mk(913,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
@@ -2131,7 +2146,8 @@ const TOBE_EXTRA = [
     dispositionLabel:'Không nghe máy lần 1', dispositionCode:'Không nghe máy lần 1',
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'20/11/2026'}]}, callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-20T16:59:59Z', createdAt:'2026-11-01T05:00:00Z', updatedAt:'2026-11-08T03:00:00Z'}),
   mk(943,{_tobe:true, customerName:'Trương Văn Phúc', phone:'0944555666', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
-    description:'Nhắc CTKM (mẫu nội dung chờ BU)', callScheduledDate:'2026-11-15T17:00:00Z', expiredTime:'2026-11-23T16:59:59Z', createdAt:'2026-11-08T05:00:00Z', updatedAt:'2026-11-08T05:00:00Z'}),
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'ENTEROGERMINA HỘP 20 ỐNG', date:'20/10/2026'}]},
+    callScheduledDate:'2026-11-15T17:00:00Z', expiredTime:'2026-11-23T16:59:59Z', createdAt:'2026-11-08T05:00:00Z', updatedAt:'2026-11-08T05:00:00Z'}),
   // Nhóm toàn ticket đã Hoàn thành: vẫn hiện trong nhóm, không có nút Gọi
   mk(951,{_tobe:true, customerName:'Mai Thị Thảo', phone:'0922666777', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'CLOSED',
     dispositionLabel:'Tạo đơn thành công', dispositionCode:'Tạo đơn thành công', resolution:'SUCCESS', closedAt:'2026-11-06T04:00:00Z', attemptCount:1,
@@ -2141,7 +2157,8 @@ const TOBE_EXTRA = [
     businessData:{items:[{name:'Losartan 50mg x 30 viên', date:'09/10/2026'}]}, callScheduledDate:'2026-11-05T17:00:00Z', expiredTime:'2026-11-13T16:59:59Z', createdAt:'2026-10-31T06:00:00Z', updatedAt:'2026-11-06T04:05:00Z'}),
   // Nhóm 4 ticket nằm vắt qua ranh giới trang (10 ticket mỗi trang): trang kéo dài cho đủ nhóm, không cắt
   mk(961,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
-    description:'Nhắc CTKM (mẫu nội dung chờ BU)', callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-07T07:00:00Z', updatedAt:'2026-11-07T07:00:00Z'}),
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'14/10/2026'}]},
+    callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-07T07:00:00Z', updatedAt:'2026-11-07T07:00:00Z'}),
   mk(962,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
     businessData:{items:[{name:'Bisoprolol 5mg x 30 viên', date:'14/10/2026'},{name:'Aspirin 81mg x 30 viên', date:'14/10/2026'}]}, callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-03T07:00:00Z', updatedAt:'2026-11-03T07:00:00Z'}),
   mk(963,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
@@ -2173,7 +2190,7 @@ function tbInGroup(a,b){
 }
 // Quyền xem như CI: không phải quản lý thì chỉ thấy ticket mình giữ và ticket Mới (US-3 Business Rules 17)
 const tbCanSee = t => SIM.isManager || t.status==='OPEN' || t.assignedAgentId===ME.id;
-// Nội dung không tách được item (ví dụ CTKM chưa có mẫu) vẫn canh lề như một item
+// Nội dung không tách được item (chỉ có chuỗi mô tả) vẫn canh lề như một item
 const tbContent = t => { const items=(t.businessData||{}).items, lb=flowOf(t).itemDateLabel;
   if(!items||!items.length) return `<div class="it"><span class="it-n">${t.description||'—'}</span></div>`;
   return items.map(i=>`<div class="it"><span class="it-d" title="${tbEsc(lb)}">${i.date}</span><span class="it-n" title="${tbEsc(i.name)}">${i.name}</span></div>`).join(''); };
