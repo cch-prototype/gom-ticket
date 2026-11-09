@@ -2683,7 +2683,7 @@ function go(id){
   dCode.innerHTML = 'Mã yêu cầu  '+short(t.id)+copyIc(t.id,'mã yêu cầu');
   dStatus.innerHTML = `<span class="tag st-${t.status}">${STATUS[t.status]}</span>`;
   dActs.innerHTML = actions(t).replace('Nhận','Nhận');
-  dName.textContent = t.customerName; dPhone.innerHTML = maskPhone(t.phone)+copyIc(t.phone,'SĐT');
+  dName.textContent = t.customerName; dPhone.innerHTML = maskPhone(t.phone)+copyIc(MODE==='tobe' ? (tbNorm(t.phone)||t.phone) : t.phone,'SĐT'); // To-Be copy số đã chuẩn hoá, giống danh sách
   dInfo.innerHTML = [
     ['Công việc', flow.name], ['Mã tham chiếu', `<span class="link">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>${copyIc(t.externalRef,'mã tham chiếu')}`],
     ['NV đảm trách', t.assignedAgentName||'—'], ['Kết quả xử lý', resultOf(t).label], ['Ghi chú', resultOf(t).note],
