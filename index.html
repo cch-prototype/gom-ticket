@@ -1995,7 +1995,7 @@ const ATTEMPTS = { // theo ticket id, shape attempts[] trên CI
 /* ---------- CỘT DANH SÁCH: thêm/bớt cột mockup tại đây ---------- */
 /* ---------- CỘT DANH SÁCH: đủ 15 cột như CI (độ rộng + cố định trái/phải lấy từ CI) ---------- */
 const COLUMNS = [
-  {h:'Mã yêu cầu', w:100, fix:'l', cls:'code', r:t=>`<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(short(t.id),'mã yêu cầu')}`},
+  {h:'Mã yêu cầu', w:100, fix:'l', cls:'code', r:t=>`<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}`},
   {h:'Khách hàng', w:140, fix:'l', cls:'cust', r:t=>`<b title="${t.customerName}">${t.customerName}</b>`},
   {h:'SĐT', w:120, fix:'l', r:t=>`<span class="mask">${maskPhone(t.phone)}</span>${copyIc(t.phone,'SĐT')}`},
   {h:'Trạng thái', w:120, r:t=>`<span class="tag st-${t.status}">${STATUS[t.status]}</span>`},
@@ -2020,7 +2020,8 @@ const fixCls = c => c.fix ? (c.fix==='l'?' fl':' fr') + (c.fix==='l'&&!COLUMNS.s
 /* ---------- HELPERS ---------- */
 const short = id => id.slice(-6);
 const maskPhone = p => '****'+p.slice(-4);
-// Icon copy (CI: Mã yêu cầu, SĐT, Mã tham chiếu có icon và copy được). Giá trị copy: mã yêu cầu và mã tham chiếu như đang hiện, SĐT là số đầy đủ dù màn hình che. [Kiro giả định, chưa kiểm CI]
+// Icon copy (Hưng 09/11: CI có icon copy ở Mã yêu cầu, SĐT, Mã tham chiếu và copy được). Copy giá trị ĐẦY ĐỦ, không phải bản rút gọn hay che trên màn hình
+// (CI chỉ tìm ra Mã YC khi nhập mã đầy đủ, nên copy 6 ký tự đang hiện sẽ vô dụng). [Kiro giả định, chưa kiểm CI]
 const copyIc = (v,lb) => `<span class="copy" role="button" tabindex="0" data-copy="${tbEsc(v)}" data-lb="${tbEsc(lb)}" title="Sao chép ${tbEsc(lb)}">⧉</span>`;
 const flowName = id => (FLOWS.find(f=>f.id===id)||{}).name||id;
 /* CI (y1t): Kết quả = dispositionLabel của ticket, không có thì lấy từ 2 lượt gọi gần nhất.
@@ -2296,7 +2297,7 @@ function tbRow(g,t,i,gi){
       return `<td ${at} rowspan="${g.tickets.length}">${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
     }
     let h;
-    if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(short(t.id),'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?'<span class="tb-newtag">Vừa giao</span>':''}`;
+    if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?'<span class="tb-newtag">Vừa giao</span>':''}`;
         else if(ci===6) h = `<span class="link" onclick="go('${t.id}')">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>${copyIc(t.externalRef,'mã tham chiếu')}`; // US-3 v3: bấm Mã tham chiếu mở Chi tiết
     else h = (c.cls||'').includes('nd') ? tbContent(t) : c.r(t);
     return `<td ${at}>${h}</td>`;
@@ -2335,7 +2336,7 @@ function tbPaintGroup(t){
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?' (đang xem)':''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
   const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở bảng ticket của khách':'Thu gọn bảng ticket của khách'}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
   const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
-    + grp.map(x=>`<tr class="${x.id===t.id?'tb-cur':''}"><td><span class="link" onclick="go('${x.id}')">${short(x.id)}</span>${copyIc(short(x.id),'mã yêu cầu')}${x.id===t.id?'<span class="tb-cur-tag">Đang xem</span>':''}${tbMine(x)}</td>
+    + grp.map(x=>`<tr class="${x.id===t.id?'tb-cur':''}"><td><span class="link" onclick="go('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${x.id===t.id?'<span class="tb-cur-tag">Đang xem</span>':''}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
       <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}${copyIc(x.externalRef,'mã tham chiếu')}</td>
       <td class="nd">${tbContent(x)}</td>
@@ -2679,7 +2680,7 @@ function go(id){
   vList.classList.toggle('hidden', !!id); vDetail.classList.toggle('hidden', !id);
   if(!id){ render(); return; }
   const t = CUR = TICKETS.find(x=>x.id===id), flow = FLOWS.find(f=>f.id===t.businessFlowId);
-  dCode.innerHTML = 'Mã yêu cầu  '+short(t.id)+copyIc(short(t.id),'mã yêu cầu');
+  dCode.innerHTML = 'Mã yêu cầu  '+short(t.id)+copyIc(t.id,'mã yêu cầu');
   dStatus.innerHTML = `<span class="tag st-${t.status}">${STATUS[t.status]}</span>`;
   dActs.innerHTML = actions(t).replace('Nhận','Nhận');
   dName.textContent = t.customerName; dPhone.innerHTML = maskPhone(t.phone)+copyIc(t.phone,'SĐT');
@@ -2946,7 +2947,7 @@ function copyText(v){
 function copyFallback(v){ const a=document.createElement('textarea'); a.value=v; a.style.cssText='position:fixed;opacity:0'; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); }catch(e){} a.remove(); }
 function doCopy(c){
   copyText(c.dataset.copy).then(()=>{
-    toast('success', c.dataset.lb==='SĐT' ? 'Đã sao chép SĐT' : 'Đã sao chép '+c.dataset.lb+': '+c.dataset.copy);
+    toast('success', 'Đã sao chép '+c.dataset.lb);
     const o=c.textContent; c.textContent='✓'; c.classList.add('done'); setTimeout(()=>{ c.textContent=o; c.classList.remove('done'); }, 1200);
   });
 }
