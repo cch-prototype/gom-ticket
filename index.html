@@ -303,6 +303,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-callhd .tb-callg{display:flex;align-items:center;gap:6px}.tb-callhd .tb-calln{margin:0;font-size:12px}
 .tb-called .tb-calledtx{display:block;font-size:11px;line-height:16px;color:var(--muted);margin-bottom:2px}.tb-called.hd .tb-calledtx{display:inline;font-size:12px;margin:0 6px 0 0}
 .tb-called .btn.split{background:#fff;color:var(--primary);border-color:var(--primary)} /* Hưng 09/11: sau cuộc gọi, Gọi lại là nút phụ */
+.cw-step{font-size:12.5px;font-weight:600;margin:6px 0 4px}
 .cw-row{padding:6px 0;border-bottom:1px dashed #e3e8f0}.cw-row:last-child{border-bottom:0}.cw-rowh{font-size:12.5px;margin-bottom:4px}.cw-row .cw-chips{margin:0}
 .tb-on .tb-gt .it{grid-template-columns:auto minmax(0,1fr)}.tb-gt .it-d{text-align:left} /* Hưng 09/11: bảng nhóm hiện ngày trước tên, không dính chữ */
 .cw-for{font-size:12px;color:var(--muted);margin:-4px 0 8px}
@@ -2422,7 +2423,7 @@ function tbOnCall(t){
   TB.undo = {key, hadCalled:TB.called.has(key), pending:TB.pending, list:[]}; // để trả lại nếu gọi không thành công
   TB.called.add(key);
   const scope = tbCallScope(key), held = scope.some(x=>x.id===t.id) ? scope : [t];
-  TB.pending = {key, ids:new Set(held.map(x=>x.id)), at:nowIso()}; CALL.picks = {};
+  TB.pending = {key, ids:new Set(held.map(x=>x.id)), at:nowIso()}; CALL.picks = {}; CALL.reach = null;
   // Gọi một lần tính cho mọi ticket mình giữ trong nhóm: ghi cuộc gọi vào từng ticket còn lại, tăng số lượt gọi, Đã phân công chuyển Đang xử lý.
   // Bản ghi dùng chung trạng thái, thời lượng của cuộc gọi gốc (Object.create). Kết quả xử lý ghi riêng từng ticket nên không thừa hưởng.
   const at = CALL.attempt;
@@ -2457,20 +2458,34 @@ function tbWidgetFor(t){
    Không bắt chọn đủ; ticket chưa chọn vẫn nằm trong khung nhắc để bấm Xử lý sau. Không có "chọn cho tất cả". */
 const tbWList = t => (MODE==='tobe' && TB.pending && TB.pending.key===tbKey(t) && TB.pending.ids.size>=2)
   ? [...TB.pending.ids].map(id=>TICKETS.find(x=>x.id===id)).filter(Boolean).sort(tbInGroup) : null;
-function tbWPick(id,c){ CALL.picks=CALL.picks||{};
-  if(id===CALL.ticketId) CALL.pick = CALL.pick===c ? null : c; else CALL.picks[id] = CALL.picks[id]===c ? undefined : c;
-  paintCall(); }
+// Hưng 09/11 (decisions D-27): khung tổng đài 2 bước. Bước 1: khách có nghe máy không (kết quả của cả cuộc gọi, áp chung cho nhóm).
+// Bước 2: khách nghe máy thì chọn kết quả nhu cầu cho từng ticket. Kết quả "không nghe máy" nhận theo nhãn chứa "Không nghe máy".
+const tbNoAns = c => /Không nghe máy/i.test((DISP_CATALOG.find(x=>x.code===c)||{}).label||'');
+const tbCodeByLabel = (t,label) => (ALLOWED[t.businessFlowId]||[]).find(c=>DISP_CATALOG.find(x=>x.code===c).label===label);
+function tbWReach(v){ CALL.reach = CALL.reach===v ? null : v; paintCall(); }
+function tbWPick(id,c){ CALL.picks=CALL.picks||{}; CALL.picks[id] = CALL.picks[id]===c ? undefined : c; paintCall(); }
 function tbWidgetMulti(t){
   const list = tbWList(t); if(!list) return '';
-  const picked = x => x.id===CALL.ticketId ? CALL.pick : (CALL.picks||{})[x.id];
-  return `<div class="cw-for">Chọn kết quả cho từng ticket. Ticket chưa chọn sẽ chờ ghi sau bằng nút Xử lý.</div>`
+  const r = CALL.reach, chip = (on,txt,js,title='') => `<button class="cw-chip ${on?'on':''}" title="${tbEsc(title)}" onclick="${js}">${txt}</button>`;
+  const noAns = (ALLOWED[t.businessFlowId]||[]).filter(tbNoAns).map(c=>DISP_CATALOG.find(x=>x.code===c));
+  let h = `<div class="cw-step">1. Khách có nghe máy không?</div><div class="cw-chips">`
+    + chip(r==='ANSWERED','Khách nghe máy',"tbWReach('ANSWERED')")
+    + noAns.map(d=>chip(r===d.label, d.label, `tbWReach('${tbEsc(d.label)}')`, d.src)).join('') + `</div>`;
+  if(r && r!=='ANSWERED') return h + `<div class="cw-for">"${tbEsc(r)}" sẽ ghi cho cả ${list.length} ticket của khách.</div>`;
+  if(r!=='ANSWERED') return h;
+  const P = CALL.picks||{};
+  return h + `<div class="cw-step">2. Kết quả từng ticket</div><div class="cw-for">Ticket chưa chọn sẽ chờ ghi sau bằng nút Xử lý.</div>`
     + list.map(x=>`<div class="cw-row"><div class="cw-rowh"><b>${short(x.id)}</b> · ${flowName(x.businessFlowId)}</div><div class="cw-chips">`
-      + (ALLOWED[x.businessFlowId]||[]).map(c=>{const d=DISP_CATALOG.find(z=>z.code===c);return `<button class="cw-chip ${picked(x)===c?'on':''}" title="${d.src}" onclick="tbWPick('${x.id}','${c}')">${d.label}</button>`}).join('')
+      + (ALLOWED[x.businessFlowId]||[]).filter(c=>!tbNoAns(c)).map(c=>{const d=DISP_CATALOG.find(z=>z.code===c);return chip(P[x.id]===c, d.label, `tbWPick('${x.id}','${c}')`, d.src)}).join('')
       + `</div></div>`).join('');
 }
 function tbWidgetSave(t){
   const list = tbWList(t); if(!list) return false;
-  const picks = list.map(x=>[x, DISP_CATALOG.find(z=>z.code===(x.id===t.id ? CALL.pick : (CALL.picks||{})[x.id]))]).filter(r=>r[1]);
+  const r = CALL.reach;
+  if(!r){ toast('error','Vui lòng chọn khách có nghe máy không'); return true; }
+  const picks = r==='ANSWERED'
+    ? list.map(x=>[x, DISP_CATALOG.find(z=>z.code===(CALL.picks||{})[x.id])]).filter(q=>q[1])
+    : list.map(x=>[x, DISP_CATALOG.find(z=>z.code===tbCodeByLabel(x,r))]).filter(q=>q[1]);
   if(!picks.length){ toast('error','Vui lòng chọn kết quả cho ít nhất một ticket'); return true; }
   const note=document.getElementById('cwNote').value.trim();
   if(CALL.state==='DIALING'||CALL.state==='TALKING') callHangup();
@@ -2481,6 +2496,7 @@ function tbWidgetSave(t){
     if(d.behavior.startsWith('CLOSE_')){ x.status='CLOSED'; x.resolution=d.resolution; x.closedAt=nowIso(); }
     tbOnResult(x); });
   toast('success','Đã ghi kết quả cho '+picks.length+' ticket');
+  CALL.reach=null; CALL.picks={};
   callClose(); return true;
 }
 function tbOnResult(t){
