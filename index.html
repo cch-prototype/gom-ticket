@@ -138,6 +138,7 @@ td.act:empty::before{content:"—";font-size:13px;line-height:24px;color:#c0c4cc
 .flow-b{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd}
 .flow-g{background:var(--green-50);color:var(--green);border-color:#a7e3c9}
 td.nd{padding:0;white-space:normal}
+.it.nd-txt{display:block;white-space:pre-line;line-height:18px;padding-top:7px;padding-bottom:7px} /* Nội dung là một chuỗi (Hưng 09/11) */
 .it{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px;padding:6px 8px;min-height:32px;border-bottom:1px dashed #e9ecf1;font-size:12px;line-height:20px}
 .it:last-child{border-bottom:none}
 .it-n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2033,7 +2034,8 @@ function resultOf(t){
 const flowOf = t => FLOWS.find(f=>f.id===t.businessFlowId)||{cls:'flow'};
 function content(t){ // render Nội dung theo config của công việc
   const items=(t.businessData||{}).items;
-  if(!items||!items.length) return t.description||'—';
+  // Hưng 09/11 (decisions D-24): API createTickets nhận description là một chuỗi; hiển thị nguyên văn, không tách cột ngày
+  if(!items||!items.length){ const d=String(t.description||'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); return `<div class="it nd-txt">${d}</div>`; }
   return items.map(i=>`<div class="it"><span class="it-n" title="${i.name}">${i.name}</span><span class="it-d">${flowOf(t).itemDateLabel}: ${i.date}</span></div>`).join('');
 }
 const vn = iso => { if(!iso) return '—'; const d=new Date(new Date(iso).getTime()+7*3600e3); const p=n=>String(n).padStart(2,'0'); return `${p(d.getUTCDate())}/${p(d.getUTCMonth()+1)}/${d.getUTCFullYear()}`; };
@@ -2205,7 +2207,7 @@ function tbInGroup(a,b){
 const tbCanSee = t => SIM.isManager || t.status==='OPEN' || t.assignedAgentId===ME.id;
 // Nội dung không tách được item (chỉ có chuỗi mô tả) vẫn canh lề như một item
 const tbContent = t => { const items=(t.businessData||{}).items, lb=flowOf(t).itemDateLabel;
-  if(!items||!items.length) return `<div class="it"><span class="it-n">${t.description||'—'}</span></div>`;
+  if(!items||!items.length) return content(t); // Hưng 09/11: hiển thị nguyên văn chuỗi như As-Is
   return items.map(i=>`<div class="it"><span class="it-d" title="${tbEsc(lb)}">${i.date}</span><span class="it-n" title="${tbEsc(i.name)}">${i.name}</span></div>`).join(''); };
 function tbBuild(){
   const rows = filtered().filter(tbCanSee), map = new Map();
@@ -2599,6 +2601,14 @@ function tbMoveSim(on){
 /* ---------- Ngày tương đối (Hưng 09/11): dữ liệu dựng quanh mốc 09/11/2026, dời theo ngày mở trang ----------
    Để link mở lúc nào cũng còn trong bộ lọc 30 ngày, và "hôm nay, quá ngày, chưa tới ngày" luôn đúng. Ngày trong chữ của description không dời. */
 const TB_ANCHOR = '2026-11-09';
+/* Hưng 09/11 (decisions D-24): API createTickets nhận description là một chuỗi (Swagger telco-ticket-application 0.2.0).
+   Dữ liệu mẫu dựng sẵn dạng danh sách item; đổi thành một chuỗi "tên - nhãn ngày: dd/mm/yyyy", nối bằng "; ", để mockup không tách dòng khi nguồn không tách. */
+function tbItemsToText(){
+  new Set([...TICKETS, ...TOBE_EXTRA]).forEach(t=>{ const bd=t.businessData||{}, it=bd.items; if(!it||!it.length) return;
+    const lb=(FLOWS.find(f=>f.id===t.businessFlowId)||{}).itemDateLabel;
+    t.description = it.map(i=>i.name+(i.date?' - '+(lb?lb+': ':'')+i.date:'')).join('; ');
+    delete bd.items; });
+}
 function tbShiftDates(){
   const vnToday = new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
   const ms = Math.round((Date.parse(vnToday)-Date.parse(TB_ANCHOR))/864e5)*864e5;
@@ -2611,7 +2621,7 @@ function tbShiftDates(){
 }
 function tbInit(){
   if(!TOBE_ENABLED) return;
-  tbShiftDates(); render();
+  tbShiftDates(); tbItemsToText(); render();
   tbAutoInstall(); tbDockInstall();
   document.getElementById('tbSw').classList.remove('hidden');
   tbSyncUI();
