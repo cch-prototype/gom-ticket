@@ -249,7 +249,14 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-on .tablewrap tbody tr:hover td{background:#eaf1ff}
 .tb-banner{background:#fff6e5;border:1px solid #f5c98c;color:#92400e;border-radius:8px;padding:8px 12px;margin-bottom:10px}
 .tb-group{margin-bottom:12px;overflow:auto}
-.tb-gh{padding:9px 12px;font-weight:600;font-size:12px;border-bottom:1px solid var(--line)}
+.tb-gh{padding:9px 12px;font-weight:600;font-size:12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.tb-gh.col{border-bottom:none}
+.tb-ght{white-space:nowrap}
+.tb-gchips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+.tb-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:14px;padding:1px 3px 1px 9px;font-weight:400;background:#fff;line-height:20px}
+.tb-chip .tag{margin:0}
+.tb-chip.on{border-color:var(--primary);background:#eef3fb;font-weight:600;cursor:default}
+.tb-gar{margin-left:auto;color:var(--muted)}
 .tb-gt{width:100%;border-collapse:collapse;font-size:12.5px}
 .tb-gt th{background:#eef3fb;text-align:left;padding:7px 10px;font-weight:600;white-space:nowrap}
 .tb-gt td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:top}
@@ -2313,6 +2320,28 @@ function renderToBe(){
 function tbInvalidate(){ TB.snap = null; }
 
 /* ---------- Chi tiết To-Be: hiện cả nhóm ---------- */
+// Bảng "Ticket của khách này" thu gọn được (Hưng 09/11, phương án A): thu gọn thì còn một dòng gồm các chip mã yêu cầu + trạng thái,
+// bấm chip để chuyển ticket. Mặc định mở. Trạng thái nhớ trong phiên (TB.gCollapsed), tải lại trang thì mở lại.
+function tbPaintGroup(t){
+  const g = document.getElementById('tbGroup');
+  const key = tbKey(t), grp = TICKETS.filter(x=>tbKey(x)===key && (tbCanSee(x) || x.id===t.id)).sort(tbInGroup);
+  if(grp.length<2){ g.classList.add('hidden'); g.innerHTML=''; return; }
+  const col = !!TB.gCollapsed;
+  g.classList.remove('hidden');
+  const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?' (đang xem)':''}"${x.id===t.id?'':` onclick="event.stopPropagation();go('${x.id}')"`}>${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
+  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở bảng ticket của khách':'Thu gọn bảng ticket của khách'}" onclick="tbToggleGroup()"><span class="tb-ght">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
+  const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
+    + grp.map(x=>`<tr class="${x.id===t.id?'tb-cur':''}"><td><span class="link" onclick="go('${x.id}')">${short(x.id)}</span>${x.id===t.id?'<span class="tb-cur-tag">Đang xem</span>':''}${tbMine(x)}</td>
+      <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
+      <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}</td>
+      <td class="nd">${tbContent(x)}</td>
+      <td><span class="tag st-${x.status}">${STATUS[x.status]}</span></td>
+      <td>${resultOf(x).label}</td><td>${vn(x.callScheduledDate)}</td><td>${vnt(x.expiredTime)}</td>
+      <td class="act">${(TB.inGroupTable=true, actions(x))}</td></tr>`).join('') + `</tbody></table>`;
+  TB.inGroupTable = false;
+  g.innerHTML = head + table;
+}
+function tbToggleGroup(){ TB.gCollapsed = !TB.gCollapsed; const t = TB.curId && byId(TB.curId); if(t) tbPaintGroup(t); }
 function tbDetail(t){
   const g = document.getElementById('tbGroup'), b = document.getElementById('tbBanner');
   if(MODE!=='tobe'){ g.classList.add('hidden'); b.classList.add('hidden'); return; }
