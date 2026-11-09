@@ -1,0 +1,2902 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCH Khung CI</title>
+<!--
+  KHUNG MOCKUP — Call Center Hub (dựng lại từ CI v8.6.31, 05/11/2026)
+  - Layout + cột + label lấy từ màn hình CI thật. Data là data giả, field theo đúng API CI (tickets, tickets/{id}).
+  - Muốn mockup tính năng mới: tìm các comment "SLOT:" bên dưới, chèn vào đó. Data nằm ở mảng TICKETS.
+  - Không phải UI thật: không gọi API, không có telco.
+-->
+<style>
+:root{
+  --primary:#1d4ed8; --primary-50:#eff4ff; --primary-100:#dbe6ff;
+  --side:#1f5ad6; --text:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#f3f5f9; --card:#fff;
+  --red:#ef4444; --purple:#6d28d9; --purple-50:#f3efff; --green:#059669; --green-50:#e8f8f1;
+  --amber:#b45309; --amber-50:#fff6e5; --gray-50:#f3f4f6;
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; font-size:13px; color:var(--text);
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg)}
+button{font:inherit;cursor:pointer}
+/* Shell */
+.side{position:fixed;inset:0 auto 0 0;width:48px;background:var(--side);display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:14px;z-index:5}
+.side i{width:22px;height:22px;border-radius:5px;background:rgba(255,255,255,.25);display:block}
+.side i.on{background:#fff}
+.top{position:fixed;left:48px;right:0;top:0;height:48px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:14px;z-index:4}
+.crumb{color:var(--muted)} .crumb b{color:var(--text);font-weight:500}
+.banner{margin:0 auto;background:var(--red);color:#fff;padding:6px 14px;border-radius:4px}
+.user{display:flex;align-items:center;gap:8px;line-height:1.25}
+.avatar{width:30px;height:30px;border-radius:50%;background:#d1d5db}
+.env{background:#6d28d9;color:#fff;font-size:11px;border-radius:4px;padding:2px 8px;text-align:center;line-height:1.2}
+main{margin-left:48px;padding:60px 14px 14px}
+/* Generic */
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px}
+.btn{border:1px solid #d1d5db;background:#fff;border-radius:5px;padding:5px 11px;white-space:nowrap}
+.btn.pri{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.split{display:inline-flex;padding:0;overflow:hidden}
+.btn.split span{padding:5px 14px}.btn.split em{font-style:normal;padding:5px 7px;border-left:1px solid rgba(255,255,255,.4)}
+.tag{display:inline-block;border-radius:12px;padding:3px 10px;font-size:12px;white-space:nowrap}
+.st-OPEN{background:#FFF8E7;color:#F5A623;border:1px solid #F5A623} /* màu theo code CI */
+.st-ASSIGNED{background:#e0f2fe;color:#0369a1;border:1px solid #0369a1}
+.st-IN_PROGRESS{background:#ECE8FF;color:#3A3AE6;border:1px solid #3A3AE6}
+.st-CLOSED{background:#f6ffed;color:#52c41a;border:1px solid #52c41a}
+.flow{background:var(--purple-50);color:var(--purple);border:1px solid #d6c8ff}
+.flow:before{content:"•";margin-right:4px}
+.switch{display:inline-block;width:28px;height:16px;border-radius:8px;background:#cbd5e1;position:relative;vertical-align:middle;cursor:pointer}
+.switch:after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.15s}
+.switch.on{background:var(--primary)} .switch.on:after{left:14px}
+.link{color:var(--primary);cursor:pointer}
+.copy{color:#9ca3af;font-size:11px;margin-left:3px}
+/* List */
+.head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.head h1{font-size:14px;margin:0}
+.filters{padding:12px 14px;display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px 14px;margin-bottom:12px}
+.filters label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.filters input,.filters select{width:100%;border:1px solid #d1d5db;border-radius:5px;padding:5px 8px;font:inherit;background:#fff}
+.frow{grid-column:1/-1;display:flex;align-items:end;gap:10px;flex-wrap:wrap}
+.tablewrap{overflow:auto;max-height:max(420px,calc(100vh - 300px));border-radius:8px 8px 0 0}
+table{width:100%;border-collapse:separate;border-spacing:0}
+.tablewrap>table{table-layout:fixed}
+th{background:#eef3fb;text-align:left;font-weight:600;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+/* Bảng danh sách: căn TOP để mọi ô thẳng hàng với dòng nội dung đầu tiên (ô Nội dung cao 1–3 dòng) */
+.tablewrap th{position:sticky;top:0;z-index:2;box-shadow:inset 0 -1px 0 var(--line);border-bottom:none}
+.tablewrap th{padding:10px 8px}
+.tablewrap td{padding-left:8px;padding-right:8px;vertical-align:top;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid #dfe3ea}
+.tablewrap .fl,.tablewrap .fr{position:sticky;z-index:1;background:#fff}
+.tablewrap th.fl,.tablewrap th.fr{z-index:3;background:#eef3fb}
+.tablewrap .fl-last{box-shadow:6px 0 6px -6px rgba(15,23,42,.18)}
+.tablewrap .fr-first{box-shadow:-6px 0 6px -6px rgba(15,23,42,.18)}
+.tablewrap tbody tr:nth-child(even) td{background:#fafbfd}
+.tablewrap tbody tr:hover td{background:#f3f7ff}
+.tablewrap tbody tr:last-child td{border-bottom:none}
+.tablewrap td .tag{line-height:16px;padding:2px 8px;vertical-align:top}
+.tablewrap td .copy{visibility:hidden} .tablewrap tr:hover .copy{visibility:visible}
+td.cust b{font-weight:600}
+td.act{white-space:nowrap;font-size:0;padding:4px 8px;overflow:visible}
+td.act .btn{font-size:12px;height:24px;line-height:22px;padding:0 8px;margin-right:6px;vertical-align:top}
+td.act .btn:last-child{margin-right:0}
+td.act .btn.split{padding:0} td.act .btn.split span,td.act .btn.split em{padding:0 9px;line-height:22px} td.act .btn.split em{padding:0 6px}
+td.act:empty::before{content:"—";font-size:13px;line-height:24px;color:#c0c4cc}
+.mask{color:var(--primary)}
+.pager{display:flex;align-items:center;gap:8px;padding:10px 14px}
+.pager .pg{min-width:26px;height:26px;border:1px solid transparent;border-radius:4px;background:none}
+.pager .pg.on{border-color:var(--primary);color:var(--primary)}
+/* Detail */
+.dbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dbar .sp{flex:1}
+.dgrid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:12px;align-items:start}
+.sec{padding:12px 14px;border-bottom:1px solid var(--line)}
+.sec h3{font-size:12px;text-transform:uppercase;margin:0 0 10px;display:flex;justify-content:space-between}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:7px 8px;font-size:12.5px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.tl{border-left:3px solid var(--primary);background:#f8faff;padding:8px 10px;border-radius:4px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.tl b{color:var(--text);font-weight:500}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);padding:0 16px}
+.tabs button{border:none;background:none;padding:12px 0;color:var(--muted);border-bottom:2px solid transparent}
+.tabs button.on{color:var(--primary);border-bottom-color:var(--primary)}
+.panel{padding:16px;min-height:420px}
+.slot{border:2px dashed #c7d2fe;border-radius:8px;color:#6366f1;padding:18px;text-align:center;background:#fafaff}
+.fam{display:grid;grid-template-columns:200px 1fr;gap:14px}
+.fam .box{border:1px solid var(--line);border-radius:6px;padding:10px}
+.hero{border-radius:8px;background:linear-gradient(#fff,#e8f0ff);padding:60px 20px;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:20}
+.mbox{background:#fff;border-radius:8px;padding:18px 20px;width:380px;max-width:calc(100% - 32px)}
+.mbox h3{margin:0 0 12px;font-size:14px}
+.mbox label{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.pos-tabs{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:10px}
+.pos-cart{color:var(--primary);border-bottom:2px solid var(--primary);padding:4px 2px}
+.pos-add{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.pos-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.pos-bar input:not([type]){flex:1;min-width:220px;border:1px solid var(--primary);border-radius:4px;padding:6px 8px}
+.pos{display:grid;grid-template-columns:1fr 290px;gap:12px;align-items:start}
+.pos-side{display:flex;flex-direction:column;gap:8px}
+.pos-sec{border:1px solid var(--line);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.pos-sec input:not([type]),.pos-sec select,.pos-sec textarea{border:1px solid #d1d5db;border-radius:4px;padding:6px;font:inherit;width:100%}
+.pos-chip{border:1px solid #93c5fd;background:var(--primary-50);color:var(--primary);border-radius:4px;padding:7px 8px}
+.pos-pt{background:#fffbeb;border:1px solid #fde68a;border-radius:4px;padding:8px;font-size:12px;line-height:1.7}
+.pos-promo{background:#d97706;color:#fff;border-radius:4px;padding:7px 8px}
+@media (max-width:1100px){.pos{grid-template-columns:1fr}}
+.flow-b{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd}
+.flow-g{background:var(--green-50);color:var(--green);border-color:#a7e3c9}
+td.nd{padding:0;white-space:normal}
+.it{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px;padding:6px 8px;min-height:32px;border-bottom:1px dashed #e9ecf1;font-size:12px;line-height:20px}
+.it:last-child{border-bottom:none}
+.it-n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.it-d{color:var(--muted);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+#dItems .it{grid-template-columns:1fr;row-gap:2px;align-items:start}
+#dItems .it-n{white-space:normal;line-height:18px}
+#dItems .it-d{text-align:left}
+.dr{display:inline-flex;align-items:center;gap:6px;border:1px solid #d1d5db;border-radius:5px;padding:2px 8px;background:#fff}
+.dr input{border:none !important;padding:3px 0 !important;width:auto !important;font:inherit}
+.dr-err{color:var(--red);font-size:12px;margin-top:3px;min-height:0}
+.ms{position:relative}
+.ms.ms-dis{pointer-events:none;opacity:.5}
+.ms-box{display:flex;align-items:center;gap:4px;min-height:30px;border:1px solid #d1d5db;border-radius:5px;padding:2px 24px 2px 6px;background:#fff;cursor:pointer;position:relative;overflow:hidden}
+.ms-box:focus,.ms-box:hover{border-color:var(--primary)}
+.ms-tags{display:flex;gap:4px;flex:0 1 auto;flex-wrap:nowrap;min-width:0;overflow:hidden}
+.ms-tag{display:inline-flex;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:100%;background:#f0f2f5;border:1px solid #e5e7eb;border-radius:4px;padding:0 4px 0 6px;font-size:12px;line-height:20px;white-space:nowrap}
+.ms-tag b{font-weight:400;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ms-tag i{flex:0 0 auto;font-style:normal;color:#9ca3af;cursor:pointer;padding:0 2px}.ms-tag i:hover{color:var(--text)}
+.ms-tags.measure .ms-tag{flex:0 0 auto}
+.ms-more{flex:0 0 auto;padding:0 6px;color:var(--muted)}
+.ms-ph{color:#9ca3af;padding-left:2px}
+.ms-box.has .ms-ph{display:none}
+.ms-ar,.ms-clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:12px;line-height:1}
+.ms-clr{display:none;cursor:pointer;width:14px;height:14px;border-radius:50%;background:#c0c4cc;color:#fff;font-size:9px;text-align:center;line-height:14px}
+.ms-box.has:hover .ms-clr{display:block}.ms-box.has:hover .ms-ar{display:none}
+.ms-dd{position:absolute;z-index:30;left:0;min-width:100%;top:calc(100% + 4px);background:#fff;border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.12);padding:4px}
+.ms-list{max-height:240px;overflow:auto}
+.ms-q{width:100% !important;border:1px solid #d1d5db;border-radius:4px;padding:5px 8px;margin-bottom:4px;font:inherit}
+.ms-empty{padding:10px;color:var(--muted);text-align:center;font-size:12px}
+.ms-dd label{display:flex !important;gap:8px;align-items:center;padding:6px 8px;border-radius:4px;cursor:pointer;text-transform:none !important;font-size:13px !important;color:var(--text) !important;margin:0 !important;white-space:nowrap}
+.ms-dd input{width:auto !important;flex:0 0 auto;margin:0}
+.ms-dd label:hover{background:#f5f7fa}.ms-dd label.on{background:var(--primary-50);font-weight:500}
+.sim{margin-left:16px;padding:3px 10px;border:1px dashed #c7d2fe;border-radius:14px;background:#fafaff;color:#4f46e5;font-size:12px;display:inline-flex;gap:10px;align-items:center}
+.sim label{display:inline-flex;gap:4px;align-items:center;cursor:pointer}
+.btn[disabled],.btn.is-dis{opacity:.45;cursor:not-allowed}
+
+/* thao tác giả lập */
+#toasts{position:fixed;top:56px;right:16px;z-index:60;display:flex;flex-direction:column;gap:8px}
+.toast{display:flex;gap:10px;align-items:center;background:#52c41a;color:#fff;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.14);padding:10px 14px;min-width:260px;max-width:360px;transition:opacity .3s,transform .3s}
+.toast.out{opacity:0;transform:translateX(20px)}
+.toast .ti{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex:0 0 auto}
+.toast.success .ti{background:#fff;color:#52c41a}.toast.error{background:#ff4d4f}.toast.error .ti{background:#fff;color:#ff4d4f}.toast.error .ti{background:#ff4d4f}.toast.info .ti{background:#1677ff}
+.m-input{width:100%;border:1px solid #d1d5db;border-radius:5px;padding:7px 9px;font:inherit;background:#fff}
+.m-input.err{border-color:var(--red)}
+.m-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.asg-list{margin-top:8px;max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.asg-row{display:grid !important;grid-template-columns:80px 1fr 40px;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #f0f2f5;cursor:pointer}
+.asg-row:last-child{border-bottom:none}.asg-row:hover{background:#f5f7fa}.asg-row.on{background:var(--primary-50)}
+.asg-c{font-size:12.5px}
+.asg-hd{background:#eef3fb;font-weight:600;cursor:default}
+.asg-row input{justify-self:center}
+.dd-menu{position:absolute;z-index:55;background:#fff;border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.14);padding:4px;width:150px}
+.dd-menu button{display:block;width:100%;text-align:left;border:none;background:none;padding:7px 10px;border-radius:4px}
+.dd-menu button:hover{background:#f5f7fa}
+.btn.split [data-act]{cursor:pointer}
+.call-w{background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.cw-bar{display:flex;align-items:center;gap:12px;background:#1d4ed8;color:#fff;padding:8px 12px;border-radius:8px;margin:6px}
+.cw-pill{background:rgba(255,255,255,.18);border-radius:5px;padding:3px 8px;font-size:12.5px}.cw-ENDED{background:#ff7a45}
+.cw-ph{font-weight:700;font-size:15px}.cw-sim{font-size:11.5px;opacity:.85}.cw-sim a{color:#fff;text-decoration:underline;cursor:pointer}
+.cw-x{margin-left:auto;background:#ef4444;color:#fff;border:none;border-radius:5px;padding:5px 10px}
+.cw-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px 14px 12px}
+.cw-h{font-size:11.5px;font-weight:600;color:#374151;margin-bottom:6px}
+.cw-script{background:#f0fdf4;border-left:3px solid #86efac;padding:8px 10px;font-size:12.5px;line-height:1.6}
+.cw-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cw-chip{border:1px solid #d1d5db;background:#fff;border-radius:5px;padding:4px 10px;font-size:12.5px}
+.cw-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+#cwNote{width:100%;border:1px solid #d1d5db;border-radius:5px;padding:6px 8px;font:inherit}
+.cw-save{width:100%;margin-top:8px;padding:7px}
+.call-box{position:fixed;right:16px;bottom:16px;z-index:58;width:340px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:12px 14px;border-top:3px solid var(--primary)}
+.cb-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cb-s{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:10px;background:#f0f2f5}
+.cb-DIALING{background:#fff7e6;color:#ad4e00}.cb-TALKING{background:#f6ffed;color:#237804}.cb-FAILED{background:#fff1f0;color:#cf1322}
+.cb-m{font-size:12px;color:var(--muted);margin:6px 0}
+.cb-a{display:flex;gap:6px;flex-wrap:wrap}
+.btn-red{background:#ff4d4f;border-color:#ff4d4f;color:#fff}
+.hidden{display:none}
+.note{font-size:11px;color:var(--muted);margin-top:8px}
+@media (max-width:760px){.filters{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.banner{display:none}}
+/*TOBE:BEGIN css*/
+/* Chế độ To-Be: mọi rule nằm trong khối này. Gỡ bằng _backup/tobe-rollback.py */
+.tb-sw{display:inline-flex;border:1px solid var(--primary);border-radius:6px;overflow:hidden}
+.tb-sw button{border:none;background:#fff;color:var(--primary);padding:4px 14px;font-weight:600}
+.tb-sw button.on{background:var(--primary);color:#fff}
+.tb-bar{background:#fff;border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;line-height:22px}
+.tb-bar-row{display:flex;flex-wrap:wrap;gap:2px 16px;align-items:center}
+.tb-bar-row+.tb-bar-row{margin-top:2px}
+.tb-title{color:var(--primary)}
+.tb-bar a,.tb-more{color:var(--primary);cursor:pointer}
+.tb-bar label{margin-right:10px;white-space:nowrap}
+.tb-legend{color:var(--muted)}
+.tb-b{display:inline-block;font-size:10px;font-weight:700;border-radius:3px;padding:0 5px;line-height:16px;vertical-align:middle;cursor:help;white-space:nowrap}
+.tb-b-chot{background:#e6f6ee;color:#047857;border:1px solid #a7dcc3}
+.tb-b-ba{background:#fff1e0;color:#b45309;border:1px solid #f5c98c}
+.tb-b-dev{background:#e0edff;color:#1d4ed8;border:1px solid #b6cdf7}
+.tb-b-def{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1}
+.tb-b-sim{background:#f3efff;color:#6d28d9;border:1px solid #d6c8ff}
+.tb-more{display:block;font-size:11px;font-weight:400;line-height:16px;margin-top:2px}
+.tb-mine{display:inline-block;margin-left:6px;font-size:10px;line-height:14px;padding:0 5px;border-radius:3px;background:#e8f8f1;color:var(--green);border:1px solid #b7e4cf;vertical-align:top;cursor:help}
+.tb-inv{color:#9ca3af}
+.tb-on .tablewrap tbody tr td{background:#fff}
+.tb-on .tablewrap tbody tr.tb-g1 td{background:#f5f8fd}
+.tb-on .tablewrap tbody tr.tb-first td{border-top:6px solid var(--bg);box-shadow:inset 0 1px 0 #b9c3d3}
+.tb-mine-b{display:table;margin:3px 0 0;font-size:10px;line-height:14px;padding:0 5px;border-radius:3px;background:#e8f8f1;color:var(--green);border:1px solid #b7e4cf}
+.tb-simx{display:none}.tb-on .tb-simx{display:inline}
+td.callcol{padding:4px 8px;font-size:0;overflow:visible}
+.tb-callg{font-size:0}
+.tb-callg .btn{font-size:12px;height:24px;line-height:22px;padding:0;vertical-align:top}
+.tb-callg .btn.split span,.tb-callg .btn.split em{padding:0 9px;line-height:22px}.tb-callg .btn.split em{padding:0 6px}
+.tb-calln{font-size:11px;line-height:16px;color:var(--muted);margin-top:2px}
+.tb-on .tablewrap tbody tr:first-child td{border-top:none}
+.tb-on .tablewrap tbody tr:hover td{background:#eaf1ff}
+.tb-banner{background:#fff6e5;border:1px solid #f5c98c;color:#92400e;border-radius:8px;padding:8px 12px;margin-bottom:10px}
+.tb-group{margin-bottom:12px;overflow:auto}
+.tb-gh{padding:9px 12px;font-weight:600;font-size:12px;border-bottom:1px solid var(--line)}
+.tb-gt{width:100%;border-collapse:collapse;font-size:12.5px}
+.tb-gt th{background:#eef3fb;text-align:left;padding:7px 10px;font-weight:600;white-space:nowrap}
+.tb-gt td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:top}
+.tb-gt td.nd{padding:0;min-width:280px}
+.tb-gt tr.tb-cur td{background:#f3f7ff}
+.tb-cur-tag{display:inline-block;margin-left:6px;font-size:10px;line-height:14px;padding:0 5px;border-radius:3px;background:#dbe6ff;color:var(--primary)}
+.tb-pend{margin-top:12px;padding:10px 14px}
+.tb-pend h3{margin:0 0 8px;font-size:12px;text-transform:uppercase}
+.tb-pend table{width:100%;border-collapse:collapse;font-size:12.5px}
+.tb-pend td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+.tb-on #vList .head{flex-wrap:wrap;row-gap:6px}
+.tb-on #vList .head>*{flex-shrink:0;white-space:nowrap}
+.tb-auto{white-space:nowrap;display:inline-flex;align-items:center;gap:4px;font-size:12px;background:#e8f8f1;border:1px solid #b7e4cf;color:#047857;border-radius:12px;padding:2px 10px;margin-left:6px}
+.tb-auto a{color:var(--primary);cursor:pointer;margin-left:6px;font-weight:600}
+.tb-auto-desc{display:none;font-size:12.5px;color:var(--muted);margin:0 0 10px;line-height:18px}
+.tb-on .tb-auto-desc{display:block}
+/* Nút switch và giả lập dời lên thanh trên cùng, không chen vào header của Danh sách */
+.tb-dock{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.tb-dock .tb-sw button{padding:2px 12px;font-size:12px}
+.tb-simbtn{border:1px dashed #c7d2fe;background:#fafaff;color:#4f46e5;border-radius:12px;padding:2px 10px;font-size:12px;cursor:pointer;display:none}
+.tb-on .tb-simbtn{display:inline-block}
+.tb-simpop{position:fixed;top:46px;z-index:60;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);padding:10px 12px}
+.tb-simpop .sim{margin:0;border:none;background:none;padding:0;flex-direction:column;align-items:flex-start;gap:6px}
+.tb-simpop .sim>label,.tb-simpop #tbSim label{display:block}
+.tb-simpop #tbSim{display:flex !important;flex-direction:column;gap:6px}
+.tb-for{font-size:12px;color:var(--muted);margin-right:6px}
+.tb-banner .tb-bl{display:inline-flex;align-items:center;gap:6px;margin:4px 10px 0 0;background:#fff;border:1px solid #f5c98c;border-radius:6px;padding:2px 4px 2px 8px}
+.tb-noph{font-size:11.5px;color:#9ca3af}
+/* Nội dung: ngày nằm bên trái để không bị cột Thao tác che (CI đang bị che ở màn 1440px) */
+.tb-on #tbody .it{grid-template-columns:auto minmax(0,1fr)}
+.tb-on #tbody .it-d{text-align:left;min-width:74px;font-size:11.5px}
+/* Nhận phiếu tự động ở To-Be: một nút duy nhất thay cho nút gạt + chip */
+.tb-on #autoSw,.tb-on #autoSw+span{display:none}
+.tb-autobtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:16px;padding:4px 12px;font-size:12.5px;cursor:pointer}
+.tb-autobtn .dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1}
+.tb-autobtn.on{border-color:#86d0ac;background:#effaf4;color:#065f46}
+.tb-autobtn.on .dot{background:#10b981;box-shadow:0 0 0 3px #d1fae5}
+.tb-autobtn .car{color:var(--muted);font-size:10px}
+#tbAutoOff{float:left;color:var(--red);border-color:#f3c0c0;background:#fff}
+.tb-alhead{display:flex;align-items:center;gap:12px;padding:0 0 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.tb-alhead .tb-all{font-weight:600}
+.tb-alcnt{margin-left:auto;color:var(--muted);font-size:12px}
+.tb-alq{flex:1;min-width:0;padding:4px 8px;border:1px solid var(--line);border-radius:6px}
+.tb-alist{max-height:260px;overflow:auto}
+.tb-autotag{display:inline-block;font-size:11.5px;color:#065f46;background:#effaf4;border:1px dashed #86d0ac;border-radius:4px;padding:2px 8px;white-space:nowrap}
+.tb-on .tablewrap tbody tr.tb-fresh td{background:#fff8e1}
+.tb-newtag{display:table;margin-top:3px;font-size:10px;line-height:14px;padding:0 5px;border-radius:3px;background:#fde68a;color:#92400e}
+/*TOBE:END css*/
+</style>
+</head>
+<body>
+<nav class="side"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on" title="Call Center Hub"></i></nav>
+<header class="top">
+  <div class="crumb">Trang chủ / <b>Call Center Hub</b></div>
+  <div class="banner">Vui lòng nhận thông báo đơn hàng</div>
+  <div class="user"><div class="avatar"></div><div><b id="meName"></b><br><span style="color:var(--muted)">Sale Ecom</span></div></div>
+  <div class="env">CI<br>v8.6.31</div>
+</header>
+
+<main>
+<div id="callBox" class="call-w hidden"></div><!-- widget tổng đài: CI hiện ở đầu trang khi đang gọi -->
+<!-- ================= MÀN 1: DANH SÁCH YÊU CẦU ================= -->
+<section id="vList">
+  <div class="head">
+    <h1>Danh sách yêu cầu</h1>
+    <span id="tbSw" class="tb-sw hidden"></span><!--TOBE-HOOK-->
+    <span class="switch" id="autoSw" onclick="autoToggle()"></span><span>Nhận phiếu tự động</span>
+    <span id="autoChips"></span>
+    <span class="sim">Giả lập:
+      <label><input type="checkbox" id="simMgr" onchange="SIM.isManager=this.checked;syncFilters();render()"> Vai trò quản lý</label>
+      <label><input type="checkbox" id="simMpt" checked onchange="SIM.mptLoggedIn=this.checked;render()"> Đã đăng nhập tổng đài</label>
+    </span>
+    <span style="flex:1"></span><button class="btn">⎋ Đăng xuất</button>
+  </div>
+
+  <div class="card filters">
+    <div><label>Tìm kiếm</label><input id="fQ" placeholder="Nhập Mã YC/SĐT/Mã KH"></div>
+    <div id="fAgentWrap" class="hidden"><label>Nhân viên đảm trách</label><div class="ms" id="fAgent"></div></div><!-- CI: chỉ hiện với quản lý -->
+    <div><label>Trạng thái</label><div class="ms" id="fSt"></div></div>
+    <div><label>Công việc</label><div class="ms" id="fFlow"></div></div>
+    <div><label>Kết quả xử lý</label><div class="ms" id="fDisp"></div></div>
+    <div class="frow">
+      <div><label>Ngày tạo</label><span class="dr"><input type="date" id="fFrom"><span>→</span><input type="date" id="fTo"></span><div id="fDateErr" class="dr-err"></div></div>
+      <span class="switch" id="fMine" onclick="this.classList.toggle('on');syncFilters();applyFilters()"></span><span>Việc cần xử lý</span>
+      <button class="btn pri" onclick="resetFilters()" title="Đặt lại bộ lọc mặc định">⟳</button>
+      <button class="btn pri" onclick="applyFilters()">Tìm kiếm</button>
+      <!-- SLOT: filter / toggle mới (vd. chế độ hiển thị gom ticket) -->
+    </div>
+  </div>
+
+  <div id="tbBar" class="tb-bar hidden"></div><!--TOBE-HOOK-->
+  <div class="card">
+    <div class="tablewrap">
+      <table>
+        <colgroup id="cols"></colgroup>
+        <thead><tr id="thead"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="pager" id="pager"></div>
+  </div>
+  <div class="note">15 cột, độ rộng và cột cố định lấy theo CI v8.6.31. Thêm cột mockup: khai báo trong mảng COLUMNS.</div>
+  <div id="tbPend" class="card tb-pend hidden"></div><!--TOBE-HOOK-->
+</section>
+
+<!-- ================= POPUP: NHẬN PHIẾU TỰ ĐỘNG → CHỌN CÔNG VIỆC ================= -->
+<div class="modal hidden" id="autoModal">
+  <div class="mbox">
+    <h3>Loại công việc</h3>
+    <div id="autoList"></div>
+    <div id="autoErr" style="color:var(--red);font-size:12px;margin-top:4px"></div>
+    <!-- SLOT: thêm cấu hình khác khi bật nhận tự động -->
+    <div style="text-align:right;margin-top:14px">
+      <button class="btn" onclick="autoModal.classList.add('hidden')">Đóng</button>
+      <button class="btn pri" onclick="autoConfirm()">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MÀN 2: CHI TIẾT YÊU CẦU ================= -->
+<section id="vDetail" class="hidden">
+  <div class="dbar">
+    <span class="link" onclick="go()">← Quay lại</span>
+    <span class="tag st-ASSIGNED" id="dCode"></span>
+    <span id="dStatus"></span>
+    <span class="sp"></span>
+    <span id="dActs"></span>
+  </div>
+  <div id="tbBanner" class="tb-banner hidden"></div><!--TOBE-HOOK-->
+  <div id="tbGroup" class="card tb-group hidden"></div><!--TOBE-HOOK-->
+  <div class="dgrid">
+    <div class="card">
+      <div class="sec"><h3>Thông tin liên hệ <span>⌄</span></h3>
+        <dl class="kv"><dt>Tên khách hàng</dt><dd id="dName"></dd><dt>Số điện thoại</dt><dd class="mask" id="dPhone"></dd></dl>
+      </div>
+      <div class="sec"><h3>Thông tin ticket <span>⌄</span></h3>
+        <dl class="kv" id="dInfo"></dl>
+        <div id="dItems" style="margin-top:10px;border:1px solid var(--line);border-radius:6px"></div>
+        <!-- SLOT: danh sách ticket cùng nhóm (gom ticket) -->
+      </div>
+      <div class="sec"><h3><span>Lịch sử phân công (<span id="dAsgN">0</span>)</span><span>⌄</span></h3><div id="dAsg"></div></div>
+      <div class="sec" style="border:none"><h3><span>Lịch sử cuộc gọi (<span id="dAttN">0</span>)</span><span>⌄</span></h3><div id="dAtt"></div>
+        <div class="note">Data từ API attempts[] trên CI. Vị trí khối này trên UI thật chưa kiểm.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="tabs" id="rTabs"></div>
+      <div class="panel" id="rPanel"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+
+<!-- ================= THAO TÁC GIẢ LẬP: toast, popup Phân công, popup Xử lý, khung cuộc gọi ================= -->
+<div id="toasts"></div>
+<div id="ddMenu" class="dd-menu hidden"></div>
+<div class="modal hidden" id="mAsg">
+  <div class="mbox" style="width:520px">
+    <h3 id="mAsgTitle">Chọn Nhân viên đảm trách</h3>
+    <div id="mAsgCur" class="note" style="margin:-4px 0 8px;font-size:12.5px"></div>
+    <input id="mAsgQ" class="m-input" placeholder="Tìm theo tên, mã nhân viên">
+    <div id="mAsgList" class="asg-list"></div>
+    <div class="m-foot"><button class="btn" onclick="mAsg.classList.add('hidden')">Đóng</button><button class="btn pri" id="mAsgOk" onclick="confirmAssign()" disabled>Xác nhận</button></div>
+  </div>
+</div>
+<div class="modal hidden" id="mRes">
+  <div class="mbox" style="width:520px">
+    <h3>Xử lý ticket</h3>
+    <div id="mResTicket" style="margin-bottom:12px"></div>
+    <div id="mResDispWrap" style="margin-bottom:12px">
+      <div style="font-weight:600;margin-bottom:4px">Kết quả xử lý <span style="color:var(--red)">*</span></div>
+      <select id="mResDisp" class="m-input"></select>
+      <div id="mResErr" style="color:var(--red);font-size:12px;margin-top:4px"></div>
+    </div>
+    <div style="font-weight:600;margin-bottom:4px">Ghi chú</div>
+    <textarea id="mResNote" class="m-input" rows="4" maxlength="500" placeholder="Nhập ghi chú xử lý..."></textarea>
+    <div id="mResCount" class="note" style="text-align:right;margin-top:2px">0 / 500</div>
+    <div class="m-foot"><button class="btn" onclick="mRes.classList.add('hidden')">Huỷ</button><button class="btn pri" onclick="confirmResolve()">Lưu</button></div>
+  </div>
+</div>
+<script>
+/* ---------- MASTER DATA (theo CI) ---------- */
+const STATUS = {OPEN:'Mới', ASSIGNED:'Đã phân công', IN_PROGRESS:'Đang xử lý', CLOSED:'Hoàn thành'};
+/* Business flow config: Nội dung đi theo công việc (itemDateLabel + cls) */
+const FLOWS = [
+  {id:'PHARMA-NHAC_VOUCHER', name:'Nhắc Voucher gia đình', tabs:['Tài khoản gia đình','Bán hàng'], itemDateLabel:'HSD', cls:'flow', operationConfig:{
+    routing_policy:{self_claim_enabled:true, manual_assign:true, auto_assign_enabled:true}, // giá trị thật trên CI chưa đọc được (API business-flows) → GIẢ ĐỊNH
+    closure_policy:{manual_close:true}}},
+  {id:'PHARMA-NHAC_THUOC_MAN_TINH', name:'Nhắc mua thuốc mãn tính', tabs:['Tài khoản gia đình','Bán hàng'], itemDateLabel:'Ngày mua hàng', cls:'flow flow-g', operationConfig:{
+    routing_policy:{self_claim_enabled:true, manual_assign:true, auto_assign_enabled:true}, // GIẢ ĐỊNH, tabs cũng tạm giống voucher
+    closure_policy:{manual_close:true}}},
+  {id:'PHARMA-NHAC_CTKM', name:'Nhắc CTKM', tabs:['Tài khoản gia đình','Bán hàng'], itemDateLabel:'', cls:'flow flow-b', operationConfig:{
+    routing_policy:{self_claim_enabled:true, manual_assign:true, auto_assign_enabled:true}, // có trong filter mockup BU nhưng 0 phiếu; nhãn ngày + config chưa có → GIẢ ĐỊNH
+    closure_policy:{manual_close:true}}}
+];
+const ME = {id:'02173', name:'02173 - Vũ Lê Như Uyên'}; // user đăng nhập giả lập = 1 NV trong mockup
+/* Giả lập ngữ cảnh user (theo code FE CI):
+   - isManager: CI coi là quản lý nếu tên/mô tả role chứa manager|leader|lead|admin
+   - mptLoggedIn: đã đăng nhập tổng đài (MPT) chưa → Gọi/Xử lý bị disable nếu chưa */
+const SIM = {isManager:false, mptLoggedIn:true};
+
+/* ---------- TICKETS: field đúng shape API CI, data giả ---------- */
+const mk = (i, o) => Object.assign({
+  id:'01a1a0ce-0000-7000-8000-0000000'+String(100000+i).slice(1),
+  tenant:'PHARMA', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED', version:1,
+  externalRef:'ORD-'+(300100+i), businessData:{amount:500000, orderId:'ORD-'+(300100+i)},
+  customerName:'Khách A', phone:'0900000001', description:'VOUCHER HẾT HẠN',
+  assignedAgentId:ME.id, assignedAgentName:ME.name, assignedBy:'Hệ thống', assignedAt:'2026-11-03T09:50:00Z',
+  attemptCount:0, callScheduledDate:'2026-11-29T17:00:00Z', expiredTime:'2026-11-12T16:59:59Z',
+  createdAt:'2026-11-03T09:47:00Z', updatedAt:'2026-11-03T09:50:00Z'
+}, o);
+/* Data: 41 phiếu cào từ mockup BU (Apps Script, UAT v8.6.22), map sang shape API CI.
+   businessData.items = cột Nội dung của mockup. Mã yêu cầu mockup giữ ở 6 ký tự cuối id + mockupCode. */
+const TICKETS = [
+{
+"id": "mock-001-555d6b",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "58-276",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Thị Ngọc Trâm",
+"phone": "00007143",
+"description": "",
+"assignedAgentId": "01694",
+"assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-14T09:00:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T08:00:00+07:00",
+"updatedAt": "2026-10-26T13:00:00+07:00",
+"mockupCode": "555d6b"
+},
+{
+"id": "mock-002-b371e5",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "58-275",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Ngọc Bảo Trân",
+"phone": "00004206",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-15T10:11:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T09:07:00+07:00",
+"updatedAt": "2026-10-25T14:13:00+07:00",
+"dispositionLabel": "Voucher hết hạn",
+"mockupCode": "b371e5"
+},
+{
+"id": "mock-003-811991",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "58-274",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Phùng Thị Phương Anh",
+"phone": "00004736",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-16T11:22:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T10:14:00+07:00",
+"updatedAt": "2026-10-24T15:26:00+07:00",
+"dispositionLabel": "KH cần nhắc thêm",
+"mockupCode": "811991"
+},
+{
+"id": "mock-004-dfe1bc",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "58-273",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Trần Linh Chi",
+"phone": "00002284",
+"description": "",
+"assignedAgentId": "01039",
+"assignedAgentName": "01039 - Phan Thị Trúc Ly",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-17T12:33:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T11:21:00+07:00",
+"updatedAt": "2026-10-26T16:39:00+07:00",
+"dispositionLabel": "Không nghe máy",
+"mockupCode": "dfe1bc"
+},
+{
+"id": "mock-005-m5c8a2",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10282",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "27/10/2026"
+}
+]
+},
+"customerName": "Võ Thị Mỹ Duyên",
+"phone": "00006821",
+"description": "",
+"assignedAgentId": "45926",
+"assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-18T13:44:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T12:28:00+07:00",
+"updatedAt": "2026-10-25T17:52:00+07:00",
+"mockupCode": "m5c8a2"
+},
+{
+"id": "mock-006-m5c8a3",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10283",
+"businessData": {
+"items": [
+{
+"name": "PIC INSUPEN ORIGINAL 32GX4MM ĐẦU KIM TIỂU ĐƯỜNG HỘP 100 CÁI",
+"date": "29/09/2026"
+},
+{
+"name": "VIÊN UỐNG HỖ TRỢ ỔN ĐỊNH ĐƯỜNG HUYẾT BLOOD SUGAR CONTROL VITAMINS FOR LIFE 60V",
+"date": "30/09/2026"
+}
+]
+},
+"customerName": "Võ Thị Mỹ Duyên",
+"phone": "00006821",
+"description": "",
+"assignedAgentId": "01694",
+"assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-19T14:55:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T13:35:00+07:00",
+"updatedAt": "2026-10-24T18:05:00+07:00",
+"mockupCode": "m5c8a3"
+},
+{
+"id": "mock-007-a82f19",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10281",
+"businessData": {
+"items": [
+{
+"name": "PIC INSUPEN ORIGINAL 32GX4MM ĐẦU KIM TIỂU ĐƯỜNG HỘP 100 CÁI",
+"date": "01/10/2026"
+},
+{
+"name": "VIÊN UỐNG HỖ TRỢ ỔN ĐỊNH ĐƯỜNG HUYẾT BLOOD SUGAR CONTROL VITAMINS FOR LIFE 60V",
+"date": "02/10/2026"
+}
+]
+},
+"customerName": "Lê Hoàng Minh",
+"phone": "00003817",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-20T15:06:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T14:42:00+07:00",
+"updatedAt": "2026-10-26T13:18:00+07:00",
+"mockupCode": "a82f19"
+},
+{
+"id": "mock-008-c419d2",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10280",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Thị Thanh Hà",
+"phone": "00009052",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-21T16:17:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T15:49:00+07:00",
+"updatedAt": "2026-10-25T14:31:00+07:00",
+"dispositionLabel": "Đã tư vấn",
+"mockupCode": "c419d2"
+},
+{
+"id": "mock-009-e73b05",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10279",
+"businessData": {
+"items": [
+{
+"name": "JANUVIA 100MG HỘP 28 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "LOSARTAN 50MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+}
+]
+},
+"customerName": "Trần Quốc Bảo",
+"phone": "00006174",
+"description": "",
+"assignedAgentId": "01039",
+"assignedAgentName": "01039 - Phan Thị Trúc Ly",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-22T17:28:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T16:56:00+07:00",
+"updatedAt": "2026-10-24T15:44:00+07:00",
+"mockupCode": "e73b05"
+},
+{
+"id": "mock-010-f906ac",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10278",
+"businessData": {
+"items": [
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "OMEGA-3 FISH OIL 1000MG HỘP 100 VIÊN",
+"date": "03/10/2026"
+}
+]
+},
+"customerName": "Phạm Thị Ngọc Mai",
+"phone": "00002648",
+"description": "",
+"assignedAgentId": "45926",
+"assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-23T09:39:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T08:03:00+07:00",
+"updatedAt": "2026-10-26T16:57:00+07:00",
+"dispositionLabel": "Không có nhu cầu",
+"mockupCode": "f906ac"
+},
+{
+"id": "mock-011-8bd2a1",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10277",
+"businessData": {
+"items": [
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "04/10/2026"
+},
+{
+"name": "KIM TIÊM INSULIN 32G X 4MM HỘP 100 CÁI",
+"date": "05/10/2026"
+}
+]
+},
+"customerName": "Đặng Văn Hùng",
+"phone": "00007431",
+"description": "",
+"assignedAgentId": "01694",
+"assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-24T10:50:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T09:10:00+07:00",
+"updatedAt": "2026-10-25T17:10:00+07:00",
+"mockupCode": "8bd2a1"
+},
+{
+"id": "mock-012-mo0001",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10300",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - Voucher 100.000Đ mua sữa rửa mặt / tẩy trang / chống nắng",
+"date": "27/10/2026"
+}
+]
+},
+"customerName": "Trần Thị Thu Hà",
+"phone": "00001038",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-25T11:01:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T10:17:00+07:00",
+"updatedAt": "2026-10-24T18:23:00+07:00",
+"dispositionLabel": "KH cần nhắc thêm",
+"mockupCode": "mo0001"
+},
+{
+"id": "mock-013-mo0002",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10301",
+"businessData": {
+"items": [
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "30/09/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Hoàng Phúc",
+"phone": "00005821",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-26T12:12:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T11:24:00+07:00",
+"updatedAt": "2026-10-26T13:36:00+07:00",
+"mockupCode": "mo0002"
+},
+{
+"id": "mock-014-mo0003",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10302",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 5 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 5 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 5 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa",
+"date": "27/10/2026"
+}
+]
+},
+"customerName": "Lê Thị Bích Ngọc",
+"phone": "00007604",
+"description": "",
+"assignedAgentId": "01039",
+"assignedAgentName": "01039 - Phan Thị Trúc Ly",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-14T13:23:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T12:31:00+07:00",
+"updatedAt": "2026-10-25T14:49:00+07:00",
+"mockupCode": "mo0003"
+},
+{
+"id": "mock-015-mo0004",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10303",
+"businessData": {
+"items": [
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "04/10/2026"
+}
+]
+},
+"customerName": "Phạm Minh Quân",
+"phone": "00003196",
+"description": "",
+"assignedAgentId": "45926",
+"assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-15T14:34:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T13:38:00+07:00",
+"updatedAt": "2026-10-24T15:02:00+07:00",
+"mockupCode": "mo0004"
+},
+{
+"id": "mock-016-mo0005",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10304",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 8 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 8 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 8 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Đặng Thị Kim Oanh",
+"phone": "00002487",
+"description": "",
+"assignedAgentId": "01694",
+"assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-16T15:45:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T14:45:00+07:00",
+"updatedAt": "2026-10-26T16:15:00+07:00",
+"mockupCode": "mo0005"
+},
+{
+"id": "mock-017-mo0006",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10305",
+"businessData": {
+"items": [
+{
+"name": "BISOPROLOL 2.5MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+}
+]
+},
+"customerName": "Võ Quốc Khánh",
+"phone": "00006612",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-17T16:56:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T15:52:00+07:00",
+"updatedAt": "2026-10-25T17:28:00+07:00",
+"mockupCode": "mo0006"
+},
+{
+"id": "mock-018-mo0007",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10306",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 11 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Thị Mai Anh",
+"phone": "00009075",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-18T17:07:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T16:59:00+07:00",
+"updatedAt": "2026-10-24T18:41:00+07:00",
+"mockupCode": "mo0007"
+},
+{
+"id": "mock-019-mo0008",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10307",
+"businessData": {
+"items": [
+{
+"name": "PANTOPRAZOLE 40MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+}
+]
+},
+"customerName": "Trương Minh Đức",
+"phone": "00004259",
+"description": "",
+"assignedAgentId": "01039",
+"assignedAgentName": "01039 - Phan Thị Trúc Ly",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-19T09:18:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T08:06:00+07:00",
+"updatedAt": "2026-10-26T13:54:00+07:00",
+"mockupCode": "mo0008"
+},
+{
+"id": "mock-020-mo0009",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10308",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 14 - Ưu đãi 200.000Đ khi tiêm HPV theo điều kiện chương trình",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 14 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 14 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Bùi Thị Thanh Thảo",
+"phone": "00001146",
+"description": "",
+"assignedAgentId": "45926",
+"assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-20T10:29:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T09:13:00+07:00",
+"updatedAt": "2026-10-25T14:07:00+07:00",
+"mockupCode": "mo0009"
+},
+{
+"id": "mock-021-mo000a",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "OPEN",
+"version": 1,
+"externalRef": "OB-10309",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "TELMISARTAN 40MG HỘP 30 VIÊN",
+"date": "29/09/2026"
+}
+]
+},
+"customerName": "Đỗ Hoàng Yến",
+"phone": "00008392",
+"description": "",
+"assignedAgentId": null,
+"assignedAgentName": null,
+"assignedBy": null,
+"assignedAt": null,
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T10:20:00+07:00",
+"updatedAt": "2026-10-09T10:20:00+07:00",
+"mockupCode": "mo000a"
+},
+{
+"id": "mock-022-mo0012",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10317",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - Giảm ngay 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Đỗ Hoàng Yến",
+"phone": "00008392",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-22T12:51:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T11:27:00+07:00",
+"updatedAt": "2026-10-26T16:33:00+07:00",
+"mockupCode": "mo0012"
+},
+{
+"id": "mock-023-mo000b",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10310",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 3 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 3 - Miễn phí 1 hộp khẩu trang 3 lớp",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 3 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "30/10/2026"
+}
+]
+},
+"customerName": "Huỳnh Văn Tài",
+"phone": "00002068",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-23T13:02:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T12:34:00+07:00",
+"updatedAt": "2026-10-25T17:46:00+07:00",
+"mockupCode": "mo000b"
+},
+{
+"id": "mock-024-mo0013",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10318",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+}
+]
+},
+"customerName": "Huỳnh Văn Tài",
+"phone": "00002068",
+"description": "",
+"assignedAgentId": "01039",
+"assignedAgentName": "01039 - Phan Thị Trúc Ly",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-24T14:13:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T13:41:00+07:00",
+"updatedAt": "2026-10-24T18:59:00+07:00",
+"mockupCode": "mo0013"
+},
+{
+"id": "mock-025-mo000c",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10311",
+"businessData": {
+"items": [
+{
+"name": "LOSARTAN 50MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "TELMISARTAN 40MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "PERINDOPRIL 5MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+}
+]
+},
+"customerName": "Phan Ngọc Diệp",
+"phone": "00007710",
+"description": "",
+"assignedAgentId": "45926",
+"assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-25T15:24:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T14:48:00+07:00",
+"updatedAt": "2026-10-26T13:12:00+07:00",
+"mockupCode": "mo000c"
+},
+{
+"id": "mock-026-mo000d",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10312",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 6 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Voucher 100.000Đ mua sữa rửa mặt / tẩy trang / chống nắng",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Ưu đãi 200.000Đ khi tiêm HPV theo điều kiện chương trình",
+"date": "30/10/2026"
+}
+]
+},
+"customerName": "Lâm Thị Mỹ Linh",
+"phone": "00003924",
+"description": "",
+"assignedAgentId": "01694",
+"assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-26T16:35:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T15:55:00+07:00",
+"updatedAt": "2026-10-25T14:25:00+07:00",
+"dispositionLabel": "KH cần nhắc thêm",
+"mockupCode": "mo000d"
+},
+{
+"id": "mock-027-mo000e",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10313",
+"businessData": {
+"items": [
+{
+"name": "KIM TIÊM INSULIN 32G X 4MM HỘP 100 CÁI",
+"date": "29/09/2026"
+},
+{
+"name": "PERINDOPRIL 5MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "FENOFIBRATE 145MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+}
+]
+},
+"customerName": "Trần Gia Hân",
+"phone": "00005483",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-14T17:46:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T16:02:00+07:00",
+"updatedAt": "2026-10-24T15:38:00+07:00",
+"mockupCode": "mo000e"
+},
+{
+"id": "mock-028-mo000f",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10314",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 9 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 9 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 9 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG",
+"date": "30/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Thành Đạt",
+"phone": "00006901",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-15T09:57:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T08:09:00+07:00",
+"updatedAt": "2026-10-26T16:51:00+07:00",
+"mockupCode": "mo000f"
+},
+{
+"id": "mock-029-mo0010",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10315",
+"businessData": {
+"items": [
+{
+"name": "EMPAGLIFLOZIN 10MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "FENOFIBRATE 145MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "JANUVIA 100MG HỘP 28 VIÊN",
+"date": "04/10/2026"
+}
+]
+},
+"customerName": "Phạm Thị Thuý An",
+"phone": "00008327",
+"description": "",
+"assignedAgentId": "01039",
+"assignedAgentName": "01039 - Phan Thị Trúc Ly",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-16T10:08:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T09:16:00+07:00",
+"updatedAt": "2026-10-25T17:04:00+07:00",
+"mockupCode": "mo0010"
+},
+{
+"id": "mock-030-mo0011",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10316",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 12 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 12 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 12 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "30/10/2026"
+}
+]
+},
+"customerName": "Đặng Minh Khang",
+"phone": "00004713",
+"description": "",
+"assignedAgentId": "45926",
+"assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-17T11:19:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T10:23:00+07:00",
+"updatedAt": "2026-10-24T18:17:00+07:00",
+"mockupCode": "mo0011"
+},
+{
+"id": "mock-031-mo0012",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10317",
+"businessData": {
+"items": [
+{
+"name": "SITAGLIPTIN 50MG HỘP 28 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "JANUVIA 100MG HỘP 28 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "30/09/2026"
+}
+]
+},
+"customerName": "Lê Ngọc Trinh",
+"phone": "00009570",
+"description": "",
+"assignedAgentId": "01694",
+"assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-18T12:30:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T11:30:00+07:00",
+"updatedAt": "2026-10-26T13:30:00+07:00",
+"mockupCode": "mo0012"
+},
+{
+"id": "mock-032-mo0013",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10318",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 15 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 15 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 15 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "29/10/2026"
+}
+]
+},
+"customerName": "Mai Quốc Bảo",
+"phone": "00003025",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-19T13:41:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T12:37:00+07:00",
+"updatedAt": "2026-10-25T14:43:00+07:00",
+"mockupCode": "mo0013"
+},
+{
+"id": "mock-033-mo0014",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10319",
+"businessData": {
+"items": [
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "02/10/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Khánh Vy",
+"phone": "00006149",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-20T14:52:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T13:44:00+07:00",
+"updatedAt": "2026-10-24T15:56:00+07:00",
+"mockupCode": "mo0014"
+},
+{
+"id": "mock-034-mo0015",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10320",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 4 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 4 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 4 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện",
+"date": "29/10/2026"
+}
+]
+},
+"customerName": "Vũ Thị Hồng Nhung",
+"phone": "00007256",
+"description": "",
+"assignedAgentId": "01039",
+"assignedAgentName": "01039 - Phan Thị Trúc Ly",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-21T15:03:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T14:51:00+07:00",
+"updatedAt": "2026-10-26T16:09:00+07:00",
+"mockupCode": "mo0015"
+},
+{
+"id": "mock-035-mo0016",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "CLOSED",
+"version": 1,
+"externalRef": "OB-10321",
+"businessData": {
+"items": [
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "29/09/2026"
+}
+]
+},
+"customerName": "Trần Minh Tâm",
+"phone": "00004802",
+"description": "",
+"assignedAgentId": "45926",
+"assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-22T16:14:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T15:58:00+07:00",
+"updatedAt": "2026-10-25T17:22:00+07:00",
+"mockupCode": "mo0016"
+},
+{
+"id": "mock-036-mo0017",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10322",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 7 - Miễn phí 1 hộp khẩu trang 3 lớp",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 7 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 7 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng",
+"date": "29/10/2026"
+}
+]
+},
+"customerName": "Phạm Ngọc Huyền",
+"phone": "00001668",
+"description": "",
+"assignedAgentId": "01694",
+"assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-23T17:25:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T16:05:00+07:00",
+"updatedAt": "2026-10-24T18:35:00+07:00",
+"mockupCode": "mo0017"
+},
+{
+"id": "mock-037-mo0018",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "ASSIGNED",
+"version": 1,
+"externalRef": "OB-10323",
+"businessData": {
+"items": [
+{
+"name": "BISOPROLOL 2.5MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+}
+]
+},
+"customerName": "Đinh Thị Thuỳ Dung",
+"phone": "00005431",
+"description": "",
+"assignedAgentId": "02173",
+"assignedAgentName": "02173 - Vũ Lê Như Uyên",
+"assignedBy": "Hệ thống",
+"assignedAt": "2026-10-24T09:36:00+07:00",
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T08:12:00+07:00",
+"updatedAt": "2026-10-26T13:48:00+07:00",
+"mockupCode": "mo0018"
+},
+{
+"id": "mock-038-mo0019",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "OPEN",
+"version": 1,
+"externalRef": "OB-10324",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 6 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Giảm ngay 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Nguyễn Thị Thanh Trúc",
+"phone": "00001842",
+"description": "",
+"assignedAgentId": null,
+"assignedAgentName": null,
+"assignedBy": null,
+"assignedAt": null,
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-10T09:19:00+07:00",
+"updatedAt": "2026-10-10T09:19:00+07:00",
+"mockupCode": "mo0019"
+},
+{
+"id": "mock-039-mo0020",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "OPEN",
+"version": 1,
+"externalRef": "OB-10325",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+}
+]
+},
+"customerName": "Lê Quốc Bảo",
+"phone": "00005716",
+"description": "",
+"assignedAgentId": null,
+"assignedAgentName": null,
+"assignedBy": null,
+"assignedAt": null,
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-11T10:26:00+07:00",
+"updatedAt": "2026-10-11T10:26:00+07:00",
+"mockupCode": "mo0020"
+},
+{
+"id": "mock-040-mo0021",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_VOUCHER",
+"status": "OPEN",
+"version": 1,
+"externalRef": "OB-10326",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 11 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG",
+"date": "31/10/2026"
+}
+]
+},
+"customerName": "Phạm Minh Châu",
+"phone": "00009037",
+"description": "",
+"assignedAgentId": null,
+"assignedAgentName": null,
+"assignedBy": null,
+"assignedAt": null,
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-12T11:33:00+07:00",
+"updatedAt": "2026-10-12T11:33:00+07:00",
+"mockupCode": "mo0021"
+},
+{
+"id": "mock-041-mo0022",
+"tenant": "PHARMA",
+"businessFlowId": "PHARMA-NHAC_THUOC_MAN_TINH",
+"status": "OPEN",
+"version": 1,
+"externalRef": "OB-10327",
+"businessData": {
+"items": [
+{
+"name": "LOSARTAN 50MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+}
+]
+},
+"customerName": "Trần Gia Phúc",
+"phone": "00004480",
+"description": "",
+"assignedAgentId": null,
+"assignedAgentName": null,
+"assignedBy": null,
+"assignedAt": null,
+"attemptCount": 0,
+"callScheduledDate": null,
+"expiredTime": "2026-10-31T23:59:00+07:00",
+"createdAt": "2026-10-09T12:40:00+07:00",
+"updatedAt": "2026-10-09T12:40:00+07:00",
+"mockupCode": "mo0022"
+}
+];
+const AGENTS = [...new Map(TICKETS.filter(t=>t.assignedAgentId).map(t=>[t.assignedAgentId,{id:t.assignedAgentId,name:t.assignedAgentName}])).values()];
+const DISPOSITIONS = [...new Set(TICKETS.map(t=>t.dispositionLabel).filter(Boolean))].map(l=>({code:l,label:l}));
+TICKETS.forEach(t=>{ if(t.dispositionLabel) t.dispositionCode=t.dispositionLabel; });
+const ATTEMPTS = { // theo ticket id, shape attempts[] trên CI
+  [TICKETS[2].id]:[
+    {status:'ENDED', callResult:'HANDLED', startedAt:'2026-11-05T07:13:09Z', endedAt:'2026-11-05T07:13:27Z', talkDurationSec:18, dispositionCode:'KHONG_NGHE_MAY', dispositionLabel:'Không nghe máy lần 1', dispositionBehavior:'RETRY', agentName:ME.name},
+    {status:'DIALING', startedAt:'2026-11-05T07:25:12Z', agentName:ME.name}
+  ]
+};
+
+/* ---------- CỘT DANH SÁCH: thêm/bớt cột mockup tại đây ---------- */
+/* ---------- CỘT DANH SÁCH: đủ 15 cột như CI (độ rộng + cố định trái/phải lấy từ CI) ---------- */
+const COLUMNS = [
+  {h:'Mã yêu cầu', w:100, fix:'l', cls:'code', r:t=>`<span class="link" onclick="go('${t.id}')">${short(t.id)}</span><span class="copy">⧉</span>`},
+  {h:'Khách hàng', w:140, fix:'l', cls:'cust', r:t=>`<b title="${t.customerName}">${t.customerName}</b>`},
+  {h:'SĐT', w:120, fix:'l', r:t=>`<span class="mask">${maskPhone(t.phone)}</span><span class="copy">⧉</span>`},
+  {h:'Trạng thái', w:120, r:t=>`<span class="tag st-${t.status}">${STATUS[t.status]}</span>`},
+  {h:'Công việc', w:200, r:t=>`<span class="tag ${flowOf(t).cls}">${flowName(t.businessFlowId)}</span>`},
+  {h:'Nội dung', w:500, cls:'nd', r:t=>content(t)},
+  {h:'Mã tham chiếu', w:120, r:t=>`<span class="link">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>`},
+  {h:'Kết quả xử lý', w:160, r:t=>resultOf(t).label},
+  {h:'Ghi chú', w:220, r:t=>`<span title="${resultOf(t).note}">${resultOf(t).note}</span>`},
+  {h:'NV đảm trách', w:250, r:t=>t.assignedAgentName||'—'},
+  {h:'Thời gian tạo', w:140, r:t=>vnt(t.createdAt)},
+  {h:'Thời gian phân công', w:160, r:t=>vnt(t.assignedAt)},
+  {h:'Thời gian hết hạn', w:150, r:t=>vnt(t.expiredTime)},
+  {h:'Cập nhật gần nhất', w:140, r:t=>vnt(t.updatedAt)},
+  // SLOT: cột mới (vd. Số ticket trong nhóm, Ngày cần gọi...)
+  {h:'Thao tác', w:300, fix:'r', cls:'act', r:t=>actions(t)}
+];
+// tính offset cho cột cố định
+(()=>{let l=0;COLUMNS.forEach(c=>{if(c.fix==='l'){c.off=l;l+=c.w;}});let r=0;[...COLUMNS].reverse().forEach(c=>{if(c.fix==='r'){c.off=r;r+=c.w;}});})();
+const fixAttr = c => c.fix ? ` style="${c.fix==='l'?'left':'right'}:${c.off}px"` : '';
+const fixCls = c => c.fix ? (c.fix==='l'?' fl':' fr') + (c.fix==='l'&&!COLUMNS.slice(COLUMNS.indexOf(c)+1).some(x=>x.fix==='l')?' fl-last':'') + (c.fix==='r'&&COLUMNS.find(x=>x.fix==='r')===c?' fr-first':'') : '';
+
+/* ---------- HELPERS ---------- */
+const short = id => id.slice(-6);
+const maskPhone = p => '****'+p.slice(-4);
+const flowName = id => (FLOWS.find(f=>f.id===id)||{}).name||id;
+/* CI (y1t): Kết quả = dispositionLabel của ticket, không có thì lấy từ 2 lượt gọi gần nhất.
+   Ghi chú = resolutionNote → closeNote → dispositionNote của lượt gọi. (Vì vậy ghi chú popup Xử lý bị che bởi ghi chú widget.) */
+function resultOf(t){
+  const at=(typeof ATTEMPTS!=='undefined' && ATTEMPTS[t.id])||[], n=at[at.length-1]||{}, r=at[at.length-2]||{};
+  return {label: t.dispositionLabel||n.dispositionLabel||r.dispositionLabel||'—', note: t.resolutionNote||t.closeNote||n.dispositionNote||r.dispositionNote||'—'};
+}
+const flowOf = t => FLOWS.find(f=>f.id===t.businessFlowId)||{cls:'flow'};
+function content(t){ // render Nội dung theo config của công việc
+  const items=(t.businessData||{}).items;
+  if(!items||!items.length) return t.description||'—';
+  return items.map(i=>`<div class="it"><span class="it-n" title="${i.name}">${i.name}</span><span class="it-d">${flowOf(t).itemDateLabel}: ${i.date}</span></div>`).join('');
+}
+const vn = iso => { if(!iso) return '—'; const d=new Date(new Date(iso).getTime()+7*3600e3); const p=n=>String(n).padStart(2,'0'); return `${p(d.getUTCDate())}/${p(d.getUTCMonth()+1)}/${d.getUTCFullYear()}`; };
+const vnt = iso => { if(!iso) return '—'; const d=new Date(new Date(iso).getTime()+7*3600e3); const p=n=>String(n).padStart(2,'0'); return `${vn(iso)} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`; };
+/* Điều kiện hiện nút: dựng theo code FE CI v8.6.31 (đọc 05/11/2026). Chỉ hiển thị, không gọi API.
+   Nhận      : status OPEN && routing_policy.self_claim_enabled; khoá nếu đang bật nhận tự động cho công việc đó
+   Gọi       : status ≠ OPEN, ≠ CLOSED && (không phải quản lý || phiếu đang giao cho chính mình); disable nếu chưa đăng nhập tổng đài
+   Xử lý     : như Gọi && closure_policy.manual_close
+   Phân công : chỉ quản lý && routing_policy.manual_assign; OPEN hoặc chưa có người nhận → "Phân công", còn lại → "Phân công lại"; CLOSED → không có */
+function actions(t){
+  const op = flowOf(t).operationConfig||{}, rp = op.routing_policy||{}, cp = op.closure_policy||{};
+  const s = t.status, out = [];
+  if(s==='OPEN' && rp.self_claim_enabled){
+    const locked = auto.on && auto.flows.includes(t.businessFlowId);
+    const busy = BUSY.has(t.id);
+    out.push(`<button class="btn pri btn-claim" data-act="claim" data-id="${t.id}" ${locked||busy?'disabled':''} ${locked?'title="Đang bật nhận phiếu tự động cho loại công việc này"':''}>${busy?'…':'Nhận'}</button>`);
+  }
+  const canCall = s!=='OPEN' && s!=='CLOSED' && (!SIM.isManager || t.assignedAgentId===ME.id);
+  if(canCall){
+    // CI: disable khi đang có cuộc gọi, chưa đăng nhập tổng đài, hoặc đang xử lý thao tác khác
+    const dis = !SIM.mptLoggedIn ? ' disabled title="Chưa đăng nhập tổng đài"' : (CALL.state!=='IDLE' ? ' disabled title="Đang có cuộc gọi"' : '');
+    out.push(`<span class="btn pri split${dis?' is-dis':''}"><span data-act="call" data-id="${t.id}">Gọi</span><em data-act="calldd" data-id="${t.id}" title="Gọi số cố định">▾</em></span>`);
+    if(cp.manual_close) out.push(`<button class="btn pri" data-act="resolve" data-id="${t.id}"${dis}>Xử lý</button>`);
+  }
+  if(SIM.isManager && rp.manual_assign && s!=='CLOSED')
+    out.push(`<button class="btn" data-act="${s==='OPEN'||!t.assignedAgentId?'assign':'reassign'}" data-id="${t.id}">${s==='OPEN'||!t.assignedAgentId ? 'Phân công' : 'Phân công lại'}</button>`);
+  tbActions(t,out); /*TOBE-HOOK*/
+  return out.join('');
+}
+
+/*TOBE:BEGIN js*/
+// ============================================================================
+// CHẾ ĐỘ TO-BE: GOM TICKET THEO SĐT. Nguồn: US-3 bản 06/11/2026 (CP/352559748).
+// Mọi code To-Be nằm trong khối này và các dòng hook (nhãn nằm cuối dòng).
+// Gỡ bằng _backup/tobe-rollback.py. TOBE_ENABLED=false: ẩn nút switch, trang chạy như As-Is.
+// ============================================================================
+const TOBE_ENABLED = true;
+let MODE = 'asis';
+const TB = {snap:null, cross:{}, savedFlows:null, called:new Set(), pending:null, ctkmManual:null, phoneBak:null};
+const TB_FLOW_ORDER = ['PHARMA-NHAC_CTKM','PHARMA-NHAC_THUOC_MAN_TINH','PHARMA-NHAC_VOUCHER'];
+const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XUẤT', def:'MẶC ĐỊNH', sim:'MÔ PHỎNG'};
+/* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
+   BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
+const TB_PEND = [
+  {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
+  {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
+  {id:'norm',       kind:'dev', txt:'Chuẩn hoá SĐT bằng cột riêng kèm backfill ticket cũ: bỏ khoảng trắng, dấu chấm, dấu gạch; đầu số +84 hoặc 84 đổi thành 0. Sau chuẩn hoá không phải 10 số bắt đầu bằng 0 thì coi như không có SĐT, hiện row riêng.', src:'US-3 v3 mục 6.2, dev đề xuất. Backend CCH hiện chưa chuẩn hoá khi lưu (RAI 06/11). Khung chuẩn hoá ở FE. SĐT mẫu của mockup BU có 8 số, nên khung đổi sang 10 số khi ở To-Be (xem tbDemoPhone).'},
+  {id:'page',       kind:'dev', txt:'Phân trang theo ticket, trang kéo dài cho đủ nhóm cuối, trang sau bắt đầu từ nhóm kế tiếp.', src:'US-3 v3, dev đề xuất. Backend xếp nhóm vào trang.'},
+  {id:'listapi',    kind:'sim', txt:'Thứ tự gom và phân trang do API danh sách trả về. Backend chưa có, khung xếp ở FE.', src:'Dev 06/11: API danh sách hiện chưa nhận tiêu chí sắp xếp.'},
+  {id:'mine',       kind:'dev', txt:'Nhãn "Của tôi" trên ticket mình đang giữ.', src:'US-3 v3, dev đề xuất.'},
+  {id:'rowkeep',    kind:'dev', txt:'Sau mỗi thao tác chỉ cập nhật đúng row đó, không xếp lại nhóm cho tới khi bấm Tìm kiếm.', src:'US-3 v3, dev đề xuất.'},
+  {id:'nodate',     kind:'def', txt:'Thứ tự giữa các nhóm: ngày cần gọi sớm nhất của ticket chưa xong, rồi thời gian tạo. Ticket không có ngày cần gọi xếp theo thời gian tạo.', src:'Hưng chốt sáng 06/11, đã ghi vào US-3 v3 (mục 5.1 dòng 8). Phần Kiro chọn thêm, chưa có trong US-3: nhóm có ngày xếp trước nhóm không có ngày.'},
+  {id:'cross_def',  kind:'def', txt:'Gom khác công việc (cross_business_flow) mặc định bật.', src:'US-3 v3, bảng cài đặt grouping_policy.'},
+  {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
+  {id:'remain',     kind:'sim', txt:'Số N trong "KH còn N ticket khác" đếm trên toàn bộ data demo, chưa áp quyền xem theo vai (Sale chỉ thấy ticket của mình cộng ticket Mới).', src:'US-3 v3, mục 5.1 dòng 7. Khung As-Is cũng chưa có phạm vi theo vai.'}
+];
+const tbEsc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const tbBadge = id => { const p = TB_PEND.find(x=>x.id===id); return `<span class="tb-b tb-b-${p.kind}" title="${tbEsc(TB_KIND[p.kind]+': '+p.txt)}">${TB_KIND[p.kind]}</span>`; };
+
+/* ---------- Dữ liệu minh họa thêm (chỉ nạp khi vào To-Be, gỡ khi về As-Is) ---------- */
+const TB_AG2 = AGENTS.find(a=>a.id!==ME.id);
+const NOASG = {assignedAgentId:null, assignedAgentName:null, assignedBy:null, assignedAt:null};
+const TOBE_EXTRA = [
+  // Nhóm 3 ticket, 3 công việc, SĐT viết 3 kiểu (0987654321, +84 987 654 321, 0987.654.321): 1 ticket Mới, 2 ticket do ME giữ
+  mk(901,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'0987654321', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
+    description:'Nhắc CTKM (mẫu nội dung chờ BU)', callScheduledDate:'2026-11-05T17:00:00Z', createdAt:'2026-11-04T08:10:00Z', updatedAt:'2026-11-04T08:10:00Z'}),
+  mk(902,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'+84 987 654 321', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
+    businessData:{items:[{name:'Amlodipin 5mg x 30 viên', date:'12/10/2026'},{name:'Metformin 500mg x 60 viên', date:'12/10/2026'}]},
+    callScheduledDate:'2026-11-04T17:00:00Z', createdAt:'2026-11-03T08:00:00Z', updatedAt:'2026-11-03T08:00:00Z'}),
+  mk(903,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'0987.654.321', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'20/11/2026'}]},
+    callScheduledDate:null, createdAt:'2026-11-02T08:00:00Z', updatedAt:'2026-11-02T08:00:00Z'}),
+  // Nhóm có ticket Hoàn thành, ticket còn lại do nhân viên khác giữ, ngày cần gọi sớm hơn nhóm trên
+  mk(904,{_tobe:true, customerName:'Trần Văn Bình', phone:'0912345678', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'CLOSED',
+    dispositionLabel:'Không có nhu cầu', dispositionCode:'Không có nhu cầu', resolution:'NO_SALE', closedAt:'2026-11-04T03:00:00Z',
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'25/11/2026'}]},
+    callScheduledDate:null, createdAt:'2026-11-01T08:00:00Z', updatedAt:'2026-11-04T03:00:00Z'}),
+  mk(905,{_tobe:true, customerName:'Trần Văn Bình', phone:'0912345678', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'IN_PROGRESS', attemptCount:1, assignedAgentId:TB_AG2.id, assignedAgentName:TB_AG2.name,
+    businessData:{items:[{name:'Atorvastatin 20mg x 30 viên', date:'09/10/2026'}]},
+    callScheduledDate:'2026-11-02T17:00:00Z', createdAt:'2026-11-01T09:00:00Z', updatedAt:'2026-11-03T03:00:00Z'}),
+  // Nhóm 1 ticket có ngày cần gọi: đẩy ranh giới trang 10 để một nhóm 2 ticket nằm vắt qua cuối trang
+  mk(907,{_tobe:true, customerName:'Phạm Quốc Dũng', phone:'0933111222', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'OPEN', ...NOASG,
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'22/11/2026'}]},
+    callScheduledDate:'2026-11-06T17:00:00Z', createdAt:'2026-11-04T09:00:00Z', updatedAt:'2026-11-04T09:00:00Z'}),
+  // SĐT không đạt 10 số bắt đầu bằng 0: coi như không có SĐT, hiện dòng riêng
+  mk(908,{_tobe:true, customerName:'Võ Minh Khôi', phone:'098765432', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'OPEN', ...NOASG,
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'24/11/2026'}]},
+    callScheduledDate:null, createdAt:'2026-11-04T10:00:00Z', updatedAt:'2026-11-04T10:00:00Z'}),
+  // SĐT trống: không gom, hiện dòng riêng
+  mk(906,{_tobe:true, customerName:'Lê Thị Cúc', phone:'', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'OPEN', ...NOASG,
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'18/11/2026'}]},
+    callScheduledDate:null, createdAt:'2026-11-03T10:00:00Z', updatedAt:'2026-11-03T10:00:00Z'})
+];
+
+/* ---------- Khoá gom và sắp xếp ---------- */
+// SĐT chuẩn hoá theo US-3 v3 mục 6.2: bỏ khoảng trắng, dấu chấm, dấu gạch; đầu số +84 hoặc 84 đổi thành 0.
+// Sau chuẩn hoá không phải 10 số bắt đầu bằng 0 thì coi như không có SĐT, hiện row riêng.
+function tbNorm(p){
+  let d=String(p==null?'':p).replace(/[\s.\-]/g,'');
+  if(d.startsWith('+84')) d='0'+d.slice(3); else if(d.startsWith('84')) d='0'+d.slice(2);
+  return /^0\d{9}$/.test(d) ? d : '';
+}
+// SĐT mẫu của mockup BU trong dữ liệu gốc chỉ có 8 số. Khi ở To-Be đổi sang 10 số (thêm 0900 trước 6 số cuối), về As-Is trả lại nguyên.
+function tbDemoPhone(p){ return /^\d{8}$/.test(String(p)) ? '0900'+String(p).slice(-6) : p; }
+// Cùng tenant + cùng SĐT. Công việc tắt gom khác công việc thì khoá có thêm mã công việc.
+function tbKey(t){ const n=tbNorm(t.phone); if(!n) return 'solo|'+t.id; return t.tenant+'|'+n+'|'+(TB.cross[t.businessFlowId]===false ? t.businessFlowId : '*'); }
+const tbT = iso => iso ? new Date(iso).getTime() : Infinity;
+// Trong nhóm: CTKM, thuốc mãn tính, voucher; cùng công việc thì ngày cần gọi, rồi ngày tạo
+function tbInGroup(a,b){
+  const fa=TB_FLOW_ORDER.indexOf(a.businessFlowId), fb=TB_FLOW_ORDER.indexOf(b.businessFlowId);
+  if(fa!==fb) return (fa<0?9:fa)-(fb<0?9:fb);
+  const da=tbT(a.callScheduledDate), db=tbT(b.callScheduledDate);
+  if(da!==db) return da<db ? -1 : 1;
+  return tbT(a.createdAt)-tbT(b.createdAt);
+}
+// Quyền xem như CI: không phải quản lý thì chỉ thấy ticket mình giữ và ticket Mới (US-3 Business Rules 17)
+const tbCanSee = t => SIM.isManager || t.status==='OPEN' || t.assignedAgentId===ME.id;
+// Nội dung không tách được item (ví dụ CTKM chưa có mẫu) vẫn canh lề như một item
+const tbContent = t => { const items=(t.businessData||{}).items, lb=flowOf(t).itemDateLabel;
+  if(!items||!items.length) return `<div class="it"><span class="it-n">${t.description||'—'}</span></div>`;
+  return items.map(i=>`<div class="it"><span class="it-d" title="${tbEsc(lb)}">${i.date}</span><span class="it-n" title="${tbEsc(i.name)}">${i.name}</span></div>`).join(''); };
+function tbBuild(){
+  const rows = filtered().filter(tbCanSee), map = new Map();
+  rows.forEach(t=>{ const k=tbKey(t); if(!map.has(k)) map.set(k,[]); map.get(k).push(t); });
+  let groups = [...map.entries()].map(([key,ts])=>{
+    ts.sort(tbInGroup);
+    const dates = ts.filter(t=>t.status!=='CLOSED').map(t=>tbT(t.callScheduledDate)).filter(isFinite);
+    const shown = new Set(ts.map(t=>t.id));
+    const hidden = key.startsWith('solo|') ? 0 : TICKETS.filter(x=>tbKey(x)===key && !shown.has(x.id) && tbCanSee(x)).length;
+    return {key, tickets:ts, hidden, norm:tbNorm(ts[0].phone), date:dates.length?Math.min(...dates):null, created:Math.min(...ts.map(t=>tbT(t.createdAt)))};
+  });
+  // Giữa các nhóm: ngày cần gọi sớm nhất của ticket chưa xong, rồi ngày tạo. Nhóm không có ngày xếp sau.
+  groups.sort((a,b)=>{
+    if((a.date===null)!==(b.date===null)) return a.date===null ? 1 : -1;
+    if(a.date!==null && a.date!==b.date) return a.date-b.date;
+    return a.created-b.created;
+  });
+  // Nhóm riêng của công việc tắt gom khác công việc: đặt ngay sau nhóm chính cùng SĐT
+  const isSat = g => !g.key.startsWith('solo|') && !g.key.endsWith('|*');
+  const mainOf = g => g.key.split('|').slice(0,2).join('|')+'|*';
+  const sats = groups.filter(g=>isSat(g) && groups.some(m=>m.key===mainOf(g)));
+  const out = [];
+  groups.filter(g=>!sats.includes(g)).forEach(g=>{ out.push(g); sats.filter(s=>mainOf(s)===g.key).forEach(s=>out.push(s)); });
+  return {groups:out, total:rows.length};
+}
+const tbSnap = () => TB.snap || (TB.snap = tbBuild());
+// Phân trang theo ticket, trang kéo dài cho đủ nhóm cuối
+function tbPages(groups,size){
+  const pages=[]; let cur=[], n=0;
+  groups.forEach(g=>{ cur.push(g); n+=g.tickets.length; if(n>=size){ pages.push(cur); cur=[]; n=0; } });
+  if(cur.length) pages.push(cur);
+  return pages.length ? pages : [[]];
+}
+
+/* ---------- Danh sách To-Be ---------- */
+const tbIsMine = t => t.assignedAgentId===ME.id && t.status!=='CLOSED';
+const tbMine = t => ''; // Bỏ nhãn "Của tôi" (Hưng 06/11): hệ thống tự phân công, agent chỉ thấy ticket của mình
+function tbCustCell(g){
+  const nm = g.tickets.map(t=>t.customerName).find(Boolean) || '—';
+  const more = g.hidden>0 ? `<div class="tb-more" onclick="go('${g.tickets[0].id}')" title="Bấm để mở trang Chi tiết, xem đủ ticket của khách">KH còn ${g.hidden} ticket khác</div>` : '';
+  return `<b title="${tbEsc(nm)}">${tbEsc(nm)}</b>${more}`;
+}
+const tbPhoneCell = g => g.norm ? `<span class="mask">${maskPhone(g.norm)}</span><span class="copy">⧉</span>`
+  : (String(g.tickets[0].phone||'').trim() ? `<span class="tb-noph" title="Sau chuẩn hoá phải là 10 số bắt đầu bằng 0">SĐT không hợp lệ</span>` : `<span class="tb-noph">Chưa có SĐT</span>`);
+// Gọi theo nhóm (Hưng chốt 06/11): một lần Gọi tính cho mọi ticket mình giữ trong nhóm, Xử lý vẫn bấm từng ticket.
+// Nút Gọi nằm trong cột "Gọi" cố định bên phải, ngay trước Thao tác (tiêu đề Thao tác trải hai cột). Nhóm từ 2 dòng gộp ô theo nhóm.
+// Dòng riêng và nhóm một dòng có nút Gọi ở chính dòng đó. Bỏ nút Gọi khỏi ô Thao tác ở To-Be.
+const tbCallable = x => x.assignedAgentId===ME.id && x.status!=='OPEN' && x.status!=='CLOSED';
+// Ticket hiện trên widget: ticket mình giữ có ngày cần gọi sớm nhất, bằng ngày thì theo thứ tự CTKM, thuốc mãn tính, voucher
+function tbRep(g){
+  const c = g.tickets.filter(tbCallable);
+  return c.length ? c.slice().sort((a,b)=>{ const da=tbT(a.callScheduledDate), db=tbT(b.callScheduledDate); return da!==db ? (da<db?-1:1) : tbInGroup(a,b); })[0] : null;
+}
+function tbCallBtn(g){
+  const merged = !g.key.startsWith('solo|') && g.tickets.length>=2;
+  const rep = tbRep(g); if(!rep) return '';
+  const n = TICKETS.filter(x=>tbKey(x)===g.key && tbCallable(x)).length;
+  const why = !SIM.mptLoggedIn ? 'Chưa đăng nhập tổng đài' : (CALL.state!=='IDLE' ? 'Đang có cuộc gọi' : '');
+  return `<div class="tb-callg"><span class="btn pri split${why?' is-dis':''}" title="${tbEsc(why || (n>1 ? 'Gọi một lần, tính cho '+n+' ticket mình giữ trong nhóm' : 'Gọi'))}"><span data-act="call" data-id="${rep.id}">Gọi</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span>${merged||n>1 ? `<div class="tb-calln">Cho ${n} ticket</div>` : ''}</div>`;
+}
+// Cột Gọi chỉ có ở To-Be: chèn trước Thao tác, cố định bên phải. COLUMNS gốc không đổi nên As-Is giữ nguyên.
+function tbCols(){
+  if(TB.cols) return TB.cols;
+  const act = COLUMNS[COLUMNS.length-1];
+  return TB.cols = [...COLUMNS.slice(0,-1), {h:'Gọi', w:96, fix:'r', off:act.w, cls:'callcol', k:'callg'}, act];
+}
+const tbFixCls = (c,cs) => c.fix==='r' ? ' fr'+(cs.find(x=>x.fix==='r')===c?' fr-first':'') : fixCls(c);
+function tbRow(g,t,i,gi){
+  TB.inList = true;
+  const cs = tbCols();
+  const cells = cs.map((c,ci)=>{
+    const at = `class="${c.cls||''}${tbFixCls(c,cs)}"${fixAttr(c)}`;
+    if(c.k==='callg'){ // Gọi: ô gộp theo nhóm từ 2 dòng, còn lại ở chính dòng đó
+      const grouped = !g.key.startsWith('solo|') && g.tickets.length>=2;
+      if(grouped) return i>0 ? '' : `<td ${at} rowspan="${g.tickets.length}">${tbCallBtn(g)}</td>`;
+      return `<td ${at}>${tbCallBtn({key:g.key, tickets:[t]})}</td>`;
+    }
+    if(ci===1 || ci===2){ // Khách hàng, SĐT: ô gộp theo nhóm, chỉ vẽ ở row đầu
+      if(i>0) return '';
+      return `<td ${at} rowspan="${g.tickets.length}">${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
+    }
+    let h;
+    if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span><span class="copy">⧉</span>${TB.fresh&&TB.fresh.has(t.id)?'<span class="tb-newtag">Vừa giao</span>':''}`;
+        else if(ci===6) h = `<span class="link" onclick="go('${t.id}')">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>`; // US-3 v3: bấm Mã tham chiếu mở Chi tiết
+    else h = (c.cls||'').includes('nd') ? tbContent(t) : c.r(t);
+    return `<td ${at}>${h}</td>`;
+  }).join('');
+  TB.inList = false;
+  return `<tr class="tb-g${gi%2}${i===0?' tb-first':''}${TB.fresh&&TB.fresh.has(t.id)?' tb-fresh':''}">${cells}</tr>`;
+}
+function renderToBe(){
+  const cs = tbCols();
+  cols.innerHTML = cs.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('');
+  cols.parentElement.style.width = cs.reduce((n,c)=>n+(c.w||0),0)+'px';
+  // Tiêu đề Thao tác trải hai cột (Gọi và Thao tác)
+  thead.innerHTML = cs.map(c=> c.k==='callg' ? `<th colspan="2" class="fr fr-first" style="right:0">Thao tác</th>` : (c===cs[cs.length-1] ? '' : `<th class="${tbFixCls(c,cs)}"${fixAttr(c)}>${c.h}</th>`)).join('');
+  const snap = tbSnap(), pages = tbPages(snap.groups, state.size);
+  state.page = Math.min(state.page, pages.length);
+  const view = pages[state.page-1] || [];
+  tbody.innerHTML = view.map((g,gi)=>g.tickets.map((t,i)=>tbRow(g,t,i,gi)).join('')).join('')
+    || `<tr><td colspan="${cs.length}" style="padding:0"><div style="position:sticky;left:0;width:${document.querySelector('.tablewrap').clientWidth}px;text-align:center;color:var(--muted);padding:40px 0">Không có dữ liệu</div></td></tr>`;
+  pager.innerHTML = `<span>Tổng ${snap.total} ticket</span>
+    <button class="pg" onclick="state.page=Math.max(1,state.page-1);render()">‹</button>
+    ${Array.from({length:pages.length},(_,i)=>`<button class="pg ${i+1===state.page?'on':''}" onclick="state.page=${i+1};render()">${i+1}</button>`).join('')}
+    <button class="pg" onclick="state.page=Math.min(${pages.length},state.page+1);render()">›</button>
+    <select onchange="state.size=+this.value;state.page=1;render()">${[10,20,50].map(n=>`<option ${n===state.size?'selected':''} value="${n}">${n} / trang</option>`).join('')}</select>`;
+}
+function tbInvalidate(){ TB.snap = null; }
+
+/* ---------- Chi tiết To-Be: hiện cả nhóm ---------- */
+function tbDetail(t){
+  const g = document.getElementById('tbGroup'), b = document.getElementById('tbBanner');
+  if(MODE!=='tobe'){ g.classList.add('hidden'); b.classList.add('hidden'); return; }
+  document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; }); // US-3 v3: thống nhất label
+  const key = tbKey(t), grp = TICKETS.filter(x=>tbKey(x)===key && (tbCanSee(x) || x.id===t.id)).sort(tbInGroup);
+  if(grp.length<2){ g.classList.add('hidden'); g.innerHTML=''; }
+  else {
+    g.classList.remove('hidden');
+    g.innerHTML = `<div class="tb-gh">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</div><table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Hạn xử lý','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
+      + grp.map(x=>`<tr class="${x.id===t.id?'tb-cur':''}"><td><span class="link" onclick="go('${x.id}')">${short(x.id)}</span>${x.id===t.id?'<span class="tb-cur-tag">Đang xem</span>':''}${tbMine(x)}</td>
+        <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
+        <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}</td>
+        <td class="nd">${tbContent(x)}</td>
+        <td><span class="tag st-${x.status}">${STATUS[x.status]}</span></td>
+        <td>${resultOf(x).label}</td><td>${vn(x.callScheduledDate)}</td><td>${vnt(x.expiredTime)}</td>
+        <td class="act">${actions(x)}</td></tr>`).join('') + `</tbody></table>`;
+  }
+  if(grp.length>1){ const da=document.getElementById('dActs'); if(da.innerHTML.trim() && !da.querySelector('.tb-for')) da.insertAdjacentHTML('afterbegin', `<span class="tb-for">Cho ticket ${short(t.id)}:</span>`); }
+  const ids = (TB.pending && TB.pending.key===key) ? [...TB.pending.ids] : [], n = ids.length;
+  if(n>0){ b.classList.remove('hidden');
+    const busy = CALL.state!=='IDLE';
+    b.innerHTML = `Còn <b>${n}</b> ticket của bạn chưa ghi kết quả${busy?' (đóng widget tổng đài để ghi)':''}:<div>`
+      + ids.map(id=>{ const x=TICKETS.find(z=>z.id===id); return `<span class="tb-bl">${short(id)} · ${flowName(x.businessFlowId)}<button class="btn pri" data-act="resolve" data-id="${id}"${busy?' disabled':''}>Xử lý</button></span>`; }).join('') + `</div>`; }
+  else { b.classList.add('hidden'); b.innerHTML=''; }
+}
+
+/* ---------- Gọi theo nhóm và ghi kết quả từng ticket ---------- */
+// Sau cuộc gọi trong nhóm, công việc tắt đóng tay vẫn hiện nút Xử lý cho ticket mình giữ (US-3 v3, mục 5.5 dòng 6)
+function tbActions(t,out){
+  if(MODE==='tobe' && TB.inList){ // Trên danh sách To-Be, nút Gọi nằm ở cột Gọi bên cạnh, không lặp trong Thao tác
+    const k = out.findIndex(h=>h.includes('data-act="call"')); if(k>=0) out.splice(k,1);
+  }
+  if(MODE==='tobe'){ // Nút Nhận bị khoá vì đang nhận tự động: thay bằng chữ, đỡ khó hiểu
+    const k = out.findIndex(h=>h.includes('data-act="claim"') && h.includes('nhận phiếu tự động'));
+    if(k>=0) out[k] = `<span class="tb-autotag" title="Bạn đang bật nhận tự động cho công việc này. Hệ thống sẽ tự giao, không cần bấm Nhận.">Hệ thống tự giao</span>`;
+  }
+  if(MODE!=='tobe' || t.assignedAgentId!==ME.id || t.status==='CLOSED' || t.status==='OPEN') return;
+  if(((flowOf(t).operationConfig||{}).closure_policy||{}).manual_close) return; // đã có nút theo rule gốc
+  if(!TB.called.has(tbKey(t))) return;
+  const dis = !SIM.mptLoggedIn ? ' disabled title="Chưa đăng nhập tổng đài"' : (CALL.state!=='IDLE' ? ' disabled title="Đang có cuộc gọi"' : '');
+  const btn = `<button class="btn pri" data-act="resolve" data-id="${t.id}"${dis}>Xử lý</button>`;
+  const i = out.findIndex(h=>/data-act="(assign|reassign)"/.test(h));
+  if(i<0) out.push(btn); else out.splice(i,0,btn);
+}
+function tbOnCall(t){
+  if(MODE!=='tobe') return;
+  const key = tbKey(t); TB.called.add(key);
+  const held = TICKETS.filter(x=>tbKey(x)===key && x.assignedAgentId===ME.id && x.status!=='CLOSED');
+  TB.pending = {key, ids:new Set(held.map(x=>x.id))};
+  // Gọi một lần tính cho mọi ticket mình giữ trong nhóm: ghi cuộc gọi vào từng ticket còn lại, tăng số lượt gọi, Đã phân công chuyển Đang xử lý.
+  // Bản ghi dùng chung trạng thái, thời lượng của cuộc gọi gốc (Object.create). Kết quả xử lý ghi riêng từng ticket nên không thừa hưởng.
+  const at = CALL.attempt;
+  if(at) TICKETS.filter(x=>x.id!==t.id && tbKey(x)===key && tbCallable(x)).forEach(x=>{
+    const own = v => ({value:v, writable:true, enumerable:true});
+    const cp = Object.create(at, {dispositionCode:own(undefined), dispositionLabel:own(undefined), dispositionBehavior:own(undefined), dispositionNote:own(undefined), sharedCall:own(true)});
+    (ATTEMPTS[x.id] = ATTEMPTS[x.id]||[]).push(cp);
+    x.attemptCount = (x.attemptCount||0)+1;
+    if(x.status==='ASSIGNED') x.status='IN_PROGRESS';
+    x.updatedAt = nowIso();
+  });
+}
+function tbOnResult(t){
+  if(MODE!=='tobe') return;
+  const key = tbKey(t);
+  if(TB.called.has(key)){ // US-3 v3: "Không nghe máy lần 1" chuyển hoặc giữ Đang xử lý, kể cả ticket chưa được gọi riêng
+    const d = DISP_CATALOG.find(x=>x.label===t.dispositionLabel);
+    if(d && d.behavior==='RETRY' && t.status==='ASSIGNED') t.status='IN_PROGRESS';
+  }
+  if(TB.pending && TB.pending.key===key) TB.pending.ids.delete(t.id);
+}
+
+/* ---------- Thanh điều khiển, nhãn, switch ---------- */
+function tbPaintBar(){
+  const cross = FLOWS.map(f=>`<label><input type="checkbox" ${TB.cross[f.id]===false?'':'checked'} onchange="tbCross('${f.id}',this.checked)"> ${f.name}</label>`).join('');
+  const ctkm = ((FLOWS.find(f=>f.id==='PHARMA-NHAC_CTKM').operationConfig||{}).closure_policy||{}).manual_close === false;
+  document.getElementById('tbBar').innerHTML =
+   `<div class="tb-bar-row"><b class="tb-title">To-Be: gom ticket</b>
+      <span>Gom theo SĐT ${tbBadge('gkey')}</span>
+      <span>Nhóm xếp theo ngày cần gọi sớm nhất, rồi ngày tạo ${tbBadge('nodate')}</span>
+      <span>Phân trang kéo dài đủ nhóm ${tbBadge('page')}</span>
+      <a onclick="document.getElementById('tbPend').scrollIntoView({behavior:'smooth'})">Điểm chưa chốt (${TB_PEND.length})</a></div>
+    <div class="tb-bar-row"><span>Gom khác công việc ${tbBadge('cross_def')} ${tbBadge('cross_off')}: ${cross}</span>
+      <span>Giả lập: <label><input type="checkbox" ${ctkm?'checked':''} onchange="tbSimCtkm(this.checked)"> Nhắc CTKM tắt đóng tay</label></span></div>
+    <div class="tb-bar-row tb-legend"><span>Chú giải:</span>
+      <span><span class="tb-b tb-b-chot">BA CHỐT, CHỜ BU</span> Hưng đã chốt, BU chưa xác nhận</span>
+      <span><span class="tb-b tb-b-ba">BA SUY RA</span> chưa ai xác nhận</span>
+      <span><span class="tb-b tb-b-dev">DEV ĐỀ XUẤT</span> đã ghi vào US-3, BU chưa xác nhận</span>
+      <span><span class="tb-b tb-b-def">MẶC ĐỊNH</span> giá trị mặc định BA đặt</span>
+      <span><span class="tb-b tb-b-sim">MÔ PHỎNG</span> backend chưa có, khung giả lập</span>
+      <span>Không gắn nhãn: đã chốt hoặc đã kiểm trên CI</span></div>`;
+}
+function tbPaintPend(){
+  document.getElementById('tbPend').innerHTML = `<h3>Điểm chưa chốt trong khung To-Be (${TB_PEND.length})</h3><table><tbody>`
+    + TB_PEND.map(p=>`<tr><td style="width:110px">${tbBadge(p.id)}</td><td>${p.txt}</td><td style="width:38%;color:var(--muted)">${p.src}</td></tr>`).join('')
+    + `</tbody></table><div class="note" style="margin-top:8px">Nhãn đọc từ mảng TB_PEND trong code, BU chốt điểm nào thì sửa hoặc xoá dòng đó. Tải lại trang để về dữ liệu gốc.</div>`;
+}
+// Ô giả lập của To-Be nằm chung chỗ "Giả lập" trên header, chỉ hiện khi ở To-Be
+function tbPaintSim(){
+  let el = document.getElementById('tbSim');
+  if(!el){ el = document.createElement('span'); el.id='tbSim'; el.className='tb-simx'; document.querySelector('#vList .head .sim').appendChild(el); }
+  const crossOn = !FLOWS.some(f=>TB.cross[f.id]===false);
+  const ctkm = ((FLOWS.find(f=>f.id==='PHARMA-NHAC_CTKM').operationConfig||{}).closure_policy||{}).manual_close === false;
+  el.innerHTML = `<label><input type="checkbox" ${crossOn?'checked':''} onchange="tbCrossAll(this.checked)"> Gom khác công việc</label>`
+    + `<label><input type="checkbox" ${ctkm?'checked':''} onchange="tbSimCtkm(this.checked)"> Nhắc CTKM tắt đóng tay</label>`;
+}
+function tbCrossAll(on){ FLOWS.forEach(f=>{ if(on) delete TB.cross[f.id]; else TB.cross[f.id]=false; }); TB.snap=null; state.page=1; render(); }
+function tbCross(id,on){ if(on) delete TB.cross[id]; else TB.cross[id]=false; TB.snap=null; state.page=1; render(); }
+function tbSimCtkm(on){
+  const cp = FLOWS.find(f=>f.id==='PHARMA-NHAC_CTKM').operationConfig.closure_policy;
+  if(TB.ctkmManual===null) TB.ctkmManual = cp.manual_close;
+  cp.manual_close = !on; refresh();
+}
+function tbResetSim(){
+  TB.cross={}; TB.called.clear(); TB.pending=null;
+  if(TB.ctkmManual!==null){ FLOWS.find(f=>f.id==='PHARMA-NHAC_CTKM').operationConfig.closure_policy.manual_close = TB.ctkmManual; TB.ctkmManual=null; }
+}
+function tbSyncUI(){
+  const on = MODE==='tobe';
+  document.getElementById('tbSw').innerHTML = `<button class="${on?'':'on'}" onclick="tbSetMode('asis')">As-Is</button><button class="${on?'on':''}" onclick="tbSetMode('tobe')">To-Be</button>`;
+  // Bỏ khung chú thích và bảng điểm chưa chốt khỏi màn hình (Hưng 06/11). Điểm chưa chốt ghi trong file kết quả md.
+  document.getElementById('tbBar').classList.add('hidden');
+  document.getElementById('tbPend').classList.add('hidden');
+  tbPaintSim(); tbMoveSim(on); tbAutoModalText(); if(on) tbAutoChips(); else autoChips.innerHTML='';
+}
+function tbSetMode(m){
+  if(!TOBE_ENABLED || m===MODE) return;
+  if(CALL.state!=='IDLE'){ toast('error','Đang có cuộc gọi. Kết thúc cuộc gọi trước khi đổi chế độ'); return; }
+  if(m==='tobe'){ // vào To-Be: nạp data minh họa, chọn đủ 3 công việc để thấy gom ngay
+    TB.savedFlows = [...MS.fFlow.val];
+    TOBE_EXTRA.forEach(x=>{ if(!TICKETS.includes(x)) TICKETS.push(x); });
+    TB.phoneBak = new Map(); // SĐT mẫu 8 số của mockup BU -> 10 số, chỉ trong To-Be
+    TICKETS.forEach(t=>{ if(!t._tobe){ const np=tbDemoPhone(t.phone); if(np!==t.phone){ TB.phoneBak.set(t,t.phone); t.phone=np; } } });
+    MS.fFlow.val = FLOWS.map(f=>f.id); MS.fFlow.repaint();
+  } else { // về As-Is: gỡ data minh họa, trả bộ lọc công việc như cũ
+    if(TB.phoneBak){ TB.phoneBak.forEach((old,t)=>{ t.phone=old; }); TB.phoneBak=null; }
+    for(let i=TICKETS.length-1;i>=0;i--) if(TICKETS[i]._tobe) TICKETS.splice(i,1);
+    MS.fFlow.val = TB.savedFlows || MS.fFlow.val; MS.fFlow.repaint();
+    tbResetSim();
+  }
+  MODE = m; document.body.classList.toggle('tb-on', m==='tobe');
+  TB.snap = null; state.page = 1; tbSyncUI();
+  history.replaceState(null,'', m==='tobe' ? '#tobe' : location.pathname+location.search);
+  applyFilters(); render();
+}
+/* ---------- Nhận phiếu tự động: To-Be cho user biết mình đã bật nhận công việc nào ---------- */
+function tbAutoChips(){
+  if(MODE!=='tobe') return;
+  if(!auto.on){ autoChips.innerHTML = `<button class="tb-autobtn" onclick="tbAutoOpen()"><span class="dot"></span>Nhận phiếu tự động</button>`; return; }
+  // Không liệt kê tên trên nút: BU thêm nhiều công việc thì nút dài vô hạn. 1 công việc ghi tên, nhiều thì ghi số, rê chuột xem danh sách.
+  const full = auto.flows.map(id=>(AUTO_FLOWS.find(f=>f.id===id)||{name:id}).name);
+  // Giống ô lọc Công việc: tên đầu tiên + số còn lại
+  const names = full.length===AUTO_FLOWS.length && full.length>1 ? `Tất cả (${full.length})` : full[0] + (full.length>1 ? ` +${full.length-1}` : '');
+  autoChips.innerHTML = `<button class="tb-autobtn on" onclick="tbAutoOpen()" title="${tbEsc('Đang nhận tự động:\n- '+full.join('\n- ')+'\nBấm để đổi hoặc tắt.')}"><span class="dot"></span>Đang nhận tự động: <b>${tbEsc(names)}</b><span class="car">▾</span></button>`;
+}
+function tbAutoOpen(){
+  autoErr.textContent='';
+  const many = AUTO_FLOWS.length>6;
+  autoList.innerHTML = `<div class="tb-alhead">${many?'<input class="tb-alq" placeholder="Tìm công việc" oninput="tbAutoFilter(this.value)">':''}<label class="tb-all"><input type="checkbox" onchange="tbAutoAll(this.checked)"> Chọn tất cả</label><span class="tb-alcnt"></span></div><div class="tb-alist">`
+    + AUTO_FLOWS.map(f=>`<label><input type="checkbox" value="${f.id}" ${auto.flows.includes(f.id)?'checked':''} onchange="tbAutoCount()"> ${f.name}${f.mock?' <span class="note">(chưa có trên CI)</span>':''}</label>`).join('') + `</div>`;
+  tbAutoCount();
+  let off = document.getElementById('tbAutoOff');
+  if(!off){ off=document.createElement('button'); off.id='tbAutoOff'; off.className='btn'; off.textContent='Tắt nhận tự động';
+    off.onclick=()=>{ autoModal.classList.add('hidden'); auto.on=false; auto.flows=[]; state.page=1; autoPaint(); toast('success','Đã tắt nhận phiếu tự động'); };
+    autoModal.querySelector('.mbox > div:last-child').prepend(off); }
+  off.style.display = (MODE==='tobe' && auto.on) ? '' : 'none';
+  autoModal.querySelector('.btn.pri').textContent = (MODE==='tobe' && auto.on) ? 'Lưu' : 'Xác nhận';
+  autoModal.classList.remove('hidden');
+}
+// Giả lập engine phân công tự động giao ticket cho mình sau khi bật (ưu tiên ngày cần gọi hôm nay, rồi quá ngày, theo D-09)
+function tbAutoAssignDemo(){
+  if(MODE!=='tobe' || !auto.on) return;
+  const today = new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
+  const day = t => t.callScheduledDate ? new Date(tbT(t.callScheduledDate)+7*3600e3).toISOString().slice(0,10) : null;
+  const rank = t => { const d=day(t); return d===today ? 0 : (d && d<today ? 1 : 2); };
+  const pick = TICKETS.filter(t=>t.status==='OPEN' && auto.flows.includes(t.businessFlowId) && tbNorm(t.phone))
+    .sort((a,b)=>rank(a)-rank(b) || tbT(a.callScheduledDate)-tbT(b.callScheduledDate) || tbT(a.createdAt)-tbT(b.createdAt)).slice(0,2);
+  if(!pick.length) return;
+  pick.forEach(t=>{ logAssign(t,'Hệ thống',ME.name,'AUTO'); t.status='ASSIGNED'; t.assignedAgentId=ME.id; t.assignedAgentName=ME.name; t.assignedBy='Hệ thống'; t.assignedAt=nowIso(); t.updatedAt=nowIso(); });
+  TB.fresh = new Set(pick.map(t=>t.id)); TB.snap=null; render();
+  toast('success', `Hệ thống vừa giao ${pick.length} ticket cho bạn: ${pick.map(t=>short(t.id)).join(', ')}`);
+  setTimeout(()=>{ TB.fresh=null; if(MODE==='tobe') render(); }, 8000);
+}
+function tbAutoBoxes(){ return [...autoList.querySelectorAll('.tb-alist input')]; }
+function tbAutoAll(on){ tbAutoBoxes().forEach(i=>{ if(i.closest('label').style.display!=='none') i.checked=on; }); tbAutoCount(); }
+function tbAutoFilter(q){ q=q.trim().toLowerCase(); tbAutoBoxes().forEach(i=>{ i.closest('label').style.display = i.closest('label').textContent.toLowerCase().includes(q)?'':'none'; }); }
+function tbAutoCount(){ const b=tbAutoBoxes(), n=b.filter(i=>i.checked).length; const c=autoList.querySelector('.tb-alcnt'); if(c) c.textContent=`Đã chọn ${n}/${b.length}`; const a=autoList.querySelector('.tb-all input'); if(a){ a.checked = n===b.length; a.indeterminate = n>0 && n<b.length; } }
+function tbAutoModalText(){
+  const box = autoModal.querySelector('.mbox'), h = box.querySelector('h3');
+  let d = document.getElementById('tbAutoDesc');
+  if(!d){ d=document.createElement('div'); d.id='tbAutoDesc'; d.className='tb-auto-desc'; box.insertBefore(d, document.getElementById('autoList')); }
+  d.textContent = 'Chọn công việc bạn muốn nhận tự động. Hệ thống sẽ tự giao ticket của các công việc này cho bạn, và nút Nhận của các công việc này bị khoá cho tới khi bạn tắt.';
+  h.textContent = MODE==='tobe' ? 'Nhận phiếu tự động' : 'Loại công việc';
+  if(MODE!=='tobe'){ const off=document.getElementById('tbAutoOff'); if(off) off.style.display='none'; autoModal.querySelector('.btn.pri').textContent='Xác nhận'; }
+}
+function tbAutoInstall(){
+  const op = autoPaint, ot = autoToggle, oc = autoConfirm;
+  autoPaint = function(){ op(); tbAutoChips(); };
+  autoToggle = function(){ if(MODE==='tobe' && !auto.on) return tbAutoOpen(); ot(); };
+  autoConfirm = function(){
+    if(MODE!=='tobe') return oc();
+    const sel = tbAutoBoxes().filter(i=>i.checked).map(i=>i.value);
+    if(!sel.length){ autoErr.textContent='Vui lòng chọn ít nhất 1 loại công việc'; return; }
+    const was = auto.on; auto.on=true; auto.flows=sel; state.page=1; autoModal.classList.add('hidden'); autoPaint();
+    toast('success', was ? 'Đã cập nhật công việc nhận tự động' : 'Đã bật nhận phiếu tự động');
+    if(!was) setTimeout(tbAutoAssignDemo, 1500);
+  };
+}
+function tbDockInstall(){
+  const dock = document.createElement('div'); dock.className='tb-dock'; dock.innerHTML='<span>Bản demo:</span>';
+  dock.appendChild(document.getElementById('tbSw'));
+  const btn = document.createElement('button'); btn.className='tb-simbtn'; btn.textContent='Giả lập ▾';
+  btn.onclick = e=>{ e.stopPropagation(); const pop=document.getElementById('tbSimPop'); pop.classList.toggle('hidden'); const r=btn.getBoundingClientRect(); pop.style.left=r.left+'px'; };
+  dock.appendChild(btn);
+  const crumb = document.querySelector('header.top .crumb'); crumb.after(dock);
+  const pop = document.createElement('div'); pop.id='tbSimPop'; pop.className='tb-simpop hidden'; pop.onclick=e=>e.stopPropagation(); document.body.appendChild(pop);
+  document.addEventListener('click', ()=>pop.classList.add('hidden'));
+  TB.simHome = document.querySelector('#vList .head .sim').nextSibling; // chỗ cũ của khung Giả lập trên header
+}
+// To-Be: khung Giả lập dời vào nút "Giả lập ▾" trên thanh trên cùng. As-Is: trả về đúng chỗ cũ.
+function tbMoveSim(on){
+  const sim = document.querySelector('.sim'), pop = document.getElementById('tbSimPop');
+  if(on){ if(sim.parentElement!==pop) pop.appendChild(sim); }
+  else { pop.classList.add('hidden'); if(sim.parentElement===pop) document.querySelector('#vList .head').insertBefore(sim, TB.simHome); }
+}
+function tbInit(){
+  if(!TOBE_ENABLED) return;
+  tbAutoInstall(); tbDockInstall();
+  document.getElementById('tbSw').classList.remove('hidden');
+  tbSyncUI();
+  // Chọn công việc ở To-Be thì lọc ngay, danh sách chỉ còn loại công việc đó dù đang gom ticket (Hưng 06/11). As-Is vẫn chờ bấm Tìm kiếm.
+  // Nghe ở pha capture vì nút × và ✕ của ô chọn nhiều chặn nổi bọt. setTimeout để ô chọn nhiều cập nhật giá trị xong trước.
+  const tbFlowApply = () => setTimeout(()=>{
+    if(MODE!=='tobe') return;
+    const cur=[...MS.fFlow.val], app=(APPLIED||readForm()).fl;
+    if(cur.length!==app.length || cur.some(v=>!app.includes(v))) applyFilters();
+  },0);
+  ['change','click'].forEach(ev=>document.getElementById('fFlow').addEventListener(ev, tbFlowApply, true));
+  if(location.hash==='#tobe') tbSetMode('tobe');
+}
+/*TOBE:END js*/
+/* ---------- LIST ---------- */
+const state = {page:1, size:10};
+/* CI: thay đổi ô lọc chỉ đổi form; danh sách chỉ lọc lại khi bấm Tìm kiếm (hoặc Enter).
+   Bật/tắt "Việc cần xử lý" thì áp ngay cùng các giá trị đang có trong form. ⟳ = đưa form về mặc định rồi áp. */
+let APPLIED = null;
+function readForm(){ return {df:fFrom.value, dt:fTo.value, q:fQ.value.trim().toLowerCase(), st:[...MS.fSt.val], ag:[...MS.fAgent.val], fl:[...MS.fFlow.val], ds:[...MS.fDisp.val], mine:document.getElementById('fMine').classList.contains('on')}; }
+function applyFilters(){
+  tbInvalidate(); /*TOBE-HOOK*/
+  const f=readForm(); fDateErr.textContent='';
+  if(f.df && f.dt){
+    if(f.df>f.dt){ fDateErr.textContent='Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc'; return; }
+    if((new Date(f.dt)-new Date(f.df))/864e5 > 29){ fDateErr.textContent='Khoảng ngày tạo tối đa 30 ngày. Vui lòng chọn lại'; return; }
+  }
+  APPLIED = f; state.page=1; render();
+}
+function resetFilters(){
+  fQ.value=''; defaultDates(); MS.fSt.val=[]; MS.fAgent.val=[]; MS.fDisp.val=[]; MS.fFlow.val=['PHARMA-NHAC_VOUCHER'];
+  document.getElementById('fMine').classList.remove('on');
+  ['fSt','fAgent','fDisp','fFlow'].forEach(id=>MS[id].repaint()); syncFilters(); applyFilters();
+}
+function filtered(){
+  // 4 bộ lọc chọn nhiều (CI: assignedAgentIds[], status[], businessFlowId[], dispositionCode[]); rỗng = Tất cả
+  const f = APPLIED || readForm();
+  const q=f.q, st=f.st, ag=f.ag, fl=f.fl, ds=f.ds, mine=f.mine;
+  const vnDay = iso => iso ? new Date(new Date(iso).getTime()+7*3600e3).toISOString().slice(0,10) : ''; // so theo ngày giờ VN
+  const ok=(arr,v)=>!arr.length||arr.includes(v);
+  return TICKETS.filter(t=>
+    // CI test 06/11: tìm theo SĐT ra kết quả; tìm theo Mã YC 6 ký tự đang hiển thị KHÔNG ra (lỗi đã ghi QC). Khung làm giống: chỉ khớp SĐT hoặc mã đầy đủ.
+    (!q || t.phone.includes(q) || t.id.toLowerCase()===q) &&
+    ok(st,t.status) && ok(ag,t.assignedAgentId) && ok(fl,t.businessFlowId) &&
+    ok(ds,t.dispositionCode) && (!f.df || vnDay(t.createdAt)>=f.df) && (!f.dt || vnDay(t.createdAt)<=f.dt) && (!mine || (t.assignedAgentId===ME.id && t.status!=='CLOSED')));
+}
+function render(){
+  if(MODE==='tobe') return renderToBe(); /*TOBE-HOOK*/
+  cols.innerHTML = COLUMNS.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('');
+  cols.parentElement.style.width = COLUMNS.reduce((n,c)=>n+(c.w||0),0)+'px';
+  thead.innerHTML = COLUMNS.map(c=>`<th class="${fixCls(c)}"${fixAttr(c)}>${c.h}</th>`).join('');
+  const rows = filtered(), pages=Math.max(1,Math.ceil(rows.length/state.size));
+  state.page=Math.min(state.page,pages);
+  const view=rows.slice((state.page-1)*state.size, state.page*state.size);
+  tbody.innerHTML = view.map(t=>`<tr>${COLUMNS.map(c=>`<td class="${c.cls||''}${fixCls(c)}"${fixAttr(c)}>${c.r(t)}</td>`).join('')}</tr>`).join('')
+    || `<tr><td colspan="${COLUMNS.length}" style="padding:0"><div style="position:sticky;left:0;width:${document.querySelector('.tablewrap').clientWidth}px;text-align:center;color:var(--muted);padding:40px 0">Không có dữ liệu</div></td></tr>`;
+  pager.innerHTML = `<span>Tổng ${rows.length} ticket</span>
+    <button class="pg" onclick="state.page=Math.max(1,state.page-1);render()">‹</button>
+    ${Array.from({length:pages},(_,i)=>`<button class="pg ${i+1===state.page?'on':''}" onclick="state.page=${i+1};render()">${i+1}</button>`).join('')}
+    <button class="pg" onclick="state.page=Math.min(${pages},state.page+1);render()">›</button>
+    <select onchange="state.size=+this.value;state.page=1;render()">${[10,20,50].map(n=>`<option ${n===state.size?'selected':''} value="${n}">${n} / trang</option>`).join('')}</select>`;
+}
+
+/* ---------- DETAIL ---------- */
+function go(id){
+  vList.classList.toggle('hidden', !!id); vDetail.classList.toggle('hidden', !id);
+  if(!id){ render(); return; }
+  const t = CUR = TICKETS.find(x=>x.id===id), flow = FLOWS.find(f=>f.id===t.businessFlowId);
+  dCode.textContent = 'Mã yêu cầu  '+short(t.id);
+  dStatus.innerHTML = `<span class="tag st-${t.status}">${STATUS[t.status]}</span>`;
+  dActs.innerHTML = actions(t).replace('Nhận','Nhận');
+  dName.textContent = t.customerName; dPhone.textContent = maskPhone(t.phone);
+  dInfo.innerHTML = [
+    ['Công việc', flow.name], ['Mã tham chiếu', `<span class="link">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span><span class="copy">⧉</span>`],
+    ['NV đảm trách', t.assignedAgentName||'—'], ['Kết quả xử lý', resultOf(t).label], ['Ghi chú', resultOf(t).note],
+    ['Thời gian hẹn gọi', vn(t.callScheduledDate)], ['Thời gian tạo', vnt(t.createdAt)], ['Cập nhật lần cuối', vnt(t.updatedAt)]
+    , ['Thời gian hết hạn', vnt(t.expiredTime)]
+  ].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+  dItems.innerHTML = `<div style="padding:7px 10px;font-weight:600;font-size:12px;border-bottom:1px solid var(--line)">Nội dung</div>`+content(t);
+  const asg = t._asg || (t.assignedAt ? [{at:t.assignedAt, by:t.assignedBy, to:t.assignedAgentName}] : []);
+  dAsgN.textContent = asg.length;
+  dAsg.innerHTML = asg.map(a=>`<div class="tl">${vnt(a.at)}<br>Phân công bởi: <b>${a.by}</b><br>Người nhận: <b>${a.to}</b></div>`).join('') || '<div class="note">Chưa phân công</div>';
+  const at = ATTEMPTS[t.id]||[];
+  dAttN.textContent = at.length;
+  dAtt.innerHTML = at.map((a,i)=>`<div class="tl"><b style="color:var(--primary)">Lần ${i+1}</b><br>Nhân viên: ${a.agentName||'—'}<br>Bắt đầu: ${vnt(a.startedAt)}<br>Kết thúc: ${a.endedAt?vnt(a.endedAt):'—'}</div>`).join('') || '<div class="note">Chưa có cuộc gọi</div>';
+  // Tabs panel phải theo business flow (CI: Tài khoản gia đình, Bán hàng)
+  const tabs = [...flow.tabs /* SLOT: tab mới, vd. 'Lịch sử đơn hàng' (iframe RSA) */];
+  rTabs.innerHTML = tabs.map((n,i)=>`<button class="${i?'':'on'}" onclick="tab(this,'${n}')">${n}</button>`).join('');
+  tab(rTabs.firstChild, tabs[0]);
+  tbDetail(t); /*TOBE-HOOK*/
+  window.scrollTo(0,0);
+}
+let CUR = null; const t0 = () => CUR;
+function tab(btn, name){
+  [...rTabs.children].forEach(b=>b.classList.toggle('on', b===btn));
+  if(name==='Tài khoản gia đình'){
+    rPanel.innerHTML = `<div class="fam"><div>
+        <div style="margin-bottom:6px">Tìm theo: <label><input type="radio" checked> SĐT</label> <label><input type="radio"> CCCD</label></div>
+        <input placeholder="Nhập số điện thoại" style="width:100%;border:1px solid #d1d5db;border-radius:5px;padding:6px">
+        <div class="box" style="margin-top:10px"><b>${t0().customerName}</b><br><span class="note">${maskPhone(t0().phone)}</span><br><span class="tag st-ASSIGNED" style="margin-top:6px">Chưa thuộc gia đình</span></div>
+      </div><div class="hero"><b>Khách hàng chưa là thành viên của Tài khoản gia đình.</b><br><br>
+        <button class="btn pri">Tạo gia đình</button> <button class="btn">Thêm KH vào gia đình</button></div></div>`;
+  } else if(name==='Bán hàng'){
+    // CI: tab này là iframe màn /sell-ecom (Bán hàng RSA), truyền mobilePhone + layout. Dựng lại tĩnh, không bán được.
+    const sec=(h,b)=>`<div class="pos-sec"><b>${h}</b>${b}</div>`;
+    rPanel.innerHTML = `<div class="note" style="margin:-6px 0 8px">iframe: /sell-ecom?mobilePhone=…&amp;layout=…</div>
+    <div class="pos-tabs"><span class="pos-cart">63 - 05/11/2026 ✕</span><span class="pos-add">+</span></div>
+    <div class="pos-bar"><input placeholder="Nhập tên, barcode hoặc mã thuốc (F1)"><button class="btn pri">🔍</button>
+      <label><input type="radio" checked> Bán ngay</label><label><input type="radio"> Bán nợ</label>
+      <button class="btn">Huỷ (F8)</button><button class="btn">Chụp toa thuốc</button><button class="btn">Cắt liều (Shift + F12)</button></div>
+    <div class="pos">
+      <div class="card" style="overflow:auto"><table style="min-width:640px"><thead><tr>${['STT','Sản phẩm','Đơn vị','Số lượng','Đơn giá','Thành tiền','Kho','Dự án'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+        <tbody><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:70px 0">Bạn chưa thêm sản phẩm nào vào đơn hàng</td></tr></tbody></table>
+        <!-- SLOT: đổ sẵn SKU từ ticket (thuốc mãn tính / CTKM) vào giỏ --></div>
+      <div class="pos-side">
+        ${sec('Thông tin khách hàng',`<div class="pos-chip">Khách hàng thường ›</div><input value="${maskPhone(t0().phone)}"><input value="${t0().customerName}">
+          <div><label><input type="radio" checked> Nam</label> <label><input type="radio"> Nữ</label> <label><input type="radio"> Khác</label></div>
+          <div class="pos-pt">Khách sở hữu <b>0 điểm F-Sell</b> <button class="btn" disabled>Đổi điểm</button><br>0 Điểm thưởng chưa kích hoạt<br><span class="note">Vui lòng cài App/Zalo để sử dụng điểm</span></div>
+          <div class="pos-promo">Xem danh sách khuyến mãi ›</div>`)}
+        ${sec('Ghi chú của sale',`<textarea rows="2"></textarea><label><input type="checkbox"> Ẩn tên sản phẩm khi giao hàng</label><label><input type="checkbox"> Đơn hàng công ty</label><button class="btn">Chuyển level 2</button>`)}
+        ${sec('Giao hàng',`<label><input type="radio" checked> Giao tận nhà</label> <label><input type="radio"> Nhận tại shop</label><div>Địa chỉ nhận <span class="link">+ Thêm mới</span></div>`)}
+        ${sec('Shop và nguồn đơn hàng',`<div>Nguồn đơn hàng *</div><select><option>Vui lòng chọn nguồn đơn hàng</option></select><div class="note">Chưa có cửa hàng nào được chọn</div><button class="btn">Tìm shop</button>`)}
+        ${sec('Ảnh toa thuốc',`<button class="btn">Upload ảnh</button>`)}
+        ${sec('Thông tin thanh toán',`<dl class="kv">${['Tạm tính','Tổng tiền ban đầu','Giảm giá trực tiếp','Giảm giá voucher','Tiết kiệm','Phí giao hàng'].map(k=>`<dt>${k}</dt><dd style="text-align:right">0 ₫</dd>`).join('')}</dl><div class="note">Nhận 0 điểm F-Sell</div>`)}
+        <button class="btn pri" style="width:100%;padding:9px">Tiếp tục</button>
+      </div>
+    </div>`;
+  } else {
+    rPanel.innerHTML = `<div class="slot">SLOT: ${name}</div>`;
+  }
+}
+
+
+/* =====================================================================
+   THAO TÁC GIẢ LẬP — chạy theo luồng code FE CI v8.6.31 (đọc 06/11/2026)
+   Không gọi API. Mỗi thao tác đổi data trong TICKETS rồi vẽ lại.
+   - Nhận      : claim → phiếu Đã phân công, giao cho mình; toast "Nhận ticket thành công"
+   - Phân công : popup "Chọn Nhân viên đảm trách" → assign (gửi expectedVersion); toast "Phân công (lại) thành công"
+   - Gọi       : tạo call-attempt → DIALING → (bắt máy) TALKING → (cúp) WRAP_UP → IDLE; mỗi lúc 1 cuộc
+   - Xử lý     : popup "Xử lý ticket": Kết quả xử lý* + Ghi chú (≤500); chỉ đóng phiếu khi kết quả loại CLOSE_
+   [Suy luận] Phiếu chuyển "Đang xử lý" khi có cuộc gọi đầu tiên (thấy trên data CI, chưa đọc backend).
+   [GIẢ ĐỊNH] Danh mục kết quả xử lý ngoài DA_CHOT_DON và KHONG_NGHE_MAY lấy theo popup mockup BU.
+   ===================================================================== */
+const BUSY = new Set();
+const CALL = {state:'IDLE', ticketId:null, attempt:null, t0:null, timer:null};
+const DISP_CATALOG = [ // behavior bắt đầu bằng CLOSE_ thì đóng phiếu. Thứ tự + nhãn = popup Xử lý trên CI (test 06/11)
+  {code:'DA_CHOT_DON',      label:'Tạo đơn thành công',   behavior:'CLOSE_SUCCESS', resolution:'SUCCESS', src:'CI: data 05/11 (đóng phiếu)'},
+  {code:'KHONG_CO_NHU_CAU', label:'Không có nhu cầu',     behavior:'CLOSE_NO_SALE', resolution:'NO_SALE', src:'CI: test 06/11 (đóng phiếu, NO_SALE)'},
+  {code:'KHONG_NGHE_MAY',   label:'Không nghe máy lần 1', behavior:'RETRY',         resolution:'',        src:'CI: test 06/11 (giữ Đang xử lý)'},
+  {code:'KHONG_LIEN_LAC_DUOC', label:'Không nghe máy',    behavior:'CLOSE_NO_SALE', resolution:'NO_SALE', src:'CI: test 06/11 (mã KHONG_LIEN_LAC_DUOC, đóng phiếu, NO_SALE)'},
+  {code:'KH_CAN_NHAC_THEM', label:'KH cân nhắc thêm',     behavior:'CLOSE_NO_SALE', resolution:'NO_SALE', src:'CI: test 06/11 (ĐÓNG phiếu, NO_SALE)'},
+  {code:'VOUCHER_HET_HAN',  label:'Voucher hết hạn',      behavior:'CLOSE_NO_SALE', resolution:'NO_SALE', src:'CI: test 06/11 (đóng phiếu, NO_SALE)'}
+];
+const ALLOWED = { // disposition_policy.allowed_codes. Voucher: đúng 6 mục thấy trên CI. 2 công việc mới: GIẢ ĐỊNH
+  'PHARMA-NHAC_VOUCHER':        ['DA_CHOT_DON','KHONG_CO_NHU_CAU','KHONG_NGHE_MAY','KHONG_LIEN_LAC_DUOC','KH_CAN_NHAC_THEM','VOUCHER_HET_HAN'],
+  'PHARMA-NHAC_THUOC_MAN_TINH': ['DA_CHOT_DON','KHONG_CO_NHU_CAU','KHONG_NGHE_MAY','KHONG_LIEN_LAC_DUOC','KH_CAN_NHAC_THEM'],
+  'PHARMA-NHAC_CTKM':           ['DA_CHOT_DON','KHONG_CO_NHU_CAU','KHONG_NGHE_MAY','KHONG_LIEN_LAC_DUOC','KH_CAN_NHAC_THEM']
+};
+const SCRIPTS = { // "Kịch bản gợi ý" trong widget tổng đài (thấy trên CI cho voucher)
+  'PHARMA-NHAC_VOUCHER': "Em kiểm tra hệ thống thấy mình đang có Voucher [---] có hạn dùng đến ngày [---].\nĐể không bỏ lỡ ưu đãi, em mời Anh/Chị truy cập vào 'Ví Voucher' trên app Long Châu để đặt hàng và sử dụng sớm ạ."
+};
+const nowIso = () => new Date().toISOString();
+const byId = id => TICKETS.find(x=>x.id===id);
+
+/* ---------- Toast (giống notification góc phải của CI) ---------- */
+function toast(type, msg){
+  const box = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast '+type;
+  el.innerHTML = `<span class="ti">${type==='success'?'✓':type==='error'?'!':'i'}</span><span style="flex:1">${msg}</span><span style="cursor:pointer" onclick="this.parentNode.remove()">✕</span>`;
+  box.appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(),300); }, 3000);
+}
+
+/* ---------- Vẽ lại sau mỗi thao tác ---------- */
+function refresh(){
+  render();
+  if(!vDetail.classList.contains('hidden') && CUR){
+    const keepTab = [...rTabs.children].findIndex(b=>b.classList.contains('on'));
+    const y = window.scrollY; go(CUR.id);
+    if(keepTab>0 && rTabs.children[keepTab]) rTabs.children[keepTab].click();
+    window.scrollTo(0,y);
+  }
+}
+function logAssign(t, by, to, action){
+  t._asg = t._asg || (t.assignedAt ? [{at:t.assignedAt, by:t.assignedBy, to:t.assignedAgentName}] : []);
+  t._asg.unshift({at:nowIso(), by, to, action});
+}
+/* CI: sau mỗi thao tác chờ backend cập nhật (poll chi tiết mỗi 3s, tối đa 30s). Khung giả lập 0,6s. */
+function withBusy(id, fn){
+  BUSY.add(id); refresh();
+  setTimeout(()=>{ BUSY.delete(id); fn(); refresh(); }, 600);
+}
+
+/* ---------- Nhận ---------- */
+function doClaim(t){
+  if(BUSY.has(t.id)) return;
+  withBusy(t.id, ()=>{
+    logAssign(t, ME.name, ME.name, 'CLAIM'); // ghi trước khi đổi để giữ dòng lịch sử cũ
+    t.status='ASSIGNED'; t.assignedAgentId=ME.id; t.assignedAgentName=ME.name;
+    t.assignedBy=ME.name; t.assignedAt=nowIso(); t.updatedAt=nowIso(); t.version=(t.version||1)+1;
+    toast('success','Nhận ticket thành công');
+  });
+}
+
+/* ---------- Phân công / Phân công lại ---------- */
+let ASG = {t:null, mode:'assign', pick:null};
+function openAssign(t, mode){
+  ASG = {t, mode, pick:null};
+  mAsgTitle.textContent = 'Chọn Nhân viên đảm trách';
+  mAsgCur.innerHTML = mode==='reassign' && t.assignedAgentName ? `Đang phụ trách: <strong>${t.assignedAgentName}</strong>` : '';
+  mAsgQ.value=''; paintAsg(); mAsgOk.disabled=true;
+  mAsg.classList.remove('hidden'); mAsgQ.focus();
+}
+function paintAsg(){
+  const k=mAsgQ.value.trim().toLowerCase();
+  const list=AGENTS.filter(a=>!k||a.name.toLowerCase().includes(k)||a.id.includes(k));
+  mAsgList.innerHTML = `<div class="asg-row asg-hd"><span>Mã</span><span>Nhân viên</span><span>Chọn</span></div>` + (list.length ? list.map(a=>`<label class="asg-row ${ASG.pick&&ASG.pick.id===a.id?'on':''}"><span class="asg-c">${a.id}</span><span class="asg-n">${a.name.replace(/^\d+ - /,'')}</span><input type="radio" name="asg" value="${a.id}" ${ASG.pick&&ASG.pick.id===a.id?'checked':''}></label>`).join('')
+    : '<div class="ms-empty">Không tìm thấy nhân viên</div>');
+}
+function confirmAssign(){
+  const {t, mode, pick} = ASG; if(!t||!pick) return;
+  if(t.status==='CLOSED'){ toast('error', mode==='reassign'?'Yêu cầu đã đóng, không thể phân công lại':'Yêu cầu đã đóng, không thể phân công'); return; }
+  if(CALL.state!=='IDLE' && CALL.ticketId===t.id){ toast('error','Yêu cầu đang có cuộc gọi ra. Vui lòng thử lại sau'); return; }
+  mAsg.classList.add('hidden');
+  withBusy(t.id, ()=>{
+    logAssign(t, ME.name, pick.name, 'MANUAL');
+    if(mode==='assign') t.status='ASSIGNED';
+    t.assignedAgentId=pick.id; t.assignedAgentName=pick.name; t.assignedBy=ME.name; t.assignedAt=nowIso();
+    t.updatedAt=nowIso(); t.version=(t.version||1)+1;
+    toast('success', mode==='reassign'?'Phân công lại thành công':'Phân công thành công');
+  });
+}
+
+/* ---------- Gọi: widget tổng đài (dựng theo CI test 06/11) ----------
+   CI: bấm Gọi ở list → mở Detail của phiếu, widget tổng đài hiện trên đầu trang.
+   Widget: "Tổng đài" · trạng thái · SĐT · đồng hồ · Hủy gọi | Kịch bản gợi ý | Kết quả (chip) | Ghi chú cuộc gọi | Lưu.
+   Hủy gọi → "Đã kết thúc - Kết thúc cuộc gọi", nút đổi thành Đóng. Lưu → ghi kết quả qua tổng đài (resolutionSource = DISPOSITION).
+   Trong lúc widget mở: nút Gọi, Xử lý ở header bị khoá. */
+function doCall(t, useDid){
+  if(CALL.state!=='IDLE') return;
+  const at = {id:'att-'+Date.now(), status:'DIALING', startedAt:nowIso(), agentName:ME.name, did:!!useDid};
+  (ATTEMPTS[t.id] = ATTEMPTS[t.id]||[]).push(at);
+  t.attemptCount=(t.attemptCount||0)+1; t.currentAttemptId=at.id;
+  if(t.status==='ASSIGNED') t.status='IN_PROGRESS'; // CI test 06/11: sau cuộc gọi phiếu ở Đang xử lý
+  t.updatedAt=nowIso();
+  Object.assign(CALL,{state:'DIALING', ticketId:t.id, attempt:at, t0:Date.now(), pick:null});
+  clearInterval(CALL.timer); CALL.timer=setInterval(paintCall,1000);
+  tbOnCall(t); /*TOBE-HOOK*/
+  go(t.id); paintCall(); render();
+}
+function callAnswer(){ if(CALL.state==='DIALING'){ CALL.state='TALKING'; paintCall(); } }
+function callHangup(){ // Hủy gọi
+  if(CALL.state!=='DIALING' && CALL.state!=='TALKING') return;
+  const a=CALL.attempt; a.status='ENDED'; a.endedAt=nowIso();
+  a.talkDurationSec = Math.round((Date.now()-CALL.t0)/1000); a.callResult='HANDLED';
+  clearInterval(CALL.timer); CALL.state='ENDED'; paintCall(); refresh();
+}
+function callFail(){ // makeCall lỗi sau khi đã tạo attempt → attempt nằm lại ở DIALING
+  if(CALL.state!=='DIALING') return;
+  clearInterval(CALL.timer); toast('error','Không thể thực hiện cuộc gọi');
+  Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh();
+}
+function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh(); }
+function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
+  const t=byId(CALL.ticketId); if(!t) return;
+  const d=DISP_CATALOG.find(x=>x.code===CALL.pick);
+  if(!d){ toast('error','Vui lòng chọn kết quả'); return; } // [chưa kiểm] câu báo lỗi của widget
+  const note=document.getElementById('cwNote').value.trim();
+  if(CALL.state==='DIALING'||CALL.state==='TALKING') callHangup();
+  const a=CALL.attempt; Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
+  Object.assign(t,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(t.version||1)+1});
+  if(d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.resolution=d.resolution; t.closedAt=nowIso(); }
+  tbOnResult(t); /*TOBE-HOOK*/
+  callClose();
+}
+function paintCall(){
+  const t = CALL.ticketId && byId(CALL.ticketId);
+  if(CALL.state==='IDLE' || !t){ callBox.classList.add('hidden'); callBox.innerHTML=''; return; }
+  callBox.classList.remove('hidden');
+  const ref = CALL.state==='ENDED' ? CALL.attempt.talkDurationSec : Math.round((Date.now()-CALL.t0)/1000);
+  const mm = String(Math.floor(ref/60)).padStart(2,'0')+':'+String(ref%60).padStart(2,'0');
+  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED:'⛔ Đã kết thúc - Kết thúc cuộc gọi'}[CALL.state];
+  const codes = ALLOWED[t.businessFlowId]||[];
+  const keepNote = document.getElementById('cwNote')?.value || '';
+  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><span class="cw-ph">☎ ${t.phone}</span><span>${mm}</span>
+      ${CALL.state==='DIALING'?'<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>':''}
+      <button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':'Hủy gọi'}</button></div>
+    <div class="cw-body"><div><div class="cw-h">📋 KỊCH BẢN GỢI Ý</div><div class="cw-script">${(SCRIPTS[t.businessFlowId]||'Chưa có kịch bản cho công việc này.').replace(/\n/g,'<br>')}</div></div>
+      <div><div class="cw-h">✅ KẾT QUẢ</div><div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';paintCall()">${d.label}</button>`}).join('')}</div>
+      <div class="cw-h" style="margin-top:10px">✍ GHI CHÚ CUỘC GỌI</div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách...">${keepNote}</textarea>
+      <button class="btn pri cw-save" onclick="callSave()">Lưu</button></div></div>`;
+}
+
+/* ---------- Xử lý ---------- */
+let RES = {t:null};
+function openResolve(t, fromDetail){
+  RES = {t};
+  const shown = fromDetail ? t.id : t.id.slice(0,4)+'****'+t.id.slice(-4); // CI test 06/11: từ danh sách che mã, từ Detail hiện đủ
+  mResTicket.innerHTML = `Ticket: <strong>${shown}</strong> — ${t.customerName||'—'}`;
+  const codes = ALLOWED[t.businessFlowId]||[];
+  mResDispWrap.classList.toggle('hidden', !codes.length);
+  mResDisp.innerHTML = `<option value="">Chọn kết quả xử lý</option>`+codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<option value="${c}" title="${d.src}">${d.label}</option>`}).join('');
+  mResErr.textContent=''; mResDisp.classList.remove('err'); mResNote.value=''; mResCount.textContent='0 / 500';
+  mRes.classList.remove('hidden');
+}
+function confirmResolve(){
+  const t=RES.t; if(!t) return;
+  const codes = ALLOWED[t.businessFlowId]||[], code=mResDisp.value;
+  if(codes.length && !code){ mResErr.textContent='Vui lòng chọn kết quả xử lý'; mResDisp.classList.add('err'); return; }
+  const d = DISP_CATALOG.find(x=>x.code===code), note=mResNote.value.trim();
+  mRes.classList.add('hidden');
+  withBusy(t.id, ()=>{
+    t.dispositionCode = d ? d.label : t.dispositionCode; // khung lọc theo nhãn
+    t.dispositionLabel = d ? d.label : t.dispositionLabel;
+    t.resolution = d ? d.resolution : ''; t.resolutionSource='AGENT';
+    t.closeNote = note; // CI: popup ghi closeNote; ô "Ghi chú" ở Detail vẫn hiện resolutionNote (ghi chú từ widget) → lệch, đã báo QC
+    if(!d || d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.closedAt=nowIso(); }
+    t.updatedAt=nowIso(); t.version=(t.version||1)+1;
+    const last=(ATTEMPTS[t.id]||[]).slice(-1)[0];
+    if(last && !last.dispositionCode && d){ last.dispositionCode=d.code; last.dispositionLabel=d.label; last.dispositionBehavior=d.behavior; }
+    tbOnResult(t); /*TOBE-HOOK*/
+    toast('success','Xử lý ticket thành công');
+  });
+}
+
+/* ---------- Bắt click cho mọi nút có data-act (list + detail) ---------- */
+function showDD(el,t){ // CI: menu của nút Gọi chỉ có 1 mục "Gọi số cố định"
+  const r=el.getBoundingClientRect();
+  ddMenu.innerHTML=`<button data-act="calldid" data-id="${t.id}">Gọi số cố định</button>`;
+  ddMenu.style.top=(r.bottom+window.scrollY+4)+'px'; ddMenu.style.left=Math.max(8,r.right+window.scrollX-150)+'px';
+  ddMenu.classList.remove('hidden');
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#ddMenu') && !e.target.closest('[data-act="calldd"]')) ddMenu.classList.add('hidden');
+  const el = e.target.closest('[data-act]'); if(!el) return;
+  const btn = el.closest('.btn'); if(btn && (btn.disabled || btn.classList.contains('is-dis'))) return;
+  const t = byId(el.dataset.id); if(!t) return;
+  e.stopPropagation();
+  ({claim:()=>doClaim(t), assign:()=>openAssign(t,'assign'), reassign:()=>openAssign(t,'reassign'),
+    call:()=>doCall(t,false), calldd:()=>showDD(el,t), calldid:()=>{ddMenu.classList.add('hidden');doCall(t,true);}, resolve:()=>openResolve(t, !!el.closest('#vDetail'))})[el.dataset.act]?.();
+});
+mAsgQ.addEventListener('input', paintAsg);
+mAsgList.addEventListener('change', e=>{ ASG.pick = AGENTS.find(a=>a.id===e.target.value); mAsgOk.disabled=!ASG.pick; paintAsg(); });
+mResNote.addEventListener('input', ()=>{ mResCount.textContent = mResNote.value.length+' / 500'; });
+mResDisp.addEventListener('change', ()=>{ if(mResDisp.value){ mResErr.textContent=''; mResDisp.classList.remove('err'); } });
+
+DISP_CATALOG.forEach(d=>{ if(!DISPOSITIONS.some(x=>x.label===d.label)) DISPOSITIONS.push({code:d.label,label:d.label}); });
+
+/* ---------- NHẬN PHIẾU TỰ ĐỘNG: bật → popup chọn công việc ---------- */
+const AUTO_FLOWS = [ // công việc cho agent chọn; CI hiện chỉ có Nhắc Voucher gia đình
+  {id:'PHARMA-NHAC_VOUCHER', name:'Nhắc Voucher gia đình'},
+  {id:'PHARMA-NHAC_THUOC_MAN_TINH', name:'Nhắc mua thuốc mãn tính', mock:true},
+  {id:'PHARMA-NHAC_CTKM', name:'Nhắc CTKM', mock:true}
+];
+const auto = {on:false, flows:[]};
+function autoToggle(){
+  if(auto.on){ auto.on=false; auto.flows=[]; state.page=1; autoPaint(); toast('success','Đã tắt nhận phiếu tự động'); return; }
+  autoErr.textContent='';
+  autoList.innerHTML = AUTO_FLOWS.map(f=>`<label><input type="checkbox" value="${f.id}"> ${f.name}${f.mock?' <span class="note">(chưa có trên CI)</span>':''}</label>`).join('');
+  autoModal.classList.remove('hidden');
+}
+function autoConfirm(){
+  const sel=[...autoList.querySelectorAll('input:checked')].map(i=>i.value);
+  if(!sel.length){ autoErr.textContent='Vui lòng chọn ít nhất 1 loại công việc'; return; }
+  auto.on=true; auto.flows=sel; state.page=1; autoModal.classList.add('hidden'); autoPaint(); toast('success','Đã bật nhận phiếu tự động');
+}
+function autoPaint(){
+  autoSw.classList.toggle('on', auto.on);
+  autoChips.innerHTML = ''; // CI không hiện tên công việc cạnh nút; xem lại bằng cách tắt/bật
+  render(); // nút Nhận bị khoá theo công việc đang nhận tự động
+}
+
+/* ---------- INIT FILTERS ---------- */
+/* Multi-select kiểu Ant Design (mode="multiple"): tag + dropdown checkbox */
+const MS = {};
+function multiSelect(id, opts, {search=false, init=[]}={}){
+  const el=document.getElementById(id), m=MS[id]={val:[...init], opts};
+  el.innerHTML=`<div class="ms-box" tabindex="0"><span class="ms-tags"></span><span class="ms-ph">Tất cả</span>
+      <span class="ms-ar">⌄</span><span class="ms-clr" title="Xoá chọn">✕</span></div>
+    <div class="ms-dd hidden">${search?'<input class="ms-q" placeholder="Tìm…">':''}<div class="ms-list"></div></div>`;
+  const box=el.querySelector('.ms-box'), dd=el.querySelector('.ms-dd'), tagsEl=el.querySelector('.ms-tags'), list=el.querySelector('.ms-list'), q=el.querySelector('.ms-q');
+  const lab=v=>opts.find(o=>o.v===v).l;
+  const tag=v=>`<span class="ms-tag" title="${lab(v)}"><b>${lab(v)}</b><i data-x="${v}">×</i></span>`;
+  const paintTags=()=>{ // maxTagCount "responsive": hiện tối đa số tag vừa ô, còn lại gom "+n"
+    box.classList.toggle('has', m.val.length>0);
+    let n=m.val.length;
+    tagsEl.classList.add('measure'); // đo khi tag không co lại
+    tagsEl.innerHTML=m.val.map(tag).join('');
+    while(n>1 && tagsEl.scrollWidth>tagsEl.clientWidth){ n--; tagsEl.innerHTML=m.val.slice(0,n).map(tag).join('')+`<span class="ms-tag ms-more" title="${m.val.slice(n).map(lab).join(', ')}">+${m.val.length-n}</span>`; }
+    tagsEl.classList.remove('measure'); // còn 1 tag thì cho cắt "…"
+  };
+  const paintList=()=>{
+    const k=(q?.value||'').trim().toLowerCase();
+    const shown=opts.filter(o=>!k||o.l.toLowerCase().includes(k));
+    list.innerHTML=shown.map(o=>`<label class="${m.val.includes(o.v)?'on':''}"><input type="checkbox" value="${o.v}" ${m.val.includes(o.v)?'checked':''}><span>${o.l}</span></label>`).join('')
+      || '<div class="ms-empty">Không có dữ liệu</div>';
+  };
+  const changed=()=>{ paintTags(); paintList(); }; // CI: chưa lọc, chờ bấm Tìm kiếm
+  m.repaint=()=>{ paintTags(); paintList(); };
+  box.addEventListener('click',e=>{
+    if(e.target.dataset.x){ m.val=m.val.filter(v=>v!==e.target.dataset.x); changed(); e.stopPropagation(); return; }
+    if(e.target.classList.contains('ms-clr')){ m.val=[]; changed(); e.stopPropagation(); return; }
+    document.querySelectorAll('.ms-dd').forEach(d=>{ if(d!==dd) d.classList.add('hidden'); });
+    dd.classList.toggle('hidden');
+    if(!dd.classList.contains('hidden')){ if(q){ q.value=''; q.focus(); } paintList(); }
+  });
+  list.addEventListener('change',e=>{ const v=e.target.value; m.val=e.target.checked?[...m.val,v]:m.val.filter(x=>x!==v); changed(); });
+  q?.addEventListener('input',paintList);
+  window.addEventListener('resize',paintTags);
+  paintTags(); paintList();
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.ms')) document.querySelectorAll('.ms-dd').forEach(d=>d.classList.add('hidden')); });
+multiSelect('fAgent', AGENTS.map(a=>({v:a.id,l:a.name})), {search:true});
+multiSelect('fSt', Object.entries(STATUS).map(([k,v])=>({v:k,l:v})));
+multiSelect('fFlow', FLOWS.map(f=>({v:f.id,l:f.name})), {init:['PHARMA-NHAC_VOUCHER']}); // CI: mặc định <tenant>-NHAC_VOUCHER (viết cứng)
+multiSelect('fDisp', DISPOSITIONS.map(d=>({v:d.code,l:d.label})));
+fQ.addEventListener('keydown',e=>{ if(e.key==='Enter') applyFilters(); });
+
+/* Ngày tạo mặc định: 30 ngày gần nhất (CI: hôm nay − 29 ngày → hôm nay). Khung chỉ hiển thị, data mockup đều nằm trong khoảng này. */
+/* Ngày tạo (CI): mặc định hôm nay − 29 ngày → hôm nay; không chọn ngày sau hôm nay; khoảng tối đa 30 ngày. */
+function iso(d){ const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+function defaultDates(){ const t=new Date(), a=new Date(t); a.setDate(t.getDate()-29); fFrom.value=iso(a); fTo.value=iso(t); }
+fFrom.max=fTo.max=iso(new Date()); defaultDates();
+/* Ô Nhân viên chỉ hiện với quản lý; bật "Việc cần xử lý" thì khoá ô Nhân viên và Trạng thái (CI: viewMode=mine) */
+function syncFilters(){
+  const mine=document.getElementById('fMine').classList.contains('on');
+  fAgentWrap.classList.toggle('hidden', !SIM.isManager);
+  if(!SIM.isManager) MS.fAgent.val=[];
+  ['fAgent','fSt'].forEach(id=>document.getElementById(id).classList.toggle('ms-dis', mine));
+}
+syncFilters();
+APPLIED = readForm();
+meName.textContent=ME.name;
+render();
+tbInit(); /*TOBE-HOOK*/
+</script>
+</body>
+</html>
