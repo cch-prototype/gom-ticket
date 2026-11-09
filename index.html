@@ -84,6 +84,7 @@ td.act:empty::before{content:"—";font-size:13px;line-height:24px;color:#c0c4cc
 .pager{display:flex;align-items:center;gap:8px;padding:10px 14px}
 .pager .pg{min-width:26px;height:26px;border:1px solid transparent;border-radius:4px;background:none}
 .pager .pg.on{border-color:var(--primary);color:var(--primary)}
+.pager .pg:disabled{opacity:.35;cursor:not-allowed} /* Hưng 09/11: hết trang thì mũi tên mờ, không bấm được */
 /* Detail */
 .dbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .dbar .sp{flex:1}
@@ -337,7 +338,6 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
     </div>
     <div class="pager" id="pager"></div>
   </div>
-  <div class="note">15 cột, độ rộng và cột cố định lấy theo CI v8.6.31. Thêm cột mockup: khai báo trong mảng COLUMNS.</div>
   <div id="tbPend" class="card tb-pend hidden"></div><!--TOBE-HOOK-->
 </section>
 
@@ -2227,9 +2227,9 @@ function renderToBe(){
   tbody.innerHTML = view.map((g,gi)=>g.tickets.map((t,i)=>tbRow(g,t,i,gi)).join('')).join('')
     || `<tr><td colspan="${cs.length}" style="padding:0"><div style="position:sticky;left:0;width:${document.querySelector('.tablewrap').clientWidth}px;text-align:center;color:var(--muted);padding:40px 0">Không có dữ liệu</div></td></tr>`;
   pager.innerHTML = `<span>Tổng ${snap.total} ticket</span>
-    <button class="pg" onclick="state.page=Math.max(1,state.page-1);render()">‹</button>
+    <button class="pg" ${state.page<=1?'disabled':''} onclick="state.page=Math.max(1,state.page-1);render()">‹</button>
     ${Array.from({length:pages.length},(_,i)=>`<button class="pg ${i+1===state.page?'on':''}" onclick="state.page=${i+1};render()">${i+1}</button>`).join('')}
-    <button class="pg" onclick="state.page=Math.min(${pages.length},state.page+1);render()">›</button>
+    <button class="pg" ${state.page>=pages.length?'disabled':''} onclick="state.page=Math.min(${pages.length},state.page+1);render()">›</button>
     <select onchange="state.size=+this.value;state.page=1;render()">${[10,20,50].map(n=>`<option ${n===state.size?'selected':''} value="${n}">${n} / trang</option>`).join('')}</select>`;
 }
 function tbInvalidate(){ TB.snap = null; }
@@ -2518,9 +2518,9 @@ function render(){
   tbody.innerHTML = view.map(t=>`<tr>${COLUMNS.map(c=>`<td class="${c.cls||''}${fixCls(c)}"${fixAttr(c)}>${c.r(t)}</td>`).join('')}</tr>`).join('')
     || `<tr><td colspan="${COLUMNS.length}" style="padding:0"><div style="position:sticky;left:0;width:${document.querySelector('.tablewrap').clientWidth}px;text-align:center;color:var(--muted);padding:40px 0">Không có dữ liệu</div></td></tr>`;
   pager.innerHTML = `<span>Tổng ${rows.length} ticket</span>
-    <button class="pg" onclick="state.page=Math.max(1,state.page-1);render()">‹</button>
+    <button class="pg" ${state.page<=1?'disabled':''} onclick="state.page=Math.max(1,state.page-1);render()">‹</button>
     ${Array.from({length:pages},(_,i)=>`<button class="pg ${i+1===state.page?'on':''}" onclick="state.page=${i+1};render()">${i+1}</button>`).join('')}
-    <button class="pg" onclick="state.page=Math.min(${pages},state.page+1);render()">›</button>
+    <button class="pg" ${state.page>=pages?'disabled':''} onclick="state.page=Math.min(${pages},state.page+1);render()">›</button>
     <select onchange="state.size=+this.value;state.page=1;render()">${[10,20,50].map(n=>`<option ${n===state.size?'selected':''} value="${n}">${n} / trang</option>`).join('')}</select>`;
 }
 
