@@ -2341,7 +2341,11 @@ function tbPaintGroup(t){
   TB.inGroupTable = false;
   g.innerHTML = head + table;
 }
-function tbToggleGroup(){ TB.gCollapsed = !TB.gCollapsed; const t = TB.curId && byId(TB.curId); if(t) tbPaintGroup(t); }
+function tbToggleGroup(){
+  TB.gCollapsed = !TB.gCollapsed; const t = TB.curId && byId(TB.curId); if(!t) return;
+  tbPaintGroup(t);
+  const h = document.querySelector('#tbGroup .tb-gh'); if(h) h.focus(); // vẽ lại làm mất focus, trả về để bấm phím tiếp được
+}
 function tbDetail(t){
   const g = document.getElementById('tbGroup'), b = document.getElementById('tbBanner');
   if(MODE!=='tobe'){ g.classList.add('hidden'); b.classList.add('hidden'); return; }
