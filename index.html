@@ -83,6 +83,11 @@ td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .tablewrap td.nd .it:first-child{padding-top:13px}
 .tablewrap td.nd .it:last-child{padding-bottom:13px}
 .tablewrap td.nd .it.nd-txt{padding-top:14px;padding-bottom:14px}
+/* Nút Thao tác thoáng như CI (Hưng 09/11; đo CI: tâm Gọi đến Xử lý khoảng 91px, Xử lý đến Phân công lại khoảng 90px; mockup cũ 69px và 74px). Giữ cỡ chữ và chiều cao nút. */
+.tablewrap td.act .btn{padding-left:14px;padding-right:14px;margin-right:10px}
+.tablewrap td.act .btn:last-child{margin-right:0}
+.tablewrap td.act .btn.split{padding:0}
+.tablewrap td.act .btn.split span{padding:0 14px}.tablewrap td.act .btn.split em{padding:0 10px}
 .tablewrap td{padding-left:8px;padding-right:8px;vertical-align:top;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid #dfe3ea}
 .tablewrap .fl,.tablewrap .fr{position:sticky;z-index:1;background:#fff}
 .tablewrap th.fl,.tablewrap th.fr{z-index:3;background:#eef3fb}
@@ -252,7 +257,7 @@ td.nd{padding:0;white-space:normal}
 td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-callg{font-size:0}
 .tb-callg .btn{font-size:12px;height:24px;line-height:22px;padding:0;vertical-align:top}
-.tb-callg .btn.split span,.tb-callg .btn.split em{padding:0 9px;line-height:22px}.tb-callg .btn.split em{padding:0 6px}
+.tb-callg .btn.split span,.tb-callg .btn.split em{line-height:22px}.tb-callg .btn.split span{padding:0 14px}.tb-callg .btn.split em{padding:0 10px}
 .tb-calln{font-size:12px;line-height:16px;color:var(--muted);margin-top:2px}
 .tb-on .tablewrap tbody tr:first-child td{border-top:none}
 .tb-on .tablewrap tbody tr:hover td{background:#eaf1ff}
