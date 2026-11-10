@@ -2341,12 +2341,12 @@ function tbRow(g,t,i,gi){
     const at = `class="${c.cls||''}${tbFixCls(c,cs)}"${fixAttr(c)}`;
     if(c.k==='callg'){ // Gọi: ô gộp theo nhóm từ 2 dòng, còn lại gộp theo số dòng nội dung của ticket
       const grouped = !g.key.startsWith('solo|') && g.tickets.length>=2;
-      if(grouped) return i>0 ? '' : `<td ${at}${rs(gN)}>${tbCallBtn(g)}</td>`;
+      if(grouped) return i>0 ? '' : `<td ${at} rowspan="${gN}">${tbCallBtn(g)}</td>`;
       return `<td ${at}${rs(n)}>${tbCallBtn({key:g.key, tickets:[t]})}</td>`;
     }
     if(ci===1 || ci===2){ // Khách hàng, SĐT: ô gộp theo cả nhóm (tổng số dòng nội dung), chỉ vẽ ở dòng đầu của nhóm
       if(i>0) return '';
-      return `<td ${at}${rs(gN)}>${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
+      return `<td ${at} rowspan="${gN}">${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
     }
     let h;
     if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?'<span class="tb-newtag">Vừa giao</span>':''}`;
