@@ -151,7 +151,8 @@ td.act:empty::before{content:"—";font-size:14px;line-height:24px;color:#c0c4cc
 .flow-b{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd}
 .flow-g{background:var(--green-50);color:var(--green);border-color:#a7e3c9}
 td.nd{padding:0;white-space:normal}
-.it.nd-txt{display:block;white-space:pre-line;line-height:18px;padding-top:7px;padding-bottom:7px} /* Nội dung là một chuỗi (Hưng 09/11) */
+.it.nd-txt{display:block;white-space:pre;overflow:hidden;text-overflow:ellipsis;line-height:18px;padding-top:7px;padding-bottom:7px} /* Nội dung là một chuỗi do CDE gửi; chỉ xuống dòng tại \n, dài quá cột thì cắt ba chấm, tooltip hiện đủ (Hưng 10/11) */
+#dItems .it.nd-txt{white-space:pre-wrap;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 .it{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px;padding:6px 8px;min-height:32px;border-bottom:1px dashed #e9ecf1;font-size:12px;line-height:20px}
 .it:last-child{border-bottom:none}
 .it-n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1431,7 +1432,7 @@ const flowOf = t => FLOWS.find(f=>f.id===t.businessFlowId)||{cls:'flow'};
 function content(t){ // render Nội dung theo config của công việc
   const items=(t.businessData||{}).items;
   // Hưng 09/11 (decisions D-24): API createTickets nhận description là một chuỗi; hiển thị nguyên văn, không tách cột ngày
-  if(!items||!items.length){ const d=String(t.description||'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); return `<div class="it nd-txt">${d}</div>`; }
+  if(!items||!items.length){ const d=String(t.description||'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); return `<div class="it nd-txt" title="${d}">${d}</div>`; }
   return items.map(i=>`<div class="it"><span class="it-n" title="${i.name}">${i.name}</span><span class="it-d">${flowOf(t).itemDateLabel}: ${i.date}</span></div>`).join('');
 }
 const vn = iso => { if(!iso) return '—'; const d=new Date(new Date(iso).getTime()+7*3600e3); const p=n=>String(n).padStart(2,'0'); return `${p(d.getUTCDate())}/${p(d.getUTCMonth()+1)}/${d.getUTCFullYear()}`; };
@@ -1476,7 +1477,7 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
-  {id:'ctkm_content', kind:'chot', txt:'Nội dung ticket Nhắc CTKM là danh sách sản phẩm khách đã mua kèm Ngày mua hàng, như Nhắc mua thuốc mãn tính. Chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng chốt 09/11 theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026). Khác bản đề xuất ở US-03. BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27.'},
+  {id:'ctkm_content', kind:'chot', txt:'Cột Nội dung của mọi ticket là MỘT chuỗi do CDE gửi (mặc định ticket chiếm một dòng). Khi CDE thêm \\n vào chuỗi thì UI ngắt dòng đúng chỗ đó. Chuỗi dài hơn bề rộng cột bị cắt bằng ba chấm, rê chuột để xem đủ. Ticket Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, như Nhắc mua thuốc mãn tính. Chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11 (quyết định D-24: description là một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Chỗ ngắt dòng \\n ở vài ticket mẫu chỉ để minh hoạ.'},
   {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
   {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
   {id:'norm',       kind:'dev', txt:'Chuẩn hoá SĐT bằng cột riêng kèm backfill ticket cũ: bỏ khoảng trắng, dấu chấm, dấu gạch; đầu số +84 hoặc 84 đổi thành 0. Sau chuẩn hoá không phải 10 số bắt đầu bằng 0 thì coi như không có SĐT, hiện row riêng.', src:'US-3 v3 mục 6.2, dev đề xuất. Backend CCH hiện chưa chuẩn hoá khi lưu (RAI 06/11). Khung chuẩn hoá ở FE. SĐT mẫu của mockup BU có 8 số, nên khung đổi sang 10 số khi ở To-Be (xem tbDemoPhone).'},
@@ -2050,14 +2051,6 @@ function tbMoveSim(on){
 /* ---------- Ngày tương đối (Hưng 09/11): dữ liệu dựng quanh mốc 09/11/2026, dời theo ngày mở trang ----------
    Để link mở lúc nào cũng còn trong bộ lọc 30 ngày, và "hôm nay, quá ngày, chưa tới ngày" luôn đúng. Ngày trong chữ của description không dời. */
 const TB_ANCHOR = '2026-11-09';
-/* Hưng 09/11 (decisions D-24): API createTickets nhận description là một chuỗi (Swagger telco-ticket-application 0.2.0).
-   Dữ liệu mẫu dựng sẵn dạng danh sách item; đổi thành một chuỗi "tên - nhãn ngày: dd/mm/yyyy", nối bằng "; ", để mockup không tách dòng khi nguồn không tách. */
-function tbItemsToText(){
-  new Set([...TICKETS, ...TOBE_EXTRA]).forEach(t=>{ const bd=t.businessData||{}, it=bd.items; if(!it||!it.length) return;
-    const lb=(FLOWS.find(f=>f.id===t.businessFlowId)||{}).itemDateLabel;
-    t.description = it.map(i=>i.name+(i.date?' - '+(lb?lb+': ':'')+i.date:'')).join('; ');
-    delete bd.items; });
-}
 function tbShiftDates(){
   const vnToday = new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
   const ms = Math.round((Date.parse(vnToday)-Date.parse(TB_ANCHOR))/864e5)*864e5;
@@ -2065,12 +2058,12 @@ function tbShiftDates(){
   const isoRe=/^\d{4}-\d{2}-\d{2}T/, dmyRe=/^(\d{2})\/(\d{2})\/(\d{4})$/;
   const sh = o => { if(o) Object.keys(o).forEach(k=>{ const v=o[k]; if(typeof v==='string' && isoRe.test(v) && !isNaN(Date.parse(v))) o[k]=new Date(Date.parse(v)+ms).toISOString(); }); };
   const dmy = s => { const m=dmyRe.exec(s); if(!m) return s; const x=new Date(Date.UTC(+m[3],+m[2]-1,+m[1])+ms).toISOString(); return x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4); };
-  new Set([...TICKETS, ...TOBE_EXTRA]).forEach(t=>{ sh(t); ((t.businessData||{}).items||[]).forEach(i=>{ if(i.date) i.date=dmy(i.date); }); });
+  new Set([...TICKETS, ...TOBE_EXTRA]).forEach(t=>{ sh(t); if(t.description) t.description=t.description.replace(/\d{2}\/\d{2}\/\d{4}/g, dmy); });
   Object.values(ATTEMPTS).forEach(a=>a.forEach(sh));
 }
 function tbInit(){
   if(!TOBE_ENABLED) return;
-  tbShiftDates(); tbItemsToText(); render();
+  tbShiftDates(); render();
   tbAutoInstall(); tbDockInstall();
   document.getElementById('tbSw').classList.remove('hidden');
   tbSyncUI();
