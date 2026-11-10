@@ -151,8 +151,13 @@ td.act:empty::before{content:"—";font-size:14px;line-height:24px;color:#c0c4cc
 .flow-b{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd}
 .flow-g{background:var(--green-50);color:var(--green);border-color:#a7e3c9}
 td.nd{padding:0;white-space:normal}
-.it.nd-txt{display:block;white-space:pre;overflow:hidden;text-overflow:ellipsis;line-height:18px;padding-top:7px;padding-bottom:7px} /* Nội dung là một chuỗi do CDE gửi; chỉ xuống dòng tại \n, dài quá cột thì cắt ba chấm, tooltip hiện đủ (Hưng 10/11) */
-#dItems .it.nd-txt{white-space:pre-wrap;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+/* Nội dung nhiều dòng theo mockup BU (Hưng 10/11, đảo lại D-24): mỗi sản phẩm hoặc voucher là một dòng bảng, ngày riêng nằm bên phải */
+.ndl{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:start;box-sizing:border-box;padding:14px 8px;line-height:20px}
+.ndl-n{min-width:0;overflow-wrap:anywhere}
+.ndl-d{font-size:12px;color:var(--muted);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.ndl+.ndl{border-top:1px dashed #e9ecf1}
+.tb-gt .ndl{padding:6px 10px}
+.it.nd-txt{display:block;white-space:pre-line;line-height:18px;padding-top:7px;padding-bottom:7px} /* Nội dung là một chuỗi (Hưng 09/11) */
 .it{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px;padding:6px 8px;min-height:32px;border-bottom:1px dashed #e9ecf1;font-size:12px;line-height:20px}
 .it:last-child{border-bottom:none}
 .it-n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -518,9 +523,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "58-276",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Thị Ngọc Trâm",
 "phone": "00007143",
-"description": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 30/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 28/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "01694",
 "assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
 "assignedBy": "Hệ thống",
@@ -539,9 +560,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "58-275",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Ngọc Bảo Trân",
 "phone": "00004206",
-"description": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 30/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết - HSD: 28/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -561,9 +598,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "58-274",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Phùng Thị Phương Anh",
 "phone": "00004736",
-"description": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 29/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết - HSD: 28/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -583,9 +636,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "58-273",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Trần Linh Chi",
 "phone": "00002284",
-"description": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết - HSD: 29/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 27/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "01039",
 "assignedAgentName": "01039 - Phan Thị Trúc Ly",
 "assignedBy": "Hệ thống",
@@ -605,9 +674,21 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10282",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa",
+"date": "27/10/2026"
+}
+]
+},
 "customerName": "Võ Thị Mỹ Duyên",
 "phone": "00006821",
-"description": "TK Gia Đình - Đảo 1 - Giảm ngay 100,000Đ khi tiêm Sốt Xuất Huyết - HSD: 29/10/2026, TK Gia Đình - Đảo 1 - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 27/10/2026",
+"description": "",
 "assignedAgentId": "45926",
 "assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
 "assignedBy": "Hệ thống",
@@ -626,9 +707,21 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10283",
+"businessData": {
+"items": [
+{
+"name": "PIC INSUPEN ORIGINAL 32GX4MM ĐẦU KIM TIỂU ĐƯỜNG HỘP 100 CÁI",
+"date": "29/09/2026"
+},
+{
+"name": "VIÊN UỐNG HỖ TRỢ ỔN ĐỊNH ĐƯỜNG HUYẾT BLOOD SUGAR CONTROL VITAMINS FOR LIFE 60V",
+"date": "30/09/2026"
+}
+]
+},
 "customerName": "Võ Thị Mỹ Duyên",
 "phone": "00006821",
-"description": "PIC INSUPEN ORIGINAL 32GX4MM ĐẦU KIM TIỂU ĐƯỜNG HỘP 100 CÁI - Ngày mua hàng: 29/09/2026, VIÊN UỐNG HỖ TRỢ ỔN ĐỊNH ĐƯỜNG HUYẾT BLOOD SUGAR CONTROL VITAMINS FOR LIFE 60V - Ngày mua hàng: 30/09/2026",
+"description": "",
 "assignedAgentId": "01694",
 "assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
 "assignedBy": "Hệ thống",
@@ -647,9 +740,21 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10281",
+"businessData": {
+"items": [
+{
+"name": "PIC INSUPEN ORIGINAL 32GX4MM ĐẦU KIM TIỂU ĐƯỜNG HỘP 100 CÁI",
+"date": "01/10/2026"
+},
+{
+"name": "VIÊN UỐNG HỖ TRỢ ỔN ĐỊNH ĐƯỜNG HUYẾT BLOOD SUGAR CONTROL VITAMINS FOR LIFE 60V",
+"date": "02/10/2026"
+}
+]
+},
 "customerName": "Lê Hoàng Minh",
 "phone": "00003817",
-"description": "PIC INSUPEN ORIGINAL 32GX4MM ĐẦU KIM TIỂU ĐƯỜNG HỘP 100 CÁI - Ngày mua hàng: 01/10/2026, VIÊN UỐNG HỖ TRỢ ỔN ĐỊNH ĐƯỜNG HUYẾT BLOOD SUGAR CONTROL VITAMINS FOR LIFE 60V - Ngày mua hàng: 02/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -668,9 +773,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10280",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Thị Thanh Hà",
 "phone": "00009052",
-"description": "METFORMIN STELLA 850MG HỘP 60 VIÊN - Ngày mua hàng: 03/10/2026, ATORVASTATIN 20MG HỘP 30 VIÊN - Ngày mua hàng: 04/10/2026, AMLODIPINE 5MG HỘP 30 VIÊN - Ngày mua hàng: 05/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -690,9 +811,21 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10279",
+"businessData": {
+"items": [
+{
+"name": "JANUVIA 100MG HỘP 28 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "LOSARTAN 50MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+}
+]
+},
 "customerName": "Trần Quốc Bảo",
 "phone": "00006174",
-"description": "JANUVIA 100MG HỘP 28 VIÊN - Ngày mua hàng: 29/09/2026, LOSARTAN 50MG HỘP 30 VIÊN - Ngày mua hàng: 30/09/2026",
+"description": "",
 "assignedAgentId": "01039",
 "assignedAgentName": "01039 - Phan Thị Trúc Ly",
 "assignedBy": "Hệ thống",
@@ -711,9 +844,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10278",
+"businessData": {
+"items": [
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "OMEGA-3 FISH OIL 1000MG HỘP 100 VIÊN",
+"date": "03/10/2026"
+}
+]
+},
 "customerName": "Phạm Thị Ngọc Mai",
 "phone": "00002648",
-"description": "GLICLAZIDE MR 60MG HỘP 30 VIÊN - Ngày mua hàng: 01/10/2026, ROSUVASTATIN 10MG HỘP 30 VIÊN - Ngày mua hàng: 02/10/2026, OMEGA-3 FISH OIL 1000MG HỘP 100 VIÊN - Ngày mua hàng: 03/10/2026",
+"description": "",
 "assignedAgentId": "45926",
 "assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
 "assignedBy": "Hệ thống",
@@ -733,9 +882,21 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10277",
+"businessData": {
+"items": [
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "04/10/2026"
+},
+{
+"name": "KIM TIÊM INSULIN 32G X 4MM HỘP 100 CÁI",
+"date": "05/10/2026"
+}
+]
+},
 "customerName": "Đặng Văn Hùng",
 "phone": "00007431",
-"description": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML - Ngày mua hàng: 04/10/2026, KIM TIÊM INSULIN 32G X 4MM HỘP 100 CÁI - Ngày mua hàng: 05/10/2026",
+"description": "",
 "assignedAgentId": "01694",
 "assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
 "assignedBy": "Hệ thống",
@@ -754,9 +915,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10300",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - Voucher 100.000Đ mua sữa rửa mặt / tẩy trang / chống nắng",
+"date": "27/10/2026"
+}
+]
+},
 "customerName": "Trần Thị Thu Hà",
 "phone": "00001038",
-"description": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 30/10/2026, TK Gia Đình - Đảo 2 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 29/10/2026, TK Gia Đình - Đảo 2 - Voucher 100.000Đ mua sữa rửa mặt / tẩy trang / chống nắng - HSD: 27/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -776,9 +953,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10301",
+"businessData": {
+"items": [
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "30/09/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Hoàng Phúc",
 "phone": "00005821",
-"description": "AMLODIPINE 5MG HỘP 30 VIÊN - Ngày mua hàng: 29/09/2026, INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML - Ngày mua hàng: 30/09/2026, EZETIMIBE 10MG HỘP 30 VIÊN - Ngày mua hàng: 01/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -797,9 +990,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10302",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 5 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 5 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 5 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa",
+"date": "27/10/2026"
+}
+]
+},
 "customerName": "Lê Thị Bích Ngọc",
 "phone": "00007604",
-"description": "TK Gia Đình - Đảo 5 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường - HSD: 30/10/2026, TK Gia Đình - Đảo 5 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ - HSD: 28/10/2026, TK Gia Đình - Đảo 5 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa - HSD: 27/10/2026",
+"description": "",
 "assignedAgentId": "01039",
 "assignedAgentName": "01039 - Phan Thị Trúc Ly",
 "assignedBy": "Hệ thống",
@@ -818,9 +1027,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10303",
+"businessData": {
+"items": [
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "04/10/2026"
+}
+]
+},
 "customerName": "Phạm Minh Quân",
 "phone": "00003196",
-"description": "ROSUVASTATIN 10MG HỘP 30 VIÊN - Ngày mua hàng: 02/10/2026, EZETIMIBE 10MG HỘP 30 VIÊN - Ngày mua hàng: 03/10/2026, LEVOTHYROXINE 50MCG HỘP 100 VIÊN - Ngày mua hàng: 04/10/2026",
+"description": "",
 "assignedAgentId": "45926",
 "assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
 "assignedBy": "Hệ thống",
@@ -839,9 +1064,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10304",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 8 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 8 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 8 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Đặng Thị Kim Oanh",
 "phone": "00002487",
-"description": "TK Gia Đình - Đảo 8 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne - HSD: 30/10/2026, TK Gia Đình - Đảo 8 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện - HSD: 28/10/2026, TK Gia Đình - Đảo 8 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "01694",
 "assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
 "assignedBy": "Hệ thống",
@@ -860,9 +1101,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10305",
+"businessData": {
+"items": [
+{
+"name": "BISOPROLOL 2.5MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+}
+]
+},
 "customerName": "Võ Quốc Khánh",
 "phone": "00006612",
-"description": "BISOPROLOL 2.5MG HỘP 30 VIÊN - Ngày mua hàng: 05/10/2026, LEVOTHYROXINE 50MCG HỘP 100 VIÊN - Ngày mua hàng: 29/09/2026, ATORVASTATIN 20MG HỘP 30 VIÊN - Ngày mua hàng: 30/09/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -881,9 +1138,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10306",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 11 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Thị Mai Anh",
 "phone": "00009075",
-"description": "TK Gia Đình - Đảo 11 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ - HSD: 30/10/2026, TK Gia Đình - Đảo 11 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng - HSD: 28/10/2026, TK Gia Đình - Đảo 11 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -902,9 +1175,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10307",
+"businessData": {
+"items": [
+{
+"name": "PANTOPRAZOLE 40MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+}
+]
+},
 "customerName": "Trương Minh Đức",
 "phone": "00004259",
-"description": "PANTOPRAZOLE 40MG HỘP 30 VIÊN - Ngày mua hàng: 01/10/2026, ATORVASTATIN 20MG HỘP 30 VIÊN - Ngày mua hàng: 02/10/2026, GLICLAZIDE MR 60MG HỘP 30 VIÊN - Ngày mua hàng: 03/10/2026",
+"description": "",
 "assignedAgentId": "01039",
 "assignedAgentName": "01039 - Phan Thị Trúc Ly",
 "assignedBy": "Hệ thống",
@@ -923,9 +1212,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10308",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 14 - Ưu đãi 200.000Đ khi tiêm HPV theo điều kiện chương trình",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 14 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 14 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Bùi Thị Thanh Thảo",
 "phone": "00001146",
-"description": "TK Gia Đình - Đảo 14 - Ưu đãi 200.000Đ khi tiêm HPV theo điều kiện chương trình - HSD: 29/10/2026, TK Gia Đình - Đảo 14 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 28/10/2026, TK Gia Đình - Đảo 14 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "45926",
 "assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
 "assignedBy": "Hệ thống",
@@ -944,9 +1249,25 @@ const TICKETS = [
 "status": "OPEN",
 "version": 1,
 "externalRef": "OB-10309",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "TELMISARTAN 40MG HỘP 30 VIÊN",
+"date": "29/09/2026"
+}
+]
+},
 "customerName": "Đỗ Hoàng Yến",
 "phone": "00008392",
-"description": "METFORMIN STELLA 850MG HỘP 60 VIÊN - Ngày mua hàng: 04/10/2026, GLICLAZIDE MR 60MG HỘP 30 VIÊN - Ngày mua hàng: 05/10/2026, TELMISARTAN 40MG HỘP 30 VIÊN - Ngày mua hàng: 29/09/2026",
+"description": "",
 "assignedAgentId": null,
 "assignedAgentName": null,
 "assignedBy": null,
@@ -965,9 +1286,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10317",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - Giảm ngay 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 2 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Đỗ Hoàng Yến",
 "phone": "00008392",
-"description": "TK Gia Đình - Đảo 2 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 29/10/2026, TK Gia Đình - Đảo 2 - Giảm ngay 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ - HSD: 27/10/2026, TK Gia Đình - Đảo 2 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -986,9 +1323,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10310",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 3 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 3 - Miễn phí 1 hộp khẩu trang 3 lớp",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 3 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "30/10/2026"
+}
+]
+},
 "customerName": "Huỳnh Văn Tài",
 "phone": "00002068",
-"description": "TK Gia Đình - Đảo 3 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG - HSD: 29/10/2026, TK Gia Đình - Đảo 3 - Miễn phí 1 hộp khẩu trang 3 lớp - HSD: 27/10/2026, TK Gia Đình - Đảo 3 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ - HSD: 30/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -1007,9 +1360,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10318",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+}
+]
+},
 "customerName": "Huỳnh Văn Tài",
 "phone": "00002068",
-"description": "METFORMIN STELLA 850MG HỘP 60 VIÊN - Ngày mua hàng: 30/09/2026, ATORVASTATIN 20MG HỘP 30 VIÊN - Ngày mua hàng: 01/10/2026, AMLODIPINE 5MG HỘP 30 VIÊN - Ngày mua hàng: 02/10/2026",
+"description": "",
 "assignedAgentId": "01039",
 "assignedAgentName": "01039 - Phan Thị Trúc Ly",
 "assignedBy": "Hệ thống",
@@ -1028,9 +1397,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10311",
+"businessData": {
+"items": [
+{
+"name": "LOSARTAN 50MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "TELMISARTAN 40MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "PERINDOPRIL 5MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+}
+]
+},
 "customerName": "Phan Ngọc Diệp",
 "phone": "00007710",
-"description": "LOSARTAN 50MG HỘP 30 VIÊN - Ngày mua hàng: 03/10/2026, TELMISARTAN 40MG HỘP 30 VIÊN - Ngày mua hàng: 04/10/2026, PERINDOPRIL 5MG HỘP 30 VIÊN - Ngày mua hàng: 05/10/2026",
+"description": "",
 "assignedAgentId": "45926",
 "assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
 "assignedBy": "Hệ thống",
@@ -1049,9 +1434,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10312",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 6 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Voucher 100.000Đ mua sữa rửa mặt / tẩy trang / chống nắng",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Ưu đãi 200.000Đ khi tiêm HPV theo điều kiện chương trình",
+"date": "30/10/2026"
+}
+]
+},
 "customerName": "Lâm Thị Mỹ Linh",
 "phone": "00003924",
-"description": "TK Gia Đình - Đảo 6 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 29/10/2026, TK Gia Đình - Đảo 6 - Voucher 100.000Đ mua sữa rửa mặt / tẩy trang / chống nắng - HSD: 27/10/2026, TK Gia Đình - Đảo 6 - Ưu đãi 200.000Đ khi tiêm HPV theo điều kiện chương trình - HSD: 30/10/2026",
+"description": "",
 "assignedAgentId": "01694",
 "assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
 "assignedBy": "Hệ thống",
@@ -1071,9 +1472,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10313",
+"businessData": {
+"items": [
+{
+"name": "KIM TIÊM INSULIN 32G X 4MM HỘP 100 CÁI",
+"date": "29/09/2026"
+},
+{
+"name": "PERINDOPRIL 5MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "FENOFIBRATE 145MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+}
+]
+},
 "customerName": "Trần Gia Hân",
 "phone": "00005483",
-"description": "KIM TIÊM INSULIN 32G X 4MM HỘP 100 CÁI - Ngày mua hàng: 29/09/2026, PERINDOPRIL 5MG HỘP 30 VIÊN - Ngày mua hàng: 30/09/2026, FENOFIBRATE 145MG HỘP 30 VIÊN - Ngày mua hàng: 01/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -1092,9 +1509,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10314",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 9 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 9 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 9 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG",
+"date": "30/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Thành Đạt",
 "phone": "00006901",
-"description": "TK Gia Đình - Đảo 9 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ - HSD: 28/10/2026, TK Gia Đình - Đảo 9 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa - HSD: 27/10/2026, TK Gia Đình - Đảo 9 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG - HSD: 30/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -1113,9 +1546,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10315",
+"businessData": {
+"items": [
+{
+"name": "EMPAGLIFLOZIN 10MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "FENOFIBRATE 145MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "JANUVIA 100MG HỘP 28 VIÊN",
+"date": "04/10/2026"
+}
+]
+},
 "customerName": "Phạm Thị Thuý An",
 "phone": "00008327",
-"description": "EMPAGLIFLOZIN 10MG HỘP 30 VIÊN - Ngày mua hàng: 02/10/2026, FENOFIBRATE 145MG HỘP 30 VIÊN - Ngày mua hàng: 03/10/2026, JANUVIA 100MG HỘP 28 VIÊN - Ngày mua hàng: 04/10/2026",
+"description": "",
 "assignedAgentId": "01039",
 "assignedAgentName": "01039 - Phan Thị Trúc Ly",
 "assignedBy": "Hệ thống",
@@ -1134,9 +1583,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10316",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 12 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 12 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 12 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "30/10/2026"
+}
+]
+},
 "customerName": "Đặng Minh Khang",
 "phone": "00004713",
-"description": "TK Gia Đình - Đảo 12 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện - HSD: 28/10/2026, TK Gia Đình - Đảo 12 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 31/10/2026, TK Gia Đình - Đảo 12 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 30/10/2026",
+"description": "",
 "assignedAgentId": "45926",
 "assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
 "assignedBy": "Hệ thống",
@@ -1155,9 +1620,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10317",
+"businessData": {
+"items": [
+{
+"name": "SITAGLIPTIN 50MG HỘP 28 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "JANUVIA 100MG HỘP 28 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "30/09/2026"
+}
+]
+},
 "customerName": "Lê Ngọc Trinh",
 "phone": "00009570",
-"description": "SITAGLIPTIN 50MG HỘP 28 VIÊN - Ngày mua hàng: 05/10/2026, JANUVIA 100MG HỘP 28 VIÊN - Ngày mua hàng: 29/09/2026, INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML - Ngày mua hàng: 30/09/2026",
+"description": "",
 "assignedAgentId": "01694",
 "assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
 "assignedBy": "Hệ thống",
@@ -1176,9 +1657,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10318",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 15 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 15 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 15 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "29/10/2026"
+}
+]
+},
 "customerName": "Mai Quốc Bảo",
 "phone": "00003025",
-"description": "TK Gia Đình - Đảo 15 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng - HSD: 28/10/2026, TK Gia Đình - Đảo 15 - Giảm ngay 200.000Đ khi mua máy đo huyết áp / tiểu đường - HSD: 31/10/2026, TK Gia Đình - Đảo 15 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ - HSD: 29/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -1197,9 +1694,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10319",
+"businessData": {
+"items": [
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML",
+"date": "02/10/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Khánh Vy",
 "phone": "00006149",
-"description": "AMLODIPINE 5MG HỘP 30 VIÊN - Ngày mua hàng: 01/10/2026, INSULIN GLARGINE 100UI/ML BÚT TIÊM 3ML - Ngày mua hàng: 02/10/2026, EZETIMIBE 10MG HỘP 30 VIÊN - Ngày mua hàng: 03/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -1218,9 +1731,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10320",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 4 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 4 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 4 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện",
+"date": "29/10/2026"
+}
+]
+},
 "customerName": "Vũ Thị Hồng Nhung",
 "phone": "00007256",
-"description": "TK Gia Đình - Đảo 4 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 28/10/2026, TK Gia Đình - Đảo 4 - Miễn phí 1 hộp kem đánh răng bảo vệ nướu Sensodyne - HSD: 31/10/2026, TK Gia Đình - Đảo 4 - Tặng bộ quà chăm sóc gia đình cho đơn hàng đạt điều kiện - HSD: 29/10/2026",
+"description": "",
 "assignedAgentId": "01039",
 "assignedAgentName": "01039 - Phan Thị Trúc Ly",
 "assignedBy": "Hệ thống",
@@ -1239,9 +1768,25 @@ const TICKETS = [
 "status": "CLOSED",
 "version": 1,
 "externalRef": "OB-10321",
+"businessData": {
+"items": [
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+},
+{
+"name": "EZETIMIBE 10MG HỘP 30 VIÊN",
+"date": "05/10/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "29/09/2026"
+}
+]
+},
 "customerName": "Trần Minh Tâm",
 "phone": "00004802",
-"description": "ROSUVASTATIN 10MG HỘP 30 VIÊN - Ngày mua hàng: 04/10/2026, EZETIMIBE 10MG HỘP 30 VIÊN - Ngày mua hàng: 05/10/2026, LEVOTHYROXINE 50MCG HỘP 100 VIÊN - Ngày mua hàng: 29/09/2026",
+"description": "",
 "assignedAgentId": "45926",
 "assignedAgentName": "45926 - Nguyễn Thị Hồng Thắm",
 "assignedBy": "Hệ thống",
@@ -1260,9 +1805,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10322",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 7 - Miễn phí 1 hộp khẩu trang 3 lớp",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 7 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "31/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 7 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng",
+"date": "29/10/2026"
+}
+]
+},
 "customerName": "Phạm Ngọc Huyền",
 "phone": "00001668",
-"description": "TK Gia Đình - Đảo 7 - Miễn phí 1 hộp khẩu trang 3 lớp - HSD: 27/10/2026, TK Gia Đình - Đảo 7 - Giảm 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ - HSD: 31/10/2026, TK Gia Đình - Đảo 7 - Miễn phí 1 sản phẩm chăm sóc cá nhân theo danh mục áp dụng - HSD: 29/10/2026",
+"description": "",
 "assignedAgentId": "01694",
 "assignedAgentName": "01694 - Huỳnh Phúc Diễm Hoàng",
 "assignedBy": "Hệ thống",
@@ -1281,9 +1842,25 @@ const TICKETS = [
 "status": "ASSIGNED",
 "version": 1,
 "externalRef": "OB-10323",
+"businessData": {
+"items": [
+{
+"name": "BISOPROLOL 2.5MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "LEVOTHYROXINE 50MCG HỘP 100 VIÊN",
+"date": "01/10/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+}
+]
+},
 "customerName": "Đinh Thị Thuỳ Dung",
 "phone": "00005431",
-"description": "BISOPROLOL 2.5MG HỘP 30 VIÊN - Ngày mua hàng: 30/09/2026, LEVOTHYROXINE 50MCG HỘP 100 VIÊN - Ngày mua hàng: 01/10/2026, ATORVASTATIN 20MG HỘP 30 VIÊN - Ngày mua hàng: 02/10/2026",
+"description": "",
 "assignedAgentId": "02173",
 "assignedAgentName": "02173 - Vũ Lê Như Uyên",
 "assignedBy": "Hệ thống",
@@ -1302,9 +1879,25 @@ const TICKETS = [
 "status": "OPEN",
 "version": 1,
 "externalRef": "OB-10324",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 6 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "29/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Giảm ngay 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ",
+"date": "30/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 6 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Nguyễn Thị Thanh Trúc",
 "phone": "00001842",
-"description": "TK Gia Đình - Đảo 6 - ƯU ĐÃI 20.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 29/10/2026, TK Gia Đình - Đảo 6 - Giảm ngay 50.000Đ khi mua sản phẩm chăm sóc sức khỏe từ 299.000Đ - HSD: 30/10/2026, TK Gia Đình - Đảo 6 - Voucher mua thực phẩm bảo vệ sức khỏe áp dụng đơn từ 350.000Đ - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": null,
 "assignedAgentName": null,
 "assignedBy": null,
@@ -1323,9 +1916,25 @@ const TICKETS = [
 "status": "OPEN",
 "version": 1,
 "externalRef": "OB-10325",
+"businessData": {
+"items": [
+{
+"name": "METFORMIN STELLA 850MG HỘP 60 VIÊN",
+"date": "29/09/2026"
+},
+{
+"name": "ATORVASTATIN 20MG HỘP 30 VIÊN",
+"date": "30/09/2026"
+},
+{
+"name": "AMLODIPINE 5MG HỘP 30 VIÊN",
+"date": "01/10/2026"
+}
+]
+},
 "customerName": "Lê Quốc Bảo",
 "phone": "00005716",
-"description": "METFORMIN STELLA 850MG HỘP 60 VIÊN - Ngày mua hàng: 29/09/2026, ATORVASTATIN 20MG HỘP 30 VIÊN - Ngày mua hàng: 30/09/2026, AMLODIPINE 5MG HỘP 30 VIÊN - Ngày mua hàng: 01/10/2026",
+"description": "",
 "assignedAgentId": null,
 "assignedAgentName": null,
 "assignedBy": null,
@@ -1344,9 +1953,25 @@ const TICKETS = [
 "status": "OPEN",
 "version": 1,
 "externalRef": "OB-10326",
+"businessData": {
+"items": [
+{
+"name": "TK Gia Đình - Đảo 11 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa",
+"date": "27/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI",
+"date": "28/10/2026"
+},
+{
+"name": "TK Gia Đình - Đảo 11 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG",
+"date": "31/10/2026"
+}
+]
+},
 "customerName": "Phạm Minh Châu",
 "phone": "00009037",
-"description": "TK Gia Đình - Đảo 11 - Giảm ngay 100.000Đ khi tiêm vắc-xin Cúm mùa - HSD: 27/10/2026, TK Gia Đình - Đảo 11 - ƯU ĐÃI 5.000Đ DÀNH CHO GIA ĐÌNH THÔNG THÁI - HSD: 28/10/2026, TK Gia Đình - Đảo 11 - MIỄN PHÍ 01 TÚI BÔNG TẨY TRANG TRÒN KAMICARE 120 MIẾNG - HSD: 31/10/2026",
+"description": "",
 "assignedAgentId": null,
 "assignedAgentName": null,
 "assignedBy": null,
@@ -1365,9 +1990,25 @@ const TICKETS = [
 "status": "OPEN",
 "version": 1,
 "externalRef": "OB-10327",
+"businessData": {
+"items": [
+{
+"name": "LOSARTAN 50MG HỘP 30 VIÊN",
+"date": "02/10/2026"
+},
+{
+"name": "GLICLAZIDE MR 60MG HỘP 30 VIÊN",
+"date": "03/10/2026"
+},
+{
+"name": "ROSUVASTATIN 10MG HỘP 30 VIÊN",
+"date": "04/10/2026"
+}
+]
+},
 "customerName": "Trần Gia Phúc",
 "phone": "00004480",
-"description": "LOSARTAN 50MG HỘP 30 VIÊN - Ngày mua hàng: 02/10/2026, GLICLAZIDE MR 60MG HỘP 30 VIÊN - Ngày mua hàng: 03/10/2026, ROSUVASTATIN 10MG HỘP 30 VIÊN - Ngày mua hàng: 04/10/2026",
+"description": "",
 "assignedAgentId": null,
 "assignedAgentName": null,
 "assignedBy": null,
@@ -1432,7 +2073,7 @@ const flowOf = t => FLOWS.find(f=>f.id===t.businessFlowId)||{cls:'flow'};
 function content(t){ // render Nội dung theo config của công việc
   const items=(t.businessData||{}).items;
   // Hưng 09/11 (decisions D-24): API createTickets nhận description là một chuỗi; hiển thị nguyên văn, không tách cột ngày
-  if(!items||!items.length){ const d=String(t.description||'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); return `<div class="it nd-txt" title="${d}">${d}</div>`; }
+  if(!items||!items.length){ const d=String(t.description||'—').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); return `<div class="it nd-txt">${d}</div>`; }
   return items.map(i=>`<div class="it"><span class="it-n" title="${i.name}">${i.name}</span><span class="it-d">${flowOf(t).itemDateLabel}: ${i.date}</span></div>`).join('');
 }
 const vn = iso => { if(!iso) return '—'; const d=new Date(new Date(iso).getTime()+7*3600e3); const p=n=>String(n).padStart(2,'0'); return `${p(d.getUTCDate())}/${p(d.getUTCMonth()+1)}/${d.getUTCFullYear()}`; };
@@ -1477,7 +2118,7 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
-  {id:'ctkm_content', kind:'chot', txt:'Cột Nội dung của mọi ticket là MỘT chuỗi do CDE gửi (mặc định ticket chiếm một dòng). Khi CDE thêm \\n vào chuỗi thì UI ngắt dòng đúng chỗ đó. Chuỗi dài hơn bề rộng cột bị cắt bằng ba chấm, rê chuột để xem đủ. Ticket Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, như Nhắc mua thuốc mãn tính. Chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11 (quyết định D-24: description là một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Chỗ ngắt dòng \\n ở vài ticket mẫu chỉ để minh hoạ.'},
+  {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
   {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
   {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
   {id:'norm',       kind:'dev', txt:'Chuẩn hoá SĐT bằng cột riêng kèm backfill ticket cũ: bỏ khoảng trắng, dấu chấm, dấu gạch; đầu số +84 hoặc 84 đổi thành 0. Sau chuẩn hoá không phải 10 số bắt đầu bằng 0 thì coi như không có SĐT, hiện row riêng.', src:'US-3 v3 mục 6.2, dev đề xuất. Backend CCH hiện chưa chuẩn hoá khi lưu (RAI 06/11). Khung chuẩn hoá ở FE. SĐT mẫu của mockup BU có 8 số, nên khung đổi sang 10 số khi ở To-Be (xem tbDemoPhone).'},
@@ -1500,83 +2141,83 @@ const TOBE_EXTRA = [
   // Nhóm 3 ticket, 3 công việc, SĐT viết 3 kiểu (0987654321, +84 987 654 321, 0987.654.321): 1 ticket Mới, 2 ticket do ME giữ
   mk(901,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'0987654321', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
     // Mẫu nội dung CTKM (Hưng chốt 09/11, tài liệu Data Ecom): danh sách sản phẩm khách đã mua kèm Ngày mua hàng. Ngày mua = ngày cần gọi trừ 27. Tên sản phẩm là dữ liệu minh hoạ.
-    businessData:{campID:'CAMP-CTKM-202611'}, description:'PANADOL EXTRA HỘP 120 VIÊN - Ngày mua hàng: 10/10/2026',
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'10/10/2026'}]},
     callScheduledDate:'2026-11-05T17:00:00Z', createdAt:'2026-11-04T08:10:00Z', updatedAt:'2026-11-04T08:10:00Z'}),
   mk(902,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'+84 987 654 321', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    description:'Amlodipin 5mg x 30 viên - Ngày mua hàng: 12/10/2026\nMetformin 500mg x 60 viên - Ngày mua hàng: 12/10/2026',
+    businessData:{items:[{name:'Amlodipin 5mg x 30 viên', date:'12/10/2026'},{name:'Metformin 500mg x 60 viên', date:'12/10/2026'}]},
     callScheduledDate:'2026-11-04T17:00:00Z', createdAt:'2026-11-03T08:00:00Z', updatedAt:'2026-11-03T08:00:00Z'}),
   mk(903,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'0987.654.321', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    description:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 20/11/2026',
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'20/11/2026'}]},
     callScheduledDate:null, createdAt:'2026-11-02T08:00:00Z', updatedAt:'2026-11-02T08:00:00Z'}),
   // Nhóm có ticket Hoàn thành, ticket còn lại do nhân viên khác giữ, ngày cần gọi sớm hơn nhóm trên
   mk(904,{_tobe:true, customerName:'Trần Văn Bình', phone:'0912345678', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'CLOSED',
     dispositionLabel:'Không có nhu cầu', dispositionCode:'Không có nhu cầu', resolution:'NO_SALE', closedAt:'2026-11-04T03:00:00Z',
-    description:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 25/11/2026',
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'25/11/2026'}]},
     callScheduledDate:null, createdAt:'2026-11-01T08:00:00Z', updatedAt:'2026-11-04T03:00:00Z'}),
   mk(905,{_tobe:true, customerName:'Trần Văn Bình', phone:'0912345678', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'IN_PROGRESS', attemptCount:1, assignedAgentId:TB_AG2.id, assignedAgentName:TB_AG2.name,
-    description:'Atorvastatin 20mg x 30 viên - Ngày mua hàng: 09/10/2026',
+    businessData:{items:[{name:'Atorvastatin 20mg x 30 viên', date:'09/10/2026'}]},
     callScheduledDate:'2026-11-02T17:00:00Z', createdAt:'2026-11-01T09:00:00Z', updatedAt:'2026-11-03T03:00:00Z'}),
   // Nhóm 1 ticket có ngày cần gọi: đẩy ranh giới trang 10 để một nhóm 2 ticket nằm vắt qua cuối trang
   mk(907,{_tobe:true, customerName:'Phạm Quốc Dũng', phone:'0933111222', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'OPEN', ...NOASG,
-    description:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 22/11/2026',
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'22/11/2026'}]},
     callScheduledDate:'2026-11-06T17:00:00Z', createdAt:'2026-11-04T09:00:00Z', updatedAt:'2026-11-04T09:00:00Z'}),
   // SĐT không đạt 10 số bắt đầu bằng 0: coi như không có SĐT, hiện dòng riêng
   mk(908,{_tobe:true, customerName:'Võ Minh Khôi', phone:'098765432', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'OPEN', ...NOASG,
-    description:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 24/11/2026',
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'24/11/2026'}]},
     callScheduledDate:null, createdAt:'2026-11-04T10:00:00Z', updatedAt:'2026-11-04T10:00:00Z'}),
   // SĐT trống: không gom, hiện dòng riêng
   mk(906,{_tobe:true, customerName:'Lê Thị Cúc', phone:'', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'OPEN', ...NOASG,
-    description:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 18/11/2026',
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'18/11/2026'}]},
     callScheduledDate:null, createdAt:'2026-11-03T10:00:00Z', updatedAt:'2026-11-03T10:00:00Z'}),
   // ===== Bổ sung 09/11 (Hưng): đủ case để bấm thử. Ngày dựng quanh mốc 09/11/2026, tự dời theo ngày mở trang (tbShiftDates).
   // Hai ticket cùng công việc khác ngày cần gọi; CTKM ngày muộn nhưng voucher ngày sớm (CTKM vẫn nằm trên, cả nhóm được đẩy lên theo ngày voucher)
   mk(911,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_CTKM', status:'ASSIGNED',
-    businessData:{campID:'CAMP-CTKM-202611'}, description:'PANADOL EXTRA HỘP 120 VIÊN - Ngày mua hàng: 19/10/2026\nEFFERALGAN 500MG HỘP 16 VIÊN - Ngày mua hàng: 19/10/2026',
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'19/10/2026'},{name:'EFFERALGAN 500MG HỘP 16 VIÊN', date:'19/10/2026'}]},
     callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-06T02:00:00Z', updatedAt:'2026-11-06T02:00:00Z'}),
   mk(912,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    description:'Losartan 50mg x 30 viên - Ngày mua hàng: 19/10/2026', callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-02T02:00:00Z', updatedAt:'2026-11-02T02:00:00Z'}),
+    businessData:{items:[{name:'Losartan 50mg x 30 viên', date:'19/10/2026'}]}, callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-02T02:00:00Z', updatedAt:'2026-11-02T02:00:00Z'}),
   mk(913,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    description:'Glucophage 850mg x 60 viên - Ngày mua hàng: 12/10/2026', callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-15T16:59:59Z', createdAt:'2026-11-05T02:00:00Z', updatedAt:'2026-11-05T02:00:00Z'}),
+    businessData:{items:[{name:'Glucophage 850mg x 60 viên', date:'12/10/2026'}]}, callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-15T16:59:59Z', createdAt:'2026-11-05T02:00:00Z', updatedAt:'2026-11-05T02:00:00Z'}),
   mk(914,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    description:'TK Gia Đình - Giảm ngay 100,000Đ khi tiêm Zona - HSD: 30/11/2026', callScheduledDate:'2026-11-06T17:00:00Z', expiredTime:'2026-11-30T16:59:59Z', createdAt:'2026-11-01T02:00:00Z', updatedAt:'2026-11-01T02:00:00Z'}),
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 100,000Đ khi tiêm Zona', date:'30/11/2026'}]}, callScheduledDate:'2026-11-06T17:00:00Z', expiredTime:'2026-11-30T16:59:59Z', createdAt:'2026-11-01T02:00:00Z', updatedAt:'2026-11-01T02:00:00Z'}),
   // Lọc theo một công việc: thấy 2 dòng nhưng nút Gọi ghi "Cho 3 ticket", ô Khách hàng ghi "KH còn 1 ticket khác"
   mk(921,{_tobe:true, customerName:'Lý Thu Hằng', phone:'0938222333', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    description:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 25/11/2026', callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-25T16:59:59Z', createdAt:'2026-11-04T03:00:00Z', updatedAt:'2026-11-04T03:00:00Z'}),
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'25/11/2026'}]}, callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-25T16:59:59Z', createdAt:'2026-11-04T03:00:00Z', updatedAt:'2026-11-04T03:00:00Z'}),
   mk(922,{_tobe:true, customerName:'Lý Thu Hằng', phone:'0938222333', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    description:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 28/11/2026', callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-28T16:59:59Z', createdAt:'2026-11-06T03:00:00Z', updatedAt:'2026-11-06T03:00:00Z'}),
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'28/11/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-28T16:59:59Z', createdAt:'2026-11-06T03:00:00Z', updatedAt:'2026-11-06T03:00:00Z'}),
   mk(923,{_tobe:true, customerName:'Lý Thu Hằng', phone:'0938222333', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    description:'Amlodipin 5mg x 30 viên - Ngày mua hàng: 15/10/2026', callScheduledDate:'2026-11-10T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-05T03:00:00Z', updatedAt:'2026-11-05T03:00:00Z'}),
+    businessData:{items:[{name:'Amlodipin 5mg x 30 viên', date:'15/10/2026'}]}, callScheduledDate:'2026-11-10T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-05T03:00:00Z', updatedAt:'2026-11-05T03:00:00Z'}),
   // Nhóm có một ticket Mới: bấm Nhận xong nút Gọi đổi từ "Cho 1 ticket" thành "Cho 2 ticket"
   mk(931,{_tobe:true, customerName:'Hồ Ngọc Lan', phone:'0966444555', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    description:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 27/11/2026', callScheduledDate:'2026-11-12T17:00:00Z', expiredTime:'2026-11-27T16:59:59Z', createdAt:'2026-11-03T04:00:00Z', updatedAt:'2026-11-03T04:00:00Z'}),
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'27/11/2026'}]}, callScheduledDate:'2026-11-12T17:00:00Z', expiredTime:'2026-11-27T16:59:59Z', createdAt:'2026-11-03T04:00:00Z', updatedAt:'2026-11-03T04:00:00Z'}),
   mk(932,{_tobe:true, customerName:'Hồ Ngọc Lan', phone:'0966444555', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'OPEN', ...NOASG,
-    description:'Atorvastatin 20mg x 30 viên - Ngày mua hàng: 17/10/2026', callScheduledDate:'2026-11-12T17:00:00Z', expiredTime:'2026-11-20T16:59:59Z', createdAt:'2026-11-07T04:00:00Z', updatedAt:'2026-11-07T04:00:00Z'}),
+    businessData:{items:[{name:'Atorvastatin 20mg x 30 viên', date:'17/10/2026'}]}, callScheduledDate:'2026-11-12T17:00:00Z', expiredTime:'2026-11-20T16:59:59Z', createdAt:'2026-11-07T04:00:00Z', updatedAt:'2026-11-07T04:00:00Z'}),
   // Ticket cần gọi hôm nay, ticket quá ngày (đã gọi một lần, khách không nghe máy), ticket chưa tới ngày
   mk(941,{_tobe:true, customerName:'Trương Văn Phúc', phone:'0944555666', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    description:'Metformin 500mg x 60 viên - Ngày mua hàng: 13/10/2026', callScheduledDate:'2026-11-08T17:00:00Z', expiredTime:'2026-11-16T16:59:59Z', createdAt:'2026-11-02T05:00:00Z', updatedAt:'2026-11-02T05:00:00Z'}),
+    businessData:{items:[{name:'Metformin 500mg x 60 viên', date:'13/10/2026'}]}, callScheduledDate:'2026-11-08T17:00:00Z', expiredTime:'2026-11-16T16:59:59Z', createdAt:'2026-11-02T05:00:00Z', updatedAt:'2026-11-02T05:00:00Z'}),
   mk(942,{_tobe:true, customerName:'Trương Văn Phúc', phone:'0944555666', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'IN_PROGRESS', attemptCount:1,
     dispositionLabel:'Không nghe máy lần 1', dispositionCode:'Không nghe máy lần 1',
-    description:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV - HSD: 20/11/2026', callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-20T16:59:59Z', createdAt:'2026-11-01T05:00:00Z', updatedAt:'2026-11-08T03:00:00Z'}),
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'20/11/2026'}]}, callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-20T16:59:59Z', createdAt:'2026-11-01T05:00:00Z', updatedAt:'2026-11-08T03:00:00Z'}),
   mk(943,{_tobe:true, customerName:'Trương Văn Phúc', phone:'0944555666', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
-    businessData:{campID:'CAMP-CTKM-202611'}, description:'ENTEROGERMINA HỘP 20 ỐNG - Ngày mua hàng: 20/10/2026',
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'ENTEROGERMINA HỘP 20 ỐNG', date:'20/10/2026'}]},
     callScheduledDate:'2026-11-15T17:00:00Z', expiredTime:'2026-11-23T16:59:59Z', createdAt:'2026-11-08T05:00:00Z', updatedAt:'2026-11-08T05:00:00Z'}),
   // Nhóm toàn ticket đã Hoàn thành: vẫn hiện trong nhóm, không có nút Gọi
   mk(951,{_tobe:true, customerName:'Mai Thị Thảo', phone:'0922666777', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'CLOSED',
     dispositionLabel:'Tạo đơn thành công', dispositionCode:'Tạo đơn thành công', resolution:'SUCCESS', closedAt:'2026-11-06T04:00:00Z', attemptCount:1,
-    description:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa - HSD: 26/11/2026', callScheduledDate:'2026-11-05T17:00:00Z', expiredTime:'2026-11-26T16:59:59Z', createdAt:'2026-10-30T06:00:00Z', updatedAt:'2026-11-06T04:00:00Z'}),
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'26/11/2026'}]}, callScheduledDate:'2026-11-05T17:00:00Z', expiredTime:'2026-11-26T16:59:59Z', createdAt:'2026-10-30T06:00:00Z', updatedAt:'2026-11-06T04:00:00Z'}),
   mk(952,{_tobe:true, customerName:'Mai Thị Thảo', phone:'0922666777', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'CLOSED',
     dispositionLabel:'Không có nhu cầu', dispositionCode:'Không có nhu cầu', resolution:'NO_SALE', closedAt:'2026-11-06T04:05:00Z', attemptCount:1,
-    description:'Losartan 50mg x 30 viên - Ngày mua hàng: 09/10/2026', callScheduledDate:'2026-11-05T17:00:00Z', expiredTime:'2026-11-13T16:59:59Z', createdAt:'2026-10-31T06:00:00Z', updatedAt:'2026-11-06T04:05:00Z'}),
+    businessData:{items:[{name:'Losartan 50mg x 30 viên', date:'09/10/2026'}]}, callScheduledDate:'2026-11-05T17:00:00Z', expiredTime:'2026-11-13T16:59:59Z', createdAt:'2026-10-31T06:00:00Z', updatedAt:'2026-11-06T04:05:00Z'}),
   // Nhóm 4 ticket nằm vắt qua ranh giới trang (10 ticket mỗi trang): trang kéo dài cho đủ nhóm, không cắt
   mk(961,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
-    businessData:{campID:'CAMP-CTKM-202611'}, description:'PANADOL EXTRA HỘP 120 VIÊN - Ngày mua hàng: 14/10/2026',
+    businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'14/10/2026'}]},
     callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-07T07:00:00Z', updatedAt:'2026-11-07T07:00:00Z'}),
   mk(962,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    description:'Bisoprolol 5mg x 30 viên - Ngày mua hàng: 14/10/2026, Aspirin 81mg x 30 viên - Ngày mua hàng: 14/10/2026', callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-03T07:00:00Z', updatedAt:'2026-11-03T07:00:00Z'}),
+    businessData:{items:[{name:'Bisoprolol 5mg x 30 viên', date:'14/10/2026'},{name:'Aspirin 81mg x 30 viên', date:'14/10/2026'}]}, callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-03T07:00:00Z', updatedAt:'2026-11-03T07:00:00Z'}),
   mk(963,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    description:'Glucophage 850mg x 60 viên - Ngày mua hàng: 18/10/2026', callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-04T07:00:00Z', updatedAt:'2026-11-04T07:00:00Z'}),
+    businessData:{items:[{name:'Glucophage 850mg x 60 viên', date:'18/10/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-04T07:00:00Z', updatedAt:'2026-11-04T07:00:00Z'}),
   mk(964,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    description:'TK Gia Đình - Giảm ngay 100,000Đ khi tiêm Zona - HSD: 29/11/2026', callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-29T16:59:59Z', createdAt:'2026-11-02T07:00:00Z', updatedAt:'2026-11-02T07:00:00Z'})
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 100,000Đ khi tiêm Zona', date:'29/11/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-29T16:59:59Z', createdAt:'2026-11-02T07:00:00Z', updatedAt:'2026-11-02T07:00:00Z'})
 ];
 
 /* ---------- Khoá gom và sắp xếp ---------- */
@@ -1603,9 +2244,13 @@ function tbInGroup(a,b){
 // Quyền xem như CI: không phải quản lý thì chỉ thấy ticket mình giữ và ticket Mới (US-3 Business Rules 17)
 const tbCanSee = t => SIM.isManager || t.status==='OPEN' || t.assignedAgentId===ME.id;
 // Nội dung không tách được item (chỉ có chuỗi mô tả) vẫn canh lề như một item
-const tbContent = t => { const items=(t.businessData||{}).items, lb=flowOf(t).itemDateLabel;
-  if(!items||!items.length) return content(t); // Hưng 09/11: hiển thị nguyên văn chuỗi như As-Is
-  return items.map(i=>`<div class="it"><span class="it-d" title="${tbEsc(lb)}">${i.date}</span><span class="it-n" title="${tbEsc(i.name)}">${i.name}</span></div>`).join(''); };
+const tbEscN = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+// Mỗi sản phẩm hoặc voucher là một dòng nội dung; ticket không có danh sách (chỉ có chuỗi mô tả) là một dòng
+const tbLines = t => { const items=(t.businessData||{}).items, lb=flowOf(t).itemDateLabel;
+  if(!items||!items.length) return [content(t)];
+  return items.map(i=>`<div class="ndl"><span class="ndl-n" title="${tbEsc(i.name)}">${tbEscN(i.name)}</span><span class="ndl-d">${lb}: ${i.date}</span></div>`); };
+const tbN = t => Math.max(1, ((t.businessData||{}).items||[]).length);
+const tbContent = t => tbLines(t).join('');
 function tbBuild(){
   const rows = filtered().filter(tbCanSee), map = new Map();
   rows.forEach(t=>{ const k=tbKey(t); if(!map.has(k)) map.set(k,[]); map.get(k).push(t); });
@@ -1690,26 +2335,31 @@ function tbCols(){
 const tbFixCls = (c,cs) => c.fix==='r' ? ' fr'+(cs.find(x=>x.fix==='r')===c?' fr-first':'') : fixCls(c);
 function tbRow(g,t,i,gi){
   TB.inList = true;
-  const cs = tbCols();
+  const cs = tbCols(), ls = tbLines(t), n = ls.length, gN = g.tickets.reduce((a,x)=>a+tbN(x),0);
+  const rs = k => k>1 ? ` rowspan="${k}"` : '';
   const cells = cs.map((c,ci)=>{
     const at = `class="${c.cls||''}${tbFixCls(c,cs)}"${fixAttr(c)}`;
-    if(c.k==='callg'){ // Gọi: ô gộp theo nhóm từ 2 dòng, còn lại ở chính dòng đó
+    if(c.k==='callg'){ // Gọi: ô gộp theo nhóm từ 2 dòng, còn lại gộp theo số dòng nội dung của ticket
       const grouped = !g.key.startsWith('solo|') && g.tickets.length>=2;
-      if(grouped) return i>0 ? '' : `<td ${at} rowspan="${g.tickets.length}">${tbCallBtn(g)}</td>`;
-      return `<td ${at}>${tbCallBtn({key:g.key, tickets:[t]})}</td>`;
+      if(grouped) return i>0 ? '' : `<td ${at}${rs(gN)}>${tbCallBtn(g)}</td>`;
+      return `<td ${at}${rs(n)}>${tbCallBtn({key:g.key, tickets:[t]})}</td>`;
     }
-    if(ci===1 || ci===2){ // Khách hàng, SĐT: ô gộp theo nhóm, chỉ vẽ ở row đầu
+    if(ci===1 || ci===2){ // Khách hàng, SĐT: ô gộp theo cả nhóm (tổng số dòng nội dung), chỉ vẽ ở dòng đầu của nhóm
       if(i>0) return '';
-      return `<td ${at} rowspan="${g.tickets.length}">${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
+      return `<td ${at}${rs(gN)}>${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
     }
     let h;
     if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?'<span class="tb-newtag">Vừa giao</span>':''}`;
         else if(ci===6) h = `<span class="link" onclick="go('${t.id}')">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>${copyIc(t.externalRef,'mã tham chiếu')}`; // US-3 v3: bấm Mã tham chiếu mở Chi tiết
-    else h = (c.cls||'').includes('nd') ? tbContent(t) : c.r(t);
-    return `<td ${at}>${h}</td>`;
+    else h = (c.cls||'').includes('nd') ? ls[0] : c.r(t);
+    return `<td ${at}${(c.cls||'').includes('nd') ? '' : rs(n)}>${h}</td>`;
   }).join('');
+  const ndCol = cs.find(c=>(c.cls||'').includes('nd'));
+  const fresh = TB.fresh&&TB.fresh.has(t.id)?' tb-fresh':'';
   TB.inList = false;
-  return `<tr class="tb-g${gi%2}${i===0?' tb-first':''}${TB.fresh&&TB.fresh.has(t.id)?' tb-fresh':''}">${cells}</tr>`;
+  // Dòng nội dung thứ 2 trở đi của ticket chỉ có ô Nội dung (các ô khác đã rowspan)
+  const more = ls.slice(1).map(x=>`<tr class="tb-g${gi%2}${fresh}"><td class="${ndCol.cls||''}">${x}</td></tr>`).join('');
+  return `<tr class="tb-g${gi%2}${i===0?' tb-first':''}${fresh}">${cells}</tr>`+more;
 }
 function renderToBe(){
   const cs = tbCols();
@@ -2058,7 +2708,7 @@ function tbShiftDates(){
   const isoRe=/^\d{4}-\d{2}-\d{2}T/, dmyRe=/^(\d{2})\/(\d{2})\/(\d{4})$/;
   const sh = o => { if(o) Object.keys(o).forEach(k=>{ const v=o[k]; if(typeof v==='string' && isoRe.test(v) && !isNaN(Date.parse(v))) o[k]=new Date(Date.parse(v)+ms).toISOString(); }); };
   const dmy = s => { const m=dmyRe.exec(s); if(!m) return s; const x=new Date(Date.UTC(+m[3],+m[2]-1,+m[1])+ms).toISOString(); return x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4); };
-  new Set([...TICKETS, ...TOBE_EXTRA]).forEach(t=>{ sh(t); if(t.description) t.description=t.description.replace(/\d{2}\/\d{2}\/\d{4}/g, dmy); });
+  new Set([...TICKETS, ...TOBE_EXTRA]).forEach(t=>{ sh(t); ((t.businessData||{}).items||[]).forEach(i=>{ if(i.date) i.date=dmy(i.date); }); });
   Object.values(ATTEMPTS).forEach(a=>a.forEach(sh));
 }
 function tbInit(){
