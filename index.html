@@ -3043,7 +3043,7 @@ function tbAutoInstall(){
 function tbDockInstall(){
   const dock = document.createElement('div'); dock.className='tb-dock'; dock.innerHTML='<span>Bản demo:</span>';
   dock.appendChild(document.getElementById('tbSw'));
-  const kqw = document.createElement('span'); kqw.id='tbKq'; kqw.className='tb-kqw'; dock.appendChild(kqw); // UX 11/11: chọn cách ghi kết quả, chỉ hiện ở To-Be
+  // 11/11: bỏ ô chọn cách ghi kết quả khỏi thanh trên cùng (Hưng). Mặc định cách 4; link có đuôi &kq=1 hoặc &kq=2 vẫn mở cách khác.
   const btn = document.createElement('button'); btn.className='tb-simbtn'; btn.textContent='Giả lập ▾';
   btn.onclick = e=>{ e.stopPropagation(); const pop=document.getElementById('tbSimPop'); pop.classList.toggle('hidden'); const r=btn.getBoundingClientRect(); pop.style.left=r.left+'px'; };
   dock.appendChild(btn);
