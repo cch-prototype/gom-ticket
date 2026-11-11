@@ -2679,7 +2679,7 @@ function tbScriptBlocks(list){
   const m = new Map(); list.forEach(x=>{ if(!m.has(x.businessFlowId)) m.set(x.businessFlowId,[]); m.get(x.businessFlowId).push(x); });
   return [...m.entries()].map(([f,ts])=>({f, ts, txt:tbScriptText(f,ts)}));
 }
-const tbScriptHtml = b => b.txt ? tbEscN(b.txt).replace(/\n/g,'<br>') + (SCRIPTS[b.f].includes('[---]') ? ' '+tbBadge('kq_var') : '')
+const tbScriptHtml = b => b.txt ? tbEscN(b.txt).replace(/\n/g,'<br>') /* 11/11 (Hưng): bỏ nhãn MÔ PHỎNG trong kịch bản, điểm này vẫn ở bảng Điểm chưa chốt */
   : '<span class="tbw-none">Chưa có kịch bản cho công việc này.</span>';
 /* ---------- Khung tổng đài To-Be (UX 11/11, chỉ To-Be) ----------
    Màn Danh sách: thu gọn còn một thanh có tên khách và nút về màn Chi tiết.
