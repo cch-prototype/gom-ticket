@@ -310,9 +310,9 @@ td.nd{padding:0;white-space:normal}
 .tb-on .tb-gt tr.tb-pend td:first-child{box-shadow:inset 3px 0 0 #f59e0b}
 .tb-on .tablewrap th.tb-gcth{text-align:center}
 .tb-on .tablewrap th.tb-gth{text-align:center}
-.tb-on .tb-gacts{display:flex;flex-direction:column;align-items:center;gap:6px}
+.tb-on .tb-gacts{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:6px} /* 11/11: nút nhóm xếp ngang */
 .tb-on .tb-gacts .tb-callg{display:flex;flex-direction:column;align-items:center}
-.tb-on .tb-gacts .tb-gbtn{font-size:12px;height:24px;line-height:22px;padding:0 10px;margin:0;min-width:96px}
+.tb-on .tb-gacts .tb-gbtn{font-size:12px;height:24px;line-height:22px;padding:0 10px;margin:0}
 .tb-on .tb-callhd .tb-gacts{flex-direction:row;align-items:center;gap:8px}
 .tb-on .tb-callhd{border-right:0;margin-right:0;padding-right:0}
 .tb-on .tb-callhd .tb-gbtn{height:29px;line-height:27px;font-size:14px}
@@ -2526,7 +2526,7 @@ function tbCols(){
   if(TB.cols) return TB.cols;
   const act = COLUMNS[COLUMNS.length-1];
   // Góp ý 11/11: một cột Thao tác cấp nhóm (Gọi, Nhận, Phân công), bỏ Thao tác từng ticket và nút Xử lý khỏi Danh sách
-  return TB.cols = [...COLUMNS.slice(0,-1), {h:'Thao tác', w:150, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
+  return TB.cols = [...COLUMNS.slice(0,-1), {h:'Thao tác', w:280, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
 }
 const tbFixCls = (c,cs) => c.fix==='r' ? ' fr'+(cs.find(x=>x.fix==='r')===c?' fr-first':'') : fixCls(c);
 function tbRow(g,t,i,gi){
