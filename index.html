@@ -2693,7 +2693,7 @@ function tbPaintCallTB(t){
   callBox.classList.toggle('tbw-float', !!TB.float); callBox.classList.toggle('tbw-fmin', !!(TB.float && CALL.fmin)); // hướng B
   if(onList && !(K==='3' && list)){
     callBox.classList.add('tb-cwmini');
-    callBox.innerHTML = bar(`<button class="cw-back" onclick="go('${t.id}')">Về màn Chi tiết để ghi kết quả</button>`);
+    callBox.innerHTML = bar(TB.float ? `<button class="cw-back" title="Về màn Chi tiết để ghi kết quả" onclick="go('${t.id}')">Ghi kết quả ›</button>` : `<button class="cw-back" onclick="go('${t.id}')">Về màn Chi tiết để ghi kết quả</button>`);
     return true;
   }
   if(!list) return false;
