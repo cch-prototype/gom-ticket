@@ -323,7 +323,14 @@ td.nd{padding:0;white-space:normal}
 .tb-on .tbw-float .tbw-row{padding:10px 0;border-top:1px solid #eef1f5}
 .tb-on .tbw-float .tbw-rows .cw-step{margin-bottom:2px}
 .tb-on .tbw-float .tbw-meta{margin-bottom:6px}
-.tb-on .tbw-float .tbw-seg{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.tb-on .tbw-float .tbw-seg button{padding:6px;white-space:normal;text-align:center}
+/* UX 11/11: nút bước 1 cùng kiểu nút kết quả bước 2 (nút rời, viền mảnh, chọn thì tô xanh), cả khung nổi lẫn khung trên đầu */
+.tb-on #callBox .tbw-seg{display:flex;flex-wrap:wrap;gap:6px;width:auto;border:0;border-radius:0;overflow:visible}
+.tb-on #callBox .tbw-seg button{border:1px solid #d1d5db;border-radius:5px;background:#fff;color:inherit;padding:4px 10px;white-space:nowrap;font-weight:400;cursor:pointer}
+.tb-on #callBox .tbw-seg button:last-child{border-right:1px solid #d1d5db}
+.tb-on #callBox .tbw-seg button:hover{border-color:var(--primary);color:var(--primary)}
+.tb-on #callBox .tbw-seg button.on{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
+.tb-on #callBox .tbw-seg button:focus-visible,.tb-on #callBox .cw-chip:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.tb-on #callBox.tbw-float .tbw-seg button,.tb-on #callBox.tbw-float .cw-chip{padding:4px 9px}
 .tb-on .tbw-float .tbw-body,.tb-on .tbw-float .tbw-k1,.tb-on .tbw-float .tbw-foot,.tb-on .tbw-float .tbw-row{grid-template-columns:minmax(0,1fr)}
 .tb-on .tbw-float .tbf-r1 .cw-nm{flex:0 1 auto;font-size:15px}
 .tb-on .tbw-float .tbf-r2 .cw-pill{padding:1px 8px;font-size:12px}
