@@ -305,6 +305,7 @@ td.nd{padding:0;white-space:normal}
 /* Góp ý 11/11: ô của nhóm canh giữa, nút cấp nhóm xếp dọc giữa ô */
 .tb-on .tablewrap td.tb-gc{vertical-align:middle;text-align:center}
 .tb-on .tb-callhd .tb-calln{display:none}
+.tb-on .tb-infoid{color:var(--primary)}
 .tb-on #callBox .tbw-script{display:flex;flex-wrap:wrap;gap:8px 24px}.tb-on #callBox .tbw-script > div{flex:1 1 320px;min-width:0}.tb-on #callBox .tbw-script > .tbw-miss,.tb-on #callBox .tbw-script > .tbw-sh{flex-basis:100%}
 .tb-on .tb-gt tr.tb-pend td{background:#fff8e1}
 .tb-on .tb-gt tr.tb-pend td:first-child{box-shadow:inset 3px 0 0 #f59e0b}
@@ -2615,9 +2616,11 @@ function tbDetail(t){
     da.innerHTML = `<span class="tb-callhd">${tbGroupActs({key, tickets:grp, hd:true})}</span>`;
   }
   // 11/11: nhóm từ 2 ticket thì bỏ thông tin đã có trong bảng "Ticket của khách này"
-  const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn'];
+  const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu','Ngày cần gọi','Thời gian hết hạn']; // 11/11: giữ Kết quả xử lý, Ghi chú như CI
   document.querySelectorAll('#dInfo dt').forEach(dt=>{ const hide = dup && drop.includes(dt.textContent); dt.style.display = hide?'none':''; if(dt.nextElementSibling) dt.nextElementSibling.style.display = hide?'none':''; });
   document.getElementById('dItems').style.display = dup ? 'none' : '';
+  // Nhóm từ 2 ticket: tiêu đề ghi rõ là ticket đang xem (As-Is không qua đây nên giữ chữ CI)
+  document.getElementById('dInfo').previousElementSibling.innerHTML = (dup ? `<span>Thông tin ticket <b class="tb-infoid">${short(t.id)}</b></span>` : 'Thông tin ticket') + ' <span>⌄</span>';
   const ids = (TB.pending && TB.pending.key===key) ? [...TB.pending.ids] : [], n = ids.length;
   if(false){ b.classList.remove('hidden'); // 11/11: bỏ thanh nhắc, dòng chưa ghi kết quả tô vàng trong bảng nhóm // UX 11/11: đang gọi thì ẩn thanh này, ghi kết quả ở khung tổng đài và bảng nhóm
     const busy = CALL.state!=='IDLE';
