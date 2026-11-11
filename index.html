@@ -2732,7 +2732,8 @@ function tbSetFloat(v){
 // Khung nổi: nút biểu tượng gọn trên dòng 1 của thanh (có tooltip và aria-label)
 const tbFloatIcons = () => `<button class="tbf-ic" title="Đưa lên đầu trang" aria-label="Đưa lên đầu trang" onclick="tbSetFloat(false)">⇱</button>`
   + `<button class="tbf-ic" title="${CALL.fmin?'Mở khung':'Thu gọn khung'}" aria-label="${CALL.fmin?'Mở khung':'Thu gọn khung'}" onclick="CALL.fmin=!CALL.fmin;paintCall()">${CALL.fmin?'▴':'▾'}</button>`;
-const tbFloatLinks = () => `<a class="cw-scr" onclick="tbSetFloat(${!TB.float})">${TB.float?'⇱ Đưa lên đầu trang':'⇲ Nổi góc phải'}</a>`
+const tbFloatLinks = () => ''; // 11/11: bỏ nút Nổi góc phải
+const tbFloatLinksOld = () => `<a class="cw-scr" onclick="tbSetFloat(${!TB.float})">${TB.float?'⇱ Đưa lên đầu trang':'⇲ Nổi góc phải'}</a>`
   + (TB.float ? `<a class="cw-scr" onclick="CALL.fmin=!CALL.fmin;paintCall()">${CALL.fmin?'Mở ▴':'Thu gọn ▾'}</a>` : '');
 function tbSetKq(k){
   if(!TB_KQ_NAME[k] || k===tbKq()) return;
@@ -3065,7 +3066,7 @@ function tbInit(){
     if(cur.length!==app.length || cur.some(v=>!app.includes(v))) applyFilters();
   },0);
   ['change','click'].forEach(ev=>document.getElementById('fFlow').addEventListener(ev, tbFlowApply, true));
-  if(location.hash.startsWith('#tobe')){ TB.float = /vt=noi/.test(location.hash); tbSetMode('tobe'); }
+  if(location.hash.startsWith('#tobe')){ TB.float = false; /* 11/11: bỏ khung nổi, khung tổng đài luôn trên đầu như CI */ tbSetMode('tobe'); }
 }
 /*TOBE:END js*/
 /* ---------- LIST ---------- */
