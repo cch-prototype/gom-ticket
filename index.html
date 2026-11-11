@@ -308,6 +308,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-callhd{display:inline-block;margin-right:14px;padding-right:14px;border-right:1px solid var(--line);vertical-align:middle}
 .tb-callhd .tb-callg{display:flex;align-items:center;gap:6px}.tb-callhd .tb-calln{margin:0;font-size:12px}
 .tb-called .tb-calledtx{display:block;font-size:11px;line-height:16px;color:var(--muted);margin-bottom:2px}.tb-called.hd .tb-calledtx{display:inline;font-size:12px;margin:0 6px 0 0}
+.tb-called:not(.hd) .tb-calledtx{white-space:normal} /* 11/11: ô Gọi ở Danh sách có thêm dòng còn N ticket, cho xuống dòng trong cột hẹp */
 .tb-called .btn.split{background:#fff;color:var(--primary);border-color:var(--primary)} /* Hưng 09/11: sau cuộc gọi, Gọi lại là nút phụ */
 .cw-step{font-size:12.5px;font-weight:600;margin:6px 0 4px}
 .cw-row{padding:6px 0;border-bottom:1px dashed #e3e8f0}.cw-row:last-child{border-bottom:0}.cw-rowh{font-size:12.5px;margin-bottom:4px}.cw-row .cw-chips{margin:0}
@@ -318,6 +319,8 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 /* Nội dung: ngày nằm bên trái để không bị cột Thao tác che (CI đang bị che ở màn 1440px) */
 .tb-on #tbody .it{grid-template-columns:auto minmax(0,1fr)}
 .tb-on #tbody .it-d{text-align:left;min-width:74px;font-size:12px}
+/* 11/11: Nội dung giờ dùng .ndl (tên trái, ngày phải) nên rule .it ở trên không còn tác dụng. Màn hẹp hơn 1660px thì cột Gọi và Thao tác cố định che nửa phải của cột Nội dung, nên đưa ngày xuống dưới tên. Màn rộng giữ ngày bên phải như mockup BU. */
+@media (max-width:1660px){.tb-on #tbody .ndl{grid-template-columns:minmax(0,1fr)}.tb-on #tbody .ndl-d{text-align:left}}
 /* Nhận phiếu tự động ở To-Be: một nút duy nhất thay cho nút gạt + chip */
 .tb-on #autoSw,.tb-on #autoSw+span{display:none}
 .tb-autobtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:16px;padding:4px 12px;font-size:12.5px;cursor:pointer}
@@ -2319,7 +2322,7 @@ function tbCallBtn(g){
   const pd = TB.pending && TB.pending.key===g.key && TB.pending.ids.size && CALL.state==='IDLE' ? TB.pending : null;
   if(pd){
     const hm = vnt(pd.at).slice(-5), n = pd.ids.size, dis = !SIM.mptLoggedIn;
-    return `<div class="tb-callg tb-called${g.hd?' hd':''}"><span class="tb-calledtx">Đã gọi lúc ${hm}${g.hd?` · còn ${n} ticket chưa ghi kết quả`:''}</span>`
+    return `<div class="tb-callg tb-called${g.hd?' hd':''}"><span class="tb-calledtx">Đã gọi lúc ${hm}${g.hd?` · còn ${n} ticket chưa ghi kết quả`:''}</span>${g.hd?'':`<span class="tb-calledtx">· còn ${n} ticket chưa ghi kết quả</span>`}`
       + `<span class="btn split${dis?' is-dis':''}" title="${dis?'Chưa đăng nhập tổng đài':'Gọi lại cho khách'}"><span data-act="call" data-id="${rep.id}">Gọi lại</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span></div>`;
   }
   const n = tbCallScope(g.key).length;
@@ -2810,13 +2813,15 @@ function go(id){
   window.scrollTo(0,0);
 }
 let CUR = null; const t0 = () => CUR;
+// 11/11 (decisions D-32): To-Be truyền SĐT đã chuẩn hóa của nhóm cho panel Tài khoản gia đình và Bán hàng; As-Is giữ SĐT gốc của ticket như CI.
+const panelPhone = () => MODE==='tobe' ? (tbNorm(t0().phone)||t0().phone) : t0().phone;
 function tab(btn, name){
   [...rTabs.children].forEach(b=>b.classList.toggle('on', b===btn));
   if(name==='Tài khoản gia đình'){
     rPanel.innerHTML = `<div class="fam"><div>
         <div style="margin-bottom:6px">Tìm theo: <label><input type="radio" checked> SĐT</label> <label><input type="radio"> CCCD</label></div>
         <input placeholder="Nhập số điện thoại" style="width:100%;border:1px solid #d1d5db;border-radius:5px;padding:6px">
-        <div class="box" style="margin-top:10px"><b>${t0().customerName}</b><br><span class="note">${maskPhone(t0().phone)}</span><br><span class="tag st-ASSIGNED" style="margin-top:6px">Chưa thuộc gia đình</span></div>
+        <div class="box" style="margin-top:10px"><b>${t0().customerName}</b><br><span class="note">${maskPhone(panelPhone())}</span><br><span class="tag st-ASSIGNED" style="margin-top:6px">Chưa thuộc gia đình</span></div>
       </div><div class="hero"><b>Khách hàng chưa là thành viên của Tài khoản gia đình.</b><br><br>
         <button class="btn pri">Tạo gia đình</button> <button class="btn">Thêm KH vào gia đình</button></div></div>`;
   } else if(name==='Bán hàng'){
@@ -2832,7 +2837,7 @@ function tab(btn, name){
         <tbody><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:70px 0">Bạn chưa thêm sản phẩm nào vào đơn hàng</td></tr></tbody></table>
         <!-- SLOT: đổ sẵn SKU từ ticket (thuốc mãn tính / CTKM) vào giỏ --></div>
       <div class="pos-side">
-        ${sec('Thông tin khách hàng',`<div class="pos-chip">Khách hàng thường ›</div><input value="${maskPhone(t0().phone)}"><input value="${t0().customerName}">
+        ${sec('Thông tin khách hàng',`<div class="pos-chip">Khách hàng thường ›</div><input value="${maskPhone(panelPhone())}"><input value="${t0().customerName}">
           <div><label><input type="radio" checked> Nam</label> <label><input type="radio"> Nữ</label> <label><input type="radio"> Khác</label></div>
           <div class="pos-pt">Khách sở hữu <b>0 điểm F-Sell</b> <button class="btn" disabled>Đổi điểm</button><br>0 Điểm thưởng chưa kích hoạt<br><span class="note">Vui lòng cài App/Zalo để sử dụng điểm</span></div>
           <div class="pos-promo">Xem danh sách khuyến mãi ›</div>`)}
