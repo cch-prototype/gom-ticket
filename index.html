@@ -250,7 +250,6 @@ td.nd{padding:0;white-space:normal}
 .tb-on #callBox .tbw-miss{grid-column:1/-1}
 /* Góp ý 11/11: ô của nhóm canh giữa, nút cấp nhóm xếp dọc giữa ô */
 .tb-on .tablewrap td.tb-gc{vertical-align:middle;text-align:center}
-.tb-on .tb-callhd .tb-calln{display:none}
 .tb-on .tb-ic{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-top:8px}
 .tb-on .tb-ic.cur{border-color:var(--primary);box-shadow:inset 3px 0 0 var(--primary)}
 .tb-on .tb-ich{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}.tb-on .tb-ichl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0}.tb-on .tb-ich .link{font-weight:600}
@@ -319,7 +318,6 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-callg{font-size:0}
 .tb-callg .btn{font-size:12px;height:24px;line-height:22px;padding:0;vertical-align:top}
 .tb-callg .btn.split span,.tb-callg .btn.split em{line-height:22px}.tb-callg .btn.split span{padding:0 14px}.tb-callg .btn.split em{padding:0 10px}
-.tb-calln{font-size:12px;line-height:16px;color:var(--muted);margin-top:2px}
 .tb-on .tablewrap tbody tr:first-child td{border-top:none}
 .tb-on .tablewrap tbody tr:hover td{background:#eaf1ff}
 .tb-banner{background:#fff6e5;border:1px solid #f5c98c;color:#92400e;border-radius:8px;padding:8px 12px;margin-bottom:10px}
@@ -362,7 +360,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-on .tb-role{display:flex;align-items:center;gap:12px}.tb-on .tb-role label{display:inline-flex !important;align-items:center;gap:4px}
 .tb-for{font-size:12px;color:var(--muted);margin-right:6px}
 .tb-callhd{display:inline-block;margin-right:14px;padding-right:14px;border-right:1px solid var(--line);vertical-align:middle}
-.tb-callhd .tb-callg{display:flex;align-items:center;gap:6px}.tb-callhd .tb-calln{margin:0;font-size:12px}
+.tb-callhd .tb-callg{display:flex;align-items:center;gap:6px}
 .tb-called .tb-calledtx{display:block;font-size:11px;line-height:16px;color:var(--muted);margin-bottom:2px}.tb-called.hd .tb-calledtx{display:inline;font-size:12px;margin:0 6px 0 0}
 .tb-called:not(.hd) .tb-calledtx{white-space:normal} /* 11/11: ô Gọi ở Danh sách có thêm dòng còn N ticket, cho xuống dòng trong cột hẹp */
 .tb-called .btn.split{background:#fff;color:var(--primary);border-color:var(--primary)} /* Hưng 09/11: sau cuộc gọi, Gọi lại là nút phụ */
@@ -409,7 +407,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 #vDetail .tb-banner{font-size:14px}
 .tb-callhd .tb-callg .btn{font-size:14px;height:29px;line-height:27px}
 .tb-callhd .tb-callg .btn.split span{line-height:27px}.tb-callhd .tb-callg .btn.split em{line-height:27px}
-.tb-callhd .tb-calln,.tb-called.hd .tb-calledtx{font-size:14px}
+.tb-called.hd .tb-calledtx{font-size:14px}
 </style>
 </head>
 <body>
@@ -2380,7 +2378,6 @@ function tbRep(g){
   return c.length ? c.slice().sort(tbInGroup)[0] : null;
 }
 function tbCallBtn(g){
-  const merged = !g.key.startsWith('solo|') && g.tickets.length>=2;
   const rep = tbRep(g); if(!rep) return '';
   // Hưng 09/11 (decisions D-25): vừa gọi xong, còn ticket chưa ghi kết quả thì không hiện nút Gọi chính nữa
   const pd = TB.pending && TB.pending.key===g.key && TB.pending.ids.size && CALL.state==='IDLE' ? TB.pending : null;
@@ -2391,7 +2388,7 @@ function tbCallBtn(g){
   }
   const n = tbCallScope(g.key).length;
   const why = !SIM.mptLoggedIn ? 'Chưa đăng nhập tổng đài' : (CALL.state!=='IDLE' ? 'Đang có cuộc gọi' : '');
-  return `<div class="tb-callg"><span class="btn pri split${why?' is-dis':''}" title="${tbEsc(why || (n>1 ? 'Gọi một lần, tính cho '+n+' ticket mình giữ trong nhóm' : 'Gọi'))}"><span data-act="call" data-id="${rep.id}">Gọi</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span>${merged||n>1 ? `<div class="tb-calln">Cho ${n} ticket</div>` : ''}</div>`;
+  return `<div class="tb-callg"><span class="btn pri split${why?' is-dis':''}" title="${tbEsc(why || (n>1 ? 'Gọi một lần, tính cho '+n+' ticket mình giữ trong nhóm' : 'Gọi'))}"><span data-act="call" data-id="${rep.id}">Gọi</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span></div>`; // 11/11 (Hưng): bỏ dòng "Cho N ticket" dưới nút Gọi, số ticket vẫn ở tooltip
 }
 /* ---------- Thao tác cấp nhóm (góp ý 11/11, Hưng cho làm thử trên demo, đảo D-11) ----------
    Nhận: nhận một lần mọi ticket Mới trong nhóm mà mình nhận được, không lấy ticket người khác, bỏ qua công việc đang nhận tự động.
