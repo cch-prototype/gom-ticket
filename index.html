@@ -302,6 +302,17 @@ td.nd{padding:0;white-space:normal}
 .tb-on #callBox .tbw-seg button.on,.tb-on #callBox .cw-chip.on,.tb-on #callBox .tbw-cnt,.tb-on #callBox .tbw-badge.on{font-weight:600}
 .tb-on #callBox .tbw-save .btn{font-size:14px;font-weight:600}
 .tb-on #callBox .tbw-miss{grid-column:1/-1}
+/* Góp ý 11/11: ô của nhóm canh giữa, nút cấp nhóm xếp dọc giữa ô */
+.tb-on .tablewrap td.tb-gc{vertical-align:middle;text-align:center}
+.tb-on .tablewrap th.tb-gcth{text-align:center}
+.tb-on .tablewrap th.tb-gth{text-align:center}
+.tb-on .tb-gacts{display:flex;flex-direction:column;align-items:center;gap:6px}
+.tb-on .tb-gacts .tb-callg{display:flex;flex-direction:column;align-items:center}
+.tb-on .tb-gacts .tb-gbtn{font-size:12px;height:24px;line-height:22px;padding:0 10px;margin:0;min-width:96px}
+.tb-on .tb-callhd .tb-gacts{flex-direction:row;align-items:center;gap:8px}
+.tb-on .tb-callhd{border-right:0;margin-right:0;padding-right:0}
+.tb-on .tb-callhd .tb-gbtn{height:29px;line-height:27px;font-size:14px}
+.tb-on .tb-callhd .tb-gacts .tb-callg{flex-direction:row;gap:6px}
 /* Khung nổi: lề đều 16px, đường chia giữa các phần, nút biểu tượng, phần Lưu nền trắng liền */
 .tb-on .tbw-float .tbf-bar{padding:8px 16px}
 .tb-on .tbw-float .tbf-r1{gap:8px}.tb-on .tbw-float .tbf-r1 .sp{flex:1}
@@ -2214,6 +2225,7 @@ function actions(t){
   if(SIM.isManager && rp.manual_assign && s!=='CLOSED')
     out.push(`<button class="btn" data-act="${s==='OPEN'||!t.assignedAgentId?'assign':'reassign'}" data-id="${t.id}">${s==='OPEN'||!t.assignedAgentId ? 'Phân công' : 'Phân công lại'}</button>`);
   tbActions(t,out); /*TOBE-HOOK*/
+  tbActionsPost(t,out); /*TOBE-HOOK*/
   return out.join('');
 }
 
@@ -2227,7 +2239,7 @@ const TOBE_ENABLED = true;
 let MODE = 'asis';
 const TB = {snap:null, cross:{}, savedFlows:null, called:new Set(), pending:null, ctkmManual:null, phoneBak:null, kq:'4', float:false};
 // UX 11/11: bốn cách ghi kết quả khi gọi chung (nút "Ghi kết quả" trên thanh trên cùng). Mặc định cách 4.
-const TB_KQ_NAME = {'1':'Sau khi cúp máy', '2':'Thẻ theo ticket', '3':'Trên Danh sách', '4':'Trong bảng + gợi ý đơn'};
+const TB_KQ_NAME = {'1':'Sau khi cúp máy', '2':'Thẻ theo ticket', '4':'Trong bảng + gợi ý đơn'}; // bỏ cách 3 (góp ý 11/11: không để thao tác từng ticket ở Danh sách)
 const tbKq = () => TB.kq || '4';
 const tbHash = () => '#tobe' + (tbKq()==='4' ? '' : '&kq='+tbKq()) + (TB.float ? '&vt=noi' : '');
 const TB_FLOW_ORDER = ['PHARMA-NHAC_CTKM','PHARMA-NHAC_THUOC_MAN_TINH','PHARMA-NHAC_VOUCHER'];
@@ -2247,6 +2259,8 @@ const TB_PEND = [
   {id:'cross_def',  kind:'def', txt:'Gom khác công việc (cross_business_flow) mặc định bật.', src:'US-3 v3, bảng cài đặt grouping_policy.'},
   {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
   {id:'remain',     kind:'sim', txt:'Số N trong "KH còn N ticket khác" đếm trên toàn bộ data demo, chưa áp quyền xem theo vai (Sale chỉ thấy ticket của mình cộng ticket Mới).', src:'US-3 v3, mục 5.1 dòng 7. Khung As-Is cũng chưa có phạm vi theo vai.'},
+  {id:'grp_act',    kind:'chot', txt:'Nhận, Phân công làm theo nhóm ở cột Thao tác của nhóm. Nút Xử lý chỉ ở màn Chi tiết. Ô Khách hàng, SĐT, Thao tác của nhóm canh chính giữa.', src:'Góp ý 11/11: Nhận, Phân công theo nhóm là hướng đã thống nhất, mockup cập nhật theo. decisions.md D-11 và US-3 còn ghi theo từng ticket, cần sửa.'},
+  {id:'grp_asg',    kind:'ba',  txt:'Phân công nhóm giao mọi ticket chưa đóng trong nhóm cho người được chọn, kể cả ticket người khác đang giữ.', src:'BA suy ra 11/11, chưa ai xác nhận.'},
   {id:'kq_ui',      kind:'ba',  txt:'Bốn cách ghi kết quả khi gọi chung, chọn bằng nút Ghi kết quả trên thanh trên cùng. BU chọn một cách.', src:'Kiro đề xuất 11/11, chưa chốt. Link có đuôi &kq=1..4 mở thẳng một cách.'},
   {id:'kq_script',  kind:'chot', txt:'Gọi chung: kịch bản gộp theo công việc, không lặp theo ticket, mở sẵn. Công việc chưa có kịch bản ghi "Chưa có kịch bản cho công việc này".', src:'Hưng chốt 11/11 trong chat. US-3 mục 4.6.11 còn NEEDS CLARIFICATION.'},
   {id:'kq_var',     kind:'sim', txt:'Ô trống [---] trong kịch bản tự điền từ dữ liệu ticket (tên voucher, HSD).', src:'Hưng chốt 11/11 trong chat. Chưa biết trang Settings hub-core có hỗ trợ biến trong kịch bản không.'},
@@ -2447,11 +2461,63 @@ function tbCallBtn(g){
   const why = !SIM.mptLoggedIn ? 'Chưa đăng nhập tổng đài' : (CALL.state!=='IDLE' ? 'Đang có cuộc gọi' : '');
   return `<div class="tb-callg"><span class="btn pri split${why?' is-dis':''}" title="${tbEsc(why || (n>1 ? 'Gọi một lần, tính cho '+n+' ticket mình giữ trong nhóm' : 'Gọi'))}"><span data-act="call" data-id="${rep.id}">Gọi</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span>${merged||n>1 ? `<div class="tb-calln">Cho ${n} ticket</div>` : ''}</div>`;
 }
+/* ---------- Thao tác cấp nhóm (góp ý 11/11, Hưng cho làm thử trên demo, đảo D-11) ----------
+   Nhận: nhận một lần mọi ticket Mới trong nhóm mà mình nhận được, không lấy ticket người khác, bỏ qua công việc đang nhận tự động.
+   Phân công (Sale Lead): giao mọi ticket chưa đóng trong nhóm cho một người, kể cả ticket người khác đang giữ (BA suy ra).
+   Xử lý: không còn ở màn Danh sách, chỉ ở màn Chi tiết (bảng Ticket của khách này, thanh nhắc). */
+const tbAutoLock = x => auto.on && auto.flows.includes(x.businessFlowId);
+const tbClaimable = ts => ts.filter(x=>x.status==='OPEN' && ((flowOf(x).operationConfig||{}).routing_policy||{}).self_claim_enabled && !tbAutoLock(x));
+const tbAutoOnly = ts => { const o = ts.filter(x=>x.status==='OPEN'); return o.length>0 && o.every(tbAutoLock); };
+const tbAssignable = ts => SIM.isManager ? ts.filter(x=>x.status!=='CLOSED' && ((flowOf(x).operationConfig||{}).routing_policy||{}).manual_assign) : [];
+function tbGroupActs(g){
+  const ts = g.tickets, many = ts.length>1, c = tbClaimable(ts), a = tbAssignable(ts), ids = l => l.map(x=>x.id).join(',');
+  const busy = ts.some(x=>BUSY.has(x.id));
+  let h = tbCallBtn(g);
+  if(c.length) h += `<button class="btn pri tb-gbtn" data-act="gclaim" data-id="${c[0].id}" data-ids="${ids(c)}"${busy?' disabled':''}>${busy?'…':(many?`Nhận ${c.length} ticket`:'Nhận')}</button>`;
+  else if(tbAutoOnly(ts)) h += `<span class="tb-autotag" title="Bạn đang bật nhận tự động cho công việc này. Hệ thống sẽ tự giao, không cần bấm Nhận.">Hệ thống tự giao</span>`;
+  if(a.length){ const re = a.some(x=>x.assignedAgentId); h += `<button class="btn tb-gbtn" data-act="gassign" data-id="${a[0].id}" data-ids="${ids(a)}"${busy?' disabled':''} title="${many?`Phân công cả ${a.length} ticket của khách`:'Phân công ticket'}">${re?'Phân công lại':'Phân công'}</button>`; }
+  return `<div class="tb-gacts">${h}</div>`;
+}
+function tbClaimGroup(idList){
+  const list = tbClaimable(idList.map(byId).filter(Boolean)); if(!list.length || list.some(x=>BUSY.has(x.id))) return;
+  list.forEach(x=>BUSY.add(x.id)); refresh();
+  setTimeout(()=>{
+    list.forEach(x=>{ BUSY.delete(x.id); logAssign(x, ME.name, ME.name, 'CLAIM');
+      Object.assign(x,{status:'ASSIGNED', assignedAgentId:ME.id, assignedAgentName:ME.name, assignedBy:ME.name, assignedAt:nowIso(), updatedAt:nowIso(), version:(x.version||1)+1}); });
+    refresh(); toast('success', list.length>1 ? `Nhận ${list.length} ticket thành công` : 'Nhận ticket thành công');
+  }, 600);
+}
+function tbAssignGroup(idList){
+  const list = tbAssignable(idList.map(byId).filter(Boolean)); if(!list.length) return;
+  openAssign(list[0], list.some(x=>x.assignedAgentId) ? 'reassign' : 'assign');
+  if(list.length<2) return; // một ticket: hộp phân công như CI
+  ASG.group = list;
+  mAsgTitle.textContent = `Phân công ${list.length} ticket của khách ${list[0].customerName||''}`;
+  const held = list.filter(x=>x.assignedAgentName);
+  mAsgCur.innerHTML = (held.length ? 'Đang giữ: ' + held.map(x=>`${short(x.id)} <strong>${tbEsc(x.assignedAgentName)}</strong>`).join(' · ') : 'Chưa ai giữ ticket nào trong nhóm.') + ' ' + tbBadge('grp_asg');
+}
+function tbConfirmAssignGroup(){
+  const {group, pick} = ASG; if(!group || !pick) return false;
+  if(CALL.state!=='IDLE' && group.some(x=>x.id===CALL.ticketId)){ toast('error','Yêu cầu đang có cuộc gọi ra. Vui lòng thử lại sau'); return true; }
+  mAsg.classList.add('hidden'); group.forEach(x=>BUSY.add(x.id)); refresh();
+  setTimeout(()=>{
+    group.forEach(x=>{ BUSY.delete(x.id); logAssign(x, ME.name, pick.name, 'MANUAL'); if(x.status==='OPEN') x.status='ASSIGNED';
+      Object.assign(x,{assignedAgentId:pick.id, assignedAgentName:pick.name, assignedBy:ME.name, assignedAt:nowIso(), updatedAt:nowIso(), version:(x.version||1)+1}); });
+    ASG.group = null; refresh(); toast('success', `Phân công ${group.length} ticket thành công`);
+  }, 600);
+  return true;
+}
+// Bảng "Ticket của khách này" ở Chi tiết: mỗi ticket chỉ còn Xử lý (Nhận, Phân công làm ở cấp nhóm)
+function tbActionsPost(t,out){
+  if(MODE!=='tobe' || !TB.inGroupTable) return;
+  for(let i=out.length-1;i>=0;i--) if(/data-act="(claim|assign|reassign)"|tb-autotag/.test(out[i])) out.splice(i,1);
+}
 // Cột Gọi chỉ có ở To-Be: chèn trước Thao tác, cố định bên phải. COLUMNS gốc không đổi nên As-Is giữ nguyên.
 function tbCols(){
   if(TB.cols) return TB.cols;
   const act = COLUMNS[COLUMNS.length-1];
-  return TB.cols = [...COLUMNS.slice(0,-1), {h:'Gọi', w:96, fix:'r', off:act.w, cls:'callcol', k:'callg'}, act];
+  // Góp ý 11/11: một cột Thao tác cấp nhóm (Gọi, Nhận, Phân công), bỏ Thao tác từng ticket và nút Xử lý khỏi Danh sách
+  return TB.cols = [...COLUMNS.slice(0,-1), {h:'Thao tác', w:150, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
 }
 const tbFixCls = (c,cs) => c.fix==='r' ? ' fr'+(cs.find(x=>x.fix==='r')===c?' fr-first':'') : fixCls(c);
 function tbRow(g,t,i,gi){
@@ -2462,12 +2528,12 @@ function tbRow(g,t,i,gi){
     const at = `class="${c.cls||''}${tbFixCls(c,cs)}"${fixAttr(c)}`;
     if(c.k==='callg'){ // Gọi: ô gộp theo nhóm từ 2 dòng, còn lại gộp theo số dòng nội dung của ticket
       const grouped = !g.key.startsWith('solo|') && g.tickets.length>=2;
-      if(grouped) return i>0 ? '' : `<td ${at} rowspan="${gN}">${tbCallBtn(g)}</td>`;
-      return `<td ${at}${rs(n)}>${tbCallBtn({key:g.key, tickets:[t]})}</td>`;
+      if(grouped) return i>0 ? '' : `<td ${at} rowspan="${gN}">${tbGroupActs(g)}</td>`;
+      return `<td ${at}${rs(n)}>${tbGroupActs({key:g.key, tickets:[t]})}</td>`;
     }
     if(ci===1 || ci===2){ // Khách hàng, SĐT: ô gộp theo cả nhóm (tổng số dòng nội dung), chỉ vẽ ở dòng đầu của nhóm
       if(i>0) return '';
-      return `<td ${at} rowspan="${gN}">${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
+      return `<td ${at.replace('class="','class="tb-gc ')} rowspan="${gN}">${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
     }
     let h;
     if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?'<span class="tb-newtag">Vừa giao</span>':''}`;
@@ -2487,7 +2553,7 @@ function renderToBe(){
   cols.innerHTML = cs.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('');
   cols.parentElement.style.width = cs.reduce((n,c)=>n+(c.w||0),0)+'px';
   // Tiêu đề Thao tác trải hai cột (Gọi và Thao tác)
-  thead.innerHTML = cs.map(c=> c.k==='callg' ? `<th colspan="2" class="fr fr-first" style="right:0">Thao tác</th>` : (c===cs[cs.length-1] ? '' : `<th class="${tbFixCls(c,cs)}"${fixAttr(c)}>${c.h}</th>`)).join('');
+  thead.innerHTML = cs.map((c,ci)=> c.k==='callg' ? `<th class="fr fr-first tb-gth" style="right:0">Thao tác</th>` : `<th class="${tbFixCls(c,cs)}${ci===1||ci===2?' tb-gcth':''}"${fixAttr(c)}>${c.h}</th>`).join('');
   const snap = tbSnap(), pages = tbPages(snap.groups, state.size);
   state.page = Math.min(state.page, pages.length);
   const view = pages[state.page-1] || [];
@@ -2536,11 +2602,8 @@ function tbDetail(t){
   TB.curId = t.id;
   tbPaintGroup(t);
   if(grp.length>1){ // Đầu trang: [Gọi cho N ticket] | Cho ticket <mã đang xem>: các nút còn lại của ticket đang xem (Hưng 09/11)
-    const da=document.getElementById('dActs');
-    const sp=da.querySelector('[data-act="call"]'); if(sp) sp.closest('.split').remove();
-    const cb = tbCallBtn({key, tickets:grp, hd:true});
-    const rest = da.innerHTML.trim() && !da.querySelector('.tb-for') ? `<span class="tb-for">Cho ticket ${short(t.id)}:</span>` : '';
-    da.insertAdjacentHTML('afterbegin', (cb ? `<span class="tb-callhd">${cb}</span>` : '') + rest);
+    const da=document.getElementById('dActs'); // góp ý 11/11: chỉ còn nút cấp nhóm, Xử lý từng ticket nằm ở bảng bên dưới
+    da.innerHTML = `<span class="tb-callhd">${tbGroupActs({key, tickets:grp, hd:true})}</span>`;
   }
   const ids = (TB.pending && TB.pending.key===key) ? [...TB.pending.ids] : [], n = ids.length;
   if(n>0 && CALL.state==='IDLE'){ b.classList.remove('hidden'); // UX 11/11: đang gọi thì ẩn thanh này, ghi kết quả ở khung tổng đài và bảng nhóm
@@ -3022,7 +3085,7 @@ function tbInit(){
     if(cur.length!==app.length || cur.some(v=>!app.includes(v))) applyFilters();
   },0);
   ['change','click'].forEach(ev=>document.getElementById('fFlow').addEventListener(ev, tbFlowApply, true));
-  if(location.hash.startsWith('#tobe')){ const m = location.hash.match(/kq=([1-4])/); if(m) TB.kq = m[1]; TB.float = /vt=noi/.test(location.hash); tbSetMode('tobe'); }
+  if(location.hash.startsWith('#tobe')){ const m = location.hash.match(/kq=([124])/); if(m) TB.kq = m[1]; TB.float = /vt=noi/.test(location.hash); tbSetMode('tobe'); }
 }
 /*TOBE:END js*/
 /* ---------- LIST ---------- */
@@ -3239,6 +3302,7 @@ function paintAsg(){
     : '<div class="ms-empty">Không tìm thấy nhân viên</div>');
 }
 function confirmAssign(){
+  if(ASG.group && tbConfirmAssignGroup()) return; /*TOBE-HOOK*/
   const {t, mode, pick} = ASG; if(!t||!pick) return;
   if(t.status==='CLOSED'){ toast('error', mode==='reassign'?'Yêu cầu đã đóng, không thể phân công lại':'Yêu cầu đã đóng, không thể phân công'); return; }
   if(CALL.state!=='IDLE' && CALL.ticketId===t.id){ toast('error','Yêu cầu đang có cuộc gọi ra. Vui lòng thử lại sau'); return; }
@@ -3389,6 +3453,7 @@ document.addEventListener('click', e=>{
   const t = byId(el.dataset.id); if(!t) return;
   e.stopPropagation();
   ({claim:()=>doClaim(t), assign:()=>openAssign(t,'assign'), reassign:()=>openAssign(t,'reassign'),
+    gclaim:()=>tbClaimGroup((el.dataset.ids||t.id).split(',')), gassign:()=>tbAssignGroup((el.dataset.ids||t.id).split(',')), /*TOBE-HOOK*/
     call:()=>doCall(t,false), calldd:()=>showDD(el,t), calldid:()=>{ddMenu.classList.add('hidden');doCall(t,true);}, resolve:()=>openResolve(t, !!el.closest('#vDetail'))})[el.dataset.act]?.();
 });
 mAsgQ.addEventListener('input', paintAsg);
