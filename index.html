@@ -306,6 +306,11 @@ td.nd{padding:0;white-space:normal}
 .tb-on .tablewrap td.tb-gc{vertical-align:middle;text-align:center}
 .tb-on .tb-callhd .tb-calln{display:none}
 .tb-on .tb-infoid{color:var(--primary)}
+.tb-on .tb-ic{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-top:8px}
+.tb-on .tb-ic.cur{border-color:var(--primary);box-shadow:inset 3px 0 0 var(--primary)}
+.tb-on .tb-ich{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}.tb-on .tb-ich .link{font-weight:600}
+.tb-on .tb-ic .kv{margin:0}
+.tb-on .tb-tlid{color:var(--primary)}
 .tb-on #callBox .tbw-script{display:flex;flex-wrap:wrap;gap:8px 24px}.tb-on #callBox .tbw-script > div{flex:1 1 320px;min-width:0}.tb-on #callBox .tbw-script > .tbw-miss,.tb-on #callBox .tbw-script > .tbw-sh{flex-basis:100%}
 .tb-on .tb-gt tr.tb-pend td{background:#fff8e1}
 .tb-on .tb-gt tr.tb-pend td:first-child{box-shadow:inset 3px 0 0 #f59e0b}
@@ -2517,6 +2522,32 @@ function tbConfirmAssignGroup(){
   }, 600);
   return true;
 }
+/* ---------- Chi tiết: thông tin của tất cả ticket trong nhóm (Hưng 11/11) ----------
+   Nhóm từ 2 ticket: Thông tin ticket hiện một thẻ cho mỗi ticket; Lịch sử phân công, Lịch sử cuộc gọi gộp cả nhóm, ghi kèm mã ticket.
+   Một cuộc gọi chung tạo bản ghi trên từng ticket, gộp lại thành một dòng theo thời điểm bắt đầu. Ticket lẻ giữ như CI. */
+function tbInfoAll(t, grp, dup){
+  const dl = document.getElementById('dInfo'), h = dl.previousElementSibling;
+  let box = document.getElementById('tbInfoAll');
+  if(!dup){ h.innerHTML = 'Thông tin ticket <span>⌄</span>'; dl.style.display=''; if(box) box.remove(); return; }
+  h.innerHTML = `<span>Thông tin ticket (${grp.length})</span><span>⌄</span>`; dl.style.display='none';
+  if(!box){ box = document.createElement('div'); box.id='tbInfoAll'; dl.after(box); }
+  const kv = (k,v) => `<dt>${k}</dt><dd>${v}</dd>`;
+  box.innerHTML = grp.map(x=>{ const r = resultOf(x);
+    return `<div class="tb-ic${x.id===t.id?' cur':''}"><div class="tb-ich"><span class="link" onclick="go('${x.id}')">${short(x.id)}</span><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span><span class="tag st-${x.status}">${STATUS[x.status]}</span></div>`
+      + `<dl class="kv">${kv('NV đảm trách', x.assignedAgentName||'—')}${kv('Kết quả xử lý', r.label)}${kv('Ghi chú', r.note)}${kv('Thời gian tạo', vnt(x.createdAt))}${kv('Cập nhật gần nhất', vnt(x.updatedAt))}</dl></div>`; }).join('');
+  // Lịch sử phân công: gộp cả nhóm, mới nhất trên cùng
+  const asg = grp.flatMap(x=>(x._asg || (x.assignedAt ? [{at:x.assignedAt, by:x.assignedBy, to:x.assignedAgentName}] : [])).map(a=>({...a, id:x.id}))).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  const ag = new Map(); asg.forEach(a=>{ const k=a.at+'|'+a.by+'|'+a.to; if(!ag.has(k)) ag.set(k,{...a, ids:[]}); ag.get(k).ids.push(a.id); }); // giao cùng lúc cho nhiều ticket: một dòng
+  const al = [...ag.values()];
+  dAsgN.textContent = al.length;
+  dAsg.innerHTML = al.map(a=>`<div class="tl">${vnt(a.at)}<br>Ticket: ${a.ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}<br>Phân công bởi: <b>${a.by}</b><br>Người nhận: <b>${a.to}</b></div>`).join('') || '<div class="note">Chưa phân công</div>';
+  // Lịch sử cuộc gọi: một cuộc gọi chung là một dòng, ghi các ticket được tính
+  const calls = new Map();
+  grp.forEach(x=>(ATTEMPTS[x.id]||[]).forEach(a=>{ const k = a.startedAt+'|'+(a.agentName||''); if(!calls.has(k)) calls.set(k,{a, ids:[]}); calls.get(k).ids.push(x.id); }));
+  const cl = [...calls.values()].sort((p,q)=>String(q.a.startedAt).localeCompare(String(p.a.startedAt)));
+  dAttN.textContent = cl.length;
+  dAtt.innerHTML = cl.map((c,i)=>`<div class="tl"><b style="color:var(--primary)">Lần ${cl.length-i}</b>${c.ids.length>1?` · gọi chung ${c.ids.length} ticket`:''}<br>Ticket: ${c.ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}<br>Nhân viên: ${c.a.agentName||'—'}<br>Bắt đầu: ${vnt(c.a.startedAt)}<br>Kết thúc: ${c.a.endedAt?vnt(c.a.endedAt):'—'}</div>`).join('') || '<div class="note">Chưa có cuộc gọi</div>';
+}
 // Bảng "Ticket của khách này" ở Chi tiết: mỗi ticket chỉ còn Xử lý (Nhận, Phân công làm ở cấp nhóm)
 function tbActionsPost(t,out){
   if(MODE!=='tobe' || !TB.inGroupTable) return;
@@ -2622,8 +2653,7 @@ function tbDetail(t){
   const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu','Ngày cần gọi','Thời gian hết hạn']; // 11/11: giữ Kết quả xử lý, Ghi chú như CI
   document.querySelectorAll('#dInfo dt').forEach(dt=>{ const hide = dup && drop.includes(dt.textContent); dt.style.display = hide?'none':''; if(dt.nextElementSibling) dt.nextElementSibling.style.display = hide?'none':''; });
   document.getElementById('dItems').style.display = dup ? 'none' : '';
-  // Nhóm từ 2 ticket: tiêu đề ghi rõ là ticket đang xem (As-Is không qua đây nên giữ chữ CI)
-  document.getElementById('dInfo').previousElementSibling.innerHTML = (dup ? `<span>Thông tin ticket <b class="tb-infoid">${short(t.id)}</b></span>` : 'Thông tin ticket') + ' <span>⌄</span>';
+  tbInfoAll(t, grp, dup); /*TOBE-HOOK*/
   const ids = (TB.pending && TB.pending.key===key) ? [...TB.pending.ids] : [], n = ids.length;
   if(false){ b.classList.remove('hidden'); // 11/11: bỏ thanh nhắc, dòng chưa ghi kết quả tô vàng trong bảng nhóm // UX 11/11: đang gọi thì ẩn thanh này, ghi kết quả ở khung tổng đài và bảng nhóm
     const busy = CALL.state!=='IDLE';
