@@ -402,6 +402,8 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 #vDetail .it,#vDetail #dItems .it{font-size:14px;line-height:21px}
 #vDetail #dItems>div:first-child{font-size:14px!important}
 #vDetail .tb-gt{font-size:14px}
+.tb-on .filters{grid-template-columns:repeat(4,minmax(140px,1fr)) auto} /* 11/11: Ngày tạo ở cuối hàng trên, rộng theo nội dung */
+.tb-on .filters:not(:has(#fAgentWrap.hidden)){grid-template-columns:repeat(5,minmax(120px,1fr)) auto}
 @media (max-width:1400px){#vDetail .tb-gt th{white-space:normal;vertical-align:bottom}#vDetail .tb-gt th,#vDetail .tb-gt td{padding-left:8px;padding-right:8px}} /* 11/11: màn 1280px bảng nhóm không tràn, tiêu đề cột được xuống dòng */
 #vDetail .tb-gh,#vDetail .tb-ght{font-size:14px}
 #vDetail .tb-for{font-size:14px}
@@ -2822,6 +2824,13 @@ function tbSyncUI(){
   document.getElementById('tbBar').classList.add('hidden');
   document.getElementById('tbPend').classList.add('hidden');
   tbPaintSim(); tbMoveSim(on); tbAutoModalText(); if(on) tbAutoChips(); else autoChips.innerHTML='';
+  tbMoveDate(on);
+}
+// 11/11 (Hưng): To-Be đưa ô Ngày tạo lên hàng trên của bộ lọc, cuối hàng. As-Is giữ vị trí như CI (hàng dưới, đầu hàng).
+function tbMoveDate(on){
+  const box = document.getElementById('fFrom').closest('.dr').parentElement, row = document.querySelector('.filters .frow');
+  if(on){ if(box.parentElement===row) row.before(box); box.classList.add('tb-fdate'); }
+  else { if(box.parentElement!==row) row.prepend(box); box.classList.remove('tb-fdate'); }
 }
 function tbSetMode(m){
   if(!TOBE_ENABLED || m===MODE) return;
