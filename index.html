@@ -425,6 +425,9 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-simpop .sim{margin:0;border:none;background:none;padding:0;flex-direction:column;align-items:flex-start;gap:6px}
 .tb-simpop .sim>label,.tb-simpop #tbSim label{display:block}
 .tb-simpop #tbSim{display:flex !important;flex-direction:column;gap:6px}
+.tb-on .sim > label:has(#simMgr){display:none}
+.tb-on .tb-simpop #tbSim{order:1}.tb-on .tb-simpop .sim > label{order:2}
+.tb-on .tb-role{display:flex;align-items:center;gap:12px}.tb-on .tb-role label{display:inline-flex !important;align-items:center;gap:4px}
 .tb-for{font-size:12px;color:var(--muted);margin-right:6px}
 .tb-callhd{display:inline-block;margin-right:14px;padding-right:14px;border-right:1px solid var(--line);vertical-align:middle}
 .tb-callhd .tb-callg{display:flex;align-items:center;gap:6px}.tb-callhd .tb-calln{margin:0;font-size:12px}
@@ -2928,7 +2931,15 @@ function tbPaintSim(){
   const crossOn = !FLOWS.some(f=>TB.cross[f.id]===false);
   const ctkm = ((FLOWS.find(f=>f.id==='PHARMA-NHAC_CTKM').operationConfig||{}).closure_policy||{}).manual_close === false;
   // Bỏ ô "Nhắc CTKM tắt đóng tay" khỏi Giả lập (Hưng 09/11). Hàm tbSimCtkm giữ lại, không còn nút gọi tới.
-  el.innerHTML = `<label><input type="checkbox" ${crossOn?'checked':''} onchange="tbCrossAll(this.checked)"> Gom khác công việc</label>`;
+  // 11/11 (Hưng): Giả lập chọn vai Agent / Sale Lead; bỏ ô Gom khác công việc, demo luôn gom theo SĐT kể cả khác công việc
+  if(!crossOn) tbCrossAll(true);
+  el.innerHTML = `<span class="tb-role" role="radiogroup" aria-label="Vai trò">Vai trò:`
+    + `<label><input type="radio" name="tbRole" ${SIM.isManager?'':'checked'} onchange="tbSetRole(false)"> Agent</label>`
+    + `<label><input type="radio" name="tbRole" ${SIM.isManager?'checked':''} onchange="tbSetRole(true)"> Sale Lead</label></span>`;
+}
+function tbSetRole(mgr){
+  SIM.isManager = !!mgr; const c = document.getElementById('simMgr'); if(c) c.checked = SIM.isManager; // giữ khớp ô của As-Is
+  syncFilters(); refresh();
 }
 function tbCrossAll(on){ FLOWS.forEach(f=>{ if(on) delete TB.cross[f.id]; else TB.cross[f.id]=false; }); TB.snap=null; state.page=1; render(); }
 function tbCross(id,on){ if(on) delete TB.cross[id]; else TB.cross[id]=false; TB.snap=null; state.page=1; render(); }
