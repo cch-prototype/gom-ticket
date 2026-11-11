@@ -227,6 +227,26 @@ td.nd{padding:0;white-space:normal}
 #cwNote{width:100%;border:1px solid #d1d5db;border-radius:5px;padding:6px 8px;font:inherit}
 .cw-save{width:100%;margin-top:8px;padding:7px}
 .cw-err{color:#dc2626;font-size:12.5px;margin-top:8px}
+/* UX 11/11: khung tổng đài To-Be bản gọn, chỉ áp khi body có .tb-on */
+.tb-on .call-w{position:sticky;top:48px;z-index:3;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.tb-on .cw-nm{font-size:14px}
+.tb-on .cw-scr{margin-left:auto;color:#fff;text-decoration:underline;cursor:pointer;font-size:12.5px}
+.tb-on .cw-back{margin-left:auto;background:#fff;color:var(--primary);border:none;border-radius:5px;padding:5px 10px;font-weight:600;cursor:pointer}
+.tb-on .cw-scr + .cw-x,.tb-on .cw-back + .cw-x{margin-left:8px}
+.tb-on .tb-cwmini .cw-bar{margin:0;border-radius:0}
+.tbw-script{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;padding:8px 14px;background:#f0fdf4;font-size:12.5px;line-height:1.6;border-bottom:1px solid var(--line)}
+.tbw-body{display:grid;grid-template-columns:auto 1fr 260px;gap:18px;padding:6px 14px 10px;align-items:start}
+.tbw-seg{display:inline-flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden}
+.tbw-seg button{border:0;border-right:1px solid #d1d5db;background:#fff;padding:5px 12px;font:inherit;font-size:12.5px;cursor:pointer}
+.tbw-seg button:last-child{border-right:0}.tbw-seg button.on{background:var(--primary);color:#fff;font-weight:600}
+.tbw-hint{font-size:12px;color:var(--muted);margin-top:6px}
+.tbw-sub{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:4px}
+.tbw-save{display:flex;flex-direction:column;gap:6px;padding-top:20px}
+.tbw-save .btn{width:100%;padding:7px}.tbw-save .cw-err{margin-top:0}
+.tbw-cnt{font-size:12px;font-weight:600}
+.tbw-sel{border:1px solid #d1d5db;border-radius:5px;padding:3px 6px;font:inherit;font-size:12.5px;max-width:170px;background:#fff}
+.tbw-sel.on{border-color:var(--primary);background:#eef4ff}
+.tbw-wait{font-size:12px;color:var(--muted)}.tbw-auto{font-size:12px;font-weight:600}
 .call-box{position:fixed;right:16px;bottom:16px;z-index:58;width:340px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:12px 14px;border-top:3px solid var(--primary)}
 .cb-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .cb-s{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:10px;background:#f0f2f5}
@@ -2391,7 +2411,7 @@ function tbPaintGroup(t){
   const g = document.getElementById('tbGroup');
   const key = tbKey(t), grp = TICKETS.filter(x=>tbKey(x)===key && (tbCanSee(x) || x.id===t.id)).sort(tbInGroup);
   if(grp.length<2){ g.classList.add('hidden'); g.innerHTML=''; return; }
-  const col = !!TB.gCollapsed;
+  const col = !!TB.gCollapsed && !(MODE==='tobe' && CALL.state!=='IDLE' && TB.pending && TB.pending.key===key); // đang gọi chung thì luôn mở bảng để chọn kết quả
   g.classList.remove('hidden');
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?' (đang xem)':''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
   const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở bảng ticket của khách':'Thu gọn bảng ticket của khách'}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
@@ -2401,7 +2421,7 @@ function tbPaintGroup(t){
       <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}${copyIc(x.externalRef,'mã tham chiếu')}</td>
       <td class="nd">${tbContent(x)}</td>
       <td><span class="tag st-${x.status}">${STATUS[x.status]}</span></td>
-      <td>${resultOf(x).label}</td><td>${vn(x.callScheduledDate)}</td><td>${vnt(x.expiredTime)}</td>
+      <td>${tbResCell(x)}</td><td>${vn(x.callScheduledDate)}</td><td>${vnt(x.expiredTime)}</td>
       <td class="act">${(TB.inGroupTable=true, actions(x))}</td></tr>`).join('') + `</tbody></table>`;
   TB.inGroupTable = false;
   g.innerHTML = head + table;
@@ -2426,11 +2446,12 @@ function tbDetail(t){
     da.insertAdjacentHTML('afterbegin', (cb ? `<span class="tb-callhd">${cb}</span>` : '') + rest);
   }
   const ids = (TB.pending && TB.pending.key===key) ? [...TB.pending.ids] : [], n = ids.length;
-  if(n>0){ b.classList.remove('hidden');
+  if(n>0 && CALL.state==='IDLE'){ b.classList.remove('hidden'); // UX 11/11: đang gọi thì ẩn thanh này, ghi kết quả ở khung tổng đài và bảng nhóm
     const busy = CALL.state!=='IDLE';
     b.innerHTML = `Còn <b>${n}</b> ticket của bạn chưa ghi kết quả${busy?' (đóng widget tổng đài để ghi)':''}:<div>`
       + ids.map(id=>{ const x=TICKETS.find(z=>z.id===id); return `<span class="tb-bl">${short(id)} · ${flowName(x.businessFlowId)}<button class="btn pri" data-act="resolve" data-id="${id}"${busy?' disabled':''}>Xử lý</button></span>`; }).join('') + `</div>`; }
   else { b.classList.add('hidden'); b.innerHTML=''; }
+  if(CALL.state!=='IDLE') document.getElementById('dActs').innerHTML = ''; // UX 11/11: đang gọi thì bỏ nút Gọi, Xử lý trên tiêu đề (đều bị khoá) cho đỡ rối
 }
 
 /* ---------- Gọi theo nhóm và ghi kết quả từng ticket ---------- */
@@ -2496,8 +2517,62 @@ const tbWList = t => (MODE==='tobe' && TB.pending && TB.pending.key===tbKey(t) &
 // Bước 2: khách nghe máy thì chọn kết quả nhu cầu cho từng ticket. Kết quả "không nghe máy" nhận theo nhãn chứa "Không nghe máy".
 const tbNoAns = c => /Không nghe máy/i.test((DISP_CATALOG.find(x=>x.code===c)||{}).label||'');
 const tbCodeByLabel = (t,label) => (ALLOWED[t.businessFlowId]||[]).find(c=>DISP_CATALOG.find(x=>x.code===c).label===label);
-function tbWReach(v){ CALL.reach = CALL.reach===v ? null : v; CALL.err=null; paintCall(); }
-function tbWPick(id,c){ CALL.picks=CALL.picks||{}; CALL.picks[id] = CALL.picks[id]===c ? undefined : c; CALL.err=null; paintCall(); }
+function tbWReach(v){ CALL.reach = CALL.reach===v ? null : v; CALL.err=null; tbRepaintCall(); }
+function tbWPick(id,c){ CALL.picks=CALL.picks||{}; CALL.picks[id] = CALL.picks[id]===c ? undefined : c; CALL.err=null; tbRepaintCall(); }
+/* ---------- Khung tổng đài To-Be bản gọn (UX 11/11, chỉ To-Be) ----------
+   Màn Danh sách: khung thu gọn còn một thanh, có tên khách và nút về màn Chi tiết để ghi kết quả.
+   Màn Chi tiết, gọi chung từ 2 ticket: bước 1 nằm trong khung, bước 2 chọn ở cột Kết quả xử lý của bảng "Ticket của khách này".
+   Màn Chi tiết, gọi một ticket: dùng khung cũ (trả false). Khung dính đầu màn hình khi cuộn (CSS .tb-on .call-w). */
+function tbWSet(id,c){ CALL.picks=CALL.picks||{}; CALL.picks[id] = c || undefined; CALL.err=null; tbRepaintCall(); }
+function tbWScript(){ CALL.showScript = !CALL.showScript; paintCall(); }
+function tbRepaintCall(){ paintCall(); if(MODE==='tobe' && CUR && !vDetail.classList.contains('hidden')) tbPaintGroup(CUR); }
+function tbAfterNav(){ if(MODE==='tobe' && CALL.state!=='IDLE') paintCall(); }
+function tbPaintCallTB(t){
+  const ne = document.getElementById('cwNote'); if(ne) CALL.note = ne.value; // giữ ghi chú khi đổi màn
+  const ref = CALL.state==='ENDED' ? CALL.attempt.talkDurationSec : Math.round((Date.now()-CALL.t0)/1000);
+  const mm = String(Math.floor(ref/60)).padStart(2,'0')+':'+String(ref%60).padStart(2,'0');
+  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED:'⛔ Đã kết thúc cuộc gọi'}[CALL.state];
+  const sim = CALL.state==='DIALING' ? '<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>' : '';
+  const endBtn = `<button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':'Kết thúc cuộc gọi'}</button>`;
+  const bar = extra => `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><b class="cw-nm">${tbEsc(t.customerName||'')}</b><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>${sim}${extra||''}${endBtn}</div>`;
+  if(vDetail.classList.contains('hidden')){ // đang ở màn Danh sách
+    callBox.classList.add('tb-cwmini');
+    callBox.innerHTML = bar(`<button class="cw-back" onclick="go('${t.id}')">Về màn Chi tiết để ghi kết quả</button>`);
+    return true;
+  }
+  callBox.classList.remove('tb-cwmini');
+  const list = tbWList(t); if(!list) return false;
+  const r = CALL.reach, P = CALL.picks||{}, N = list.length;
+  const chosen = r==='ANSWERED' ? list.filter(x=>P[x.id]).length : (r ? N : 0);
+  const noAns = (ALLOWED[t.businessFlowId]||[]).filter(tbNoAns).map(c=>DISP_CATALOG.find(x=>x.code===c));
+  const seg = (on,txt,js) => `<button class="${on?'on':''}" aria-pressed="${on}" onclick="${js}">${txt}</button>`;
+  const step1 = `<div class="tbw-seg" role="group" aria-label="Khách có nghe máy không">` + seg(r==='ANSWERED','Khách nghe máy',"tbWReach('ANSWERED')")
+    + noAns.map(d=>seg(r===d.label, d.label, `tbWReach('${tbEsc(d.label)}')`)).join('') + `</div>`;
+  const hint = !r ? 'Chọn khách có nghe máy không.'
+    : r==='ANSWERED' ? 'Bước 2: chọn kết quả ở cột <b>Kết quả xử lý</b> của bảng bên dưới.'
+    : `"${tbEsc(r)}" sẽ ghi cho cả ${N} ticket.`;
+  const flows = [...new Set(list.map(x=>x.businessFlowId))];
+  const script = CALL.showScript ? `<div class="tbw-script">${flows.map(f=>`<div><b>${flowName(f)}</b><br>${(SCRIPTS[f]||'Chưa có kịch bản cho công việc này.').replace(/\n/g,'<br>')}</div>`).join('')}</div>` : '';
+  const saveTx = r ? `Lưu kết quả ${chosen}/${N} ticket` : 'Lưu kết quả';
+  const left = r==='ANSWERED' && chosen>0 && chosen<N ? `<div class="tbw-sub">${N-chosen} ticket chưa chọn sẽ chờ ghi sau bằng nút Xử lý.</div>` : '';
+  callBox.innerHTML = bar(`<a class="cw-scr" onclick="tbWScript()">${CALL.showScript?'Ẩn kịch bản ▴':'Kịch bản gợi ý ▾'}</a>`) + script
+    + `<div class="tbw-body"><div><div class="cw-step">Bước 1. Khách có nghe máy không?</div>${step1}<div class="tbw-hint">${hint}</div></div>`
+    + `<div class="tbw-note"><div class="cw-step">Ghi chú chung cho cuộc gọi <span class="tbw-sub">ghi vào cả ${N} ticket</span></div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách..." oninput="CALL.note=this.value">${tbEsc(CALL.note||'')}</textarea></div>`
+    + `<div class="tbw-save">${r==='ANSWERED'?`<span class="tbw-cnt">Đã chọn ${chosen}/${N}</span>`:''}${CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}<button class="btn pri" onclick="callSave()">${saveTx}</button>${left}</div></div>`;
+  return true;
+}
+// Ô Kết quả xử lý trong bảng "Ticket của khách này" khi đang gọi chung (chỉ To-Be)
+function tbResCell(x){
+  const p = TB.pending, ct = CALL.ticketId && byId(CALL.ticketId);
+  const inCall = MODE==='tobe' && CALL.state!=='IDLE' && ct && p && p.key===tbKey(ct) && p.ids.size>=2 && p.ids.has(x.id);
+  if(!inCall) return resultOf(x).label;
+  const r = CALL.reach;
+  if(!r) return `<span class="tbw-wait">Chọn bước 1 trước</span>`;
+  if(r!=='ANSWERED') return `<span class="tbw-auto">${tbEsc(r)}</span>`;
+  const v = (CALL.picks||{})[x.id] || '';
+  const opts = (ALLOWED[x.businessFlowId]||[]).filter(c=>!tbNoAns(c)).map(c=>{ const d=DISP_CATALOG.find(z=>z.code===c); return `<option value="${c}"${v===c?' selected':''}>${d.label}</option>`; }).join('');
+  return `<select class="tbw-sel${v?' on':''}" aria-label="Kết quả xử lý ticket ${short(x.id)}" onchange="tbWSet('${x.id}',this.value)"><option value="">Chọn kết quả</option>${opts}</select>`;
+}
 function tbWidgetMulti(t){
   const list = tbWList(t); if(!list) return '';
   const r = CALL.reach, chip = (on,txt,js,title='') => `<button class="cw-chip ${on?'on':''}" title="${tbEsc(title)}" onclick="${js}">${txt}</button>`;
@@ -2523,7 +2598,7 @@ function tbWidgetSave(t){
   if(!picks.length){ tbWErr('Vui lòng chọn kết quả cho ít nhất một ticket'); return true; }
   const note=document.getElementById('cwNote').value.trim();
   // UX 11/11: giữ hành vi CI (Lưu kết thúc cuộc gọi) nhưng hỏi trước để agent không cúp máy ngang khách
-  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(!confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
+  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(MODE==='tobe' && !confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
   picks.forEach(([x,d])=>{ // cùng cách ghi với Lưu trong widget của CI, cho từng ticket
     const a = x.id===t.id ? CALL.attempt : (ATTEMPTS[x.id]||[]).slice(-1)[0];
     if(a) Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
@@ -2787,7 +2862,7 @@ function render(){
 const custCode = t => t.customerId || ((d=>d?String(100000+(+d%900000)):'—')(String(t.phone||'').replace(/\D/g,'').slice(-6)));
 function go(id){
   vList.classList.toggle('hidden', !!id); vDetail.classList.toggle('hidden', !id);
-  if(!id){ render(); return; }
+  if(!id){ render(); tbAfterNav(); /*TOBE-HOOK*/ return; }
   const t = CUR = TICKETS.find(x=>x.id===id), flow = FLOWS.find(f=>f.id===t.businessFlowId);
   dCode.innerHTML = 'Mã yêu cầu  '+short(t.id)+copyIc(t.id,'mã yêu cầu');
   dStatus.innerHTML = `<span class="tag st-${t.status}">${STATUS[t.status]}</span>`;
@@ -2812,6 +2887,7 @@ function go(id){
   rTabs.innerHTML = tabs.map((n,i)=>`<button class="${i?'':'on'}" onclick="tab(this,'${n}')">${n}</button>`).join('');
   tab(rTabs.firstChild, tabs[0]);
   tbDetail(t); /*TOBE-HOOK*/
+  tbAfterNav(); /*TOBE-HOOK*/
   window.scrollTo(0,0);
 }
 let CUR = null; const t0 = () => CUR;
@@ -2971,7 +3047,7 @@ function doCall(t, useDid){
   if(t.status==='ASSIGNED') t.status='IN_PROGRESS'; // CI test 06/11: sau cuộc gọi phiếu ở Đang xử lý
   t.updatedAt=nowIso();
   Object.assign(CALL,{state:'DIALING', ticketId:t.id, attempt:at, t0:Date.now(), pick:null});
-  clearInterval(CALL.timer); CALL.timer=setInterval(paintTick,1000);
+  clearInterval(CALL.timer); CALL.timer=setInterval(MODE==='tobe'?paintTick:paintCall,1000); // As-Is giữ như bản gốc
   tbOnCall(t); /*TOBE-HOOK*/
   go(t.id); paintCall(); render();
 }
@@ -2988,15 +3064,15 @@ function callFail(){ // makeCall lỗi sau khi đã tạo attempt → attempt n�
   tbOnCallFail(); /*TOBE-HOOK*/
   Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh();
 }
-function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null, err:null}); paintCall(); refresh(); }
+function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null, err:null, note:null, showScript:false}); paintCall(); refresh(); }
 function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   const t=byId(CALL.ticketId); if(!t) return;
   if(tbWidgetSave(t)) return; /*TOBE-HOOK*/
   const d=DISP_CATALOG.find(x=>x.code===CALL.pick);
-  if(!d){ tbWErr('Vui lòng chọn kết quả'); return; }
+  if(!d){ if(MODE==='tobe') tbWErr('Vui lòng chọn kết quả'); else toast('error','Vui lòng chọn kết quả'); return; } // [chưa kiểm] câu báo lỗi của widget
   const note=document.getElementById('cwNote').value.trim();
   // UX 11/11: giữ hành vi CI (Lưu kết thúc cuộc gọi) nhưng hỏi trước để agent không cúp máy ngang khách
-  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(!confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
+  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(MODE==='tobe' && !confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
   const a=CALL.attempt; Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
   Object.assign(t,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(t.version||1)+1});
   if(d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.resolution=d.resolution; t.closedAt=nowIso(); }
@@ -3017,16 +3093,18 @@ function paintCall(){
   callBox.classList.remove('hidden');
   const ref = CALL.state==='ENDED' ? CALL.attempt.talkDurationSec : Math.round((Date.now()-CALL.t0)/1000);
   const mm = String(Math.floor(ref/60)).padStart(2,'0')+':'+String(ref%60).padStart(2,'0');
-  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED:'⛔ Đã kết thúc cuộc gọi'}[CALL.state];
+  if(MODE==='tobe' && tbPaintCallTB(t)) return; /*TOBE-HOOK*/
+  const TBM = MODE==='tobe'; // As-Is giữ chữ của CI
+  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED: TBM ? '⛔ Đã kết thúc cuộc gọi' : '⛔ Đã kết thúc - Kết thúc cuộc gọi'}[CALL.state];
   const codes = ALLOWED[t.businessFlowId]||[];
-  const keepNote = document.getElementById('cwNote')?.value || '';
-  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>
+  const keepNote = document.getElementById('cwNote')?.value || (TBM ? CALL.note||'' : '');
+  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span>${TBM?`<b class="cw-nm">${tbEsc(t.customerName||'')}</b>`:''}<span class="cw-ph">☎ ${tbDialPhone(t)}</span><span${TBM?' id="cwClock"':''}>${mm}</span>
       ${CALL.state==='DIALING'?'<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>':''}
-      <button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':'Kết thúc cuộc gọi'}</button></div>
+      <button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':(TBM?'Kết thúc cuộc gọi':'Hủy gọi')}</button></div>
     <div class="cw-body"><div><div class="cw-h">📋 KỊCH BẢN GỢI Ý</div><div class="cw-script">${(SCRIPTS[t.businessFlowId]||'Chưa có kịch bản cho công việc này.').replace(/\n/g,'<br>')}</div></div>
-      <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`}).join('')}</div>`}
+      <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';${TBM?'CALL.err=null;':''}paintCall()">${d.label}</button>`}).join('')}</div>`}
       <div class="cw-h" style="margin-top:10px">✍ GHI CHÚ CUỘC GỌI</div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách...">${keepNote}</textarea>
-      ${CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}
+      ${TBM && CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}
       <button class="btn pri cw-save" onclick="callSave()">Lưu</button></div></div>`;
 }
 
