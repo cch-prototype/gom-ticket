@@ -293,6 +293,42 @@ td.nd{padding:0;white-space:normal}
 .tb-on .tbw-float .tbw-foot{display:contents}.tb-on .tbw-float .tbw-foot .tbw-note{margin:10px 0 6px}
 .tb-on .tbw-float.tbw-fmin > :not(.cw-bar){display:none}
 .tb-on .tbw-float.tbw-fmin{width:auto;max-width:400px}
+/* UX 11/11: thống nhất chữ trong khung tổng đài To-Be. 3 cỡ: 14 (đọc, tiêu đề), 13 (nút), 12 (chữ phụ). 2 độ đậm: 400, 600. */
+.tb-on #callBox{font-size:14px;line-height:1.5}
+.tb-on #callBox .cw-nm,.tb-on #callBox .cw-ph,.tb-on #callBox .cw-step,.tb-on #callBox .tbw-prod,.tb-on #callBox .tbw-script b,.tb-on #callBox .cw-bar > b{font-size:14px;font-weight:600}
+.tb-on #callBox .tbw-script,.tb-on #callBox .cw-script,.tb-on #callBox .tbw-none,.tb-on #callBox textarea,.tb-on #callBox #cwClock{font-size:14px;line-height:1.5}
+.tb-on #callBox .cw-pill,.tb-on #callBox .cw-x,.tb-on #callBox .cw-chip,.tb-on #callBox .tbw-seg button,.tb-on #callBox .tbw-tabs button,.tb-on #callBox .cw-back,.tb-on #callBox .tbw-sel{font-size:13px;line-height:1.4}
+.tb-on #callBox .tbw-meta,.tb-on #callBox .tbw-hint,.tb-on #callBox .tbw-sub,.tb-on #callBox .cw-scr,.tb-on #callBox .cw-sim,.tb-on #callBox .tbw-cnt,.tb-on #callBox .tbw-sug,.tb-on #callBox .tbw-badge,.tb-on #callBox .cw-for{font-size:12px;line-height:1.4}
+.tb-on #callBox .tbw-seg button.on,.tb-on #callBox .cw-chip.on,.tb-on #callBox .tbw-cnt,.tb-on #callBox .tbw-badge.on{font-weight:600}
+.tb-on #callBox .tbw-save .btn{font-size:14px;font-weight:600}
+.tb-on #callBox .tbw-miss{grid-column:1/-1}
+/* Khung nổi: lề đều 16px, đường chia giữa các phần, nút biểu tượng, phần Lưu nền trắng liền */
+.tb-on .tbw-float .tbf-bar{padding:8px 16px}
+.tb-on .tbw-float .tbf-r1{gap:8px}.tb-on .tbw-float .tbf-r1 .sp{flex:1}
+.tb-on .tbw-float .tbf-r1 .cw-x{margin-left:4px;padding:3px 10px}
+.tb-on .tbw-float .tbf-r2{margin-top:2px;gap:2px 12px}
+.tb-on .tbf-ic{flex:none;width:26px;height:26px;border:1px solid rgba(255,255,255,.45);border-radius:5px;background:transparent;color:#fff;font-size:14px;line-height:1;cursor:pointer}
+.tb-on .tbf-ic:hover,.tb-on .tbf-ic:focus-visible{background:rgba(255,255,255,.18)}
+.tb-on .tb-cwmini .tbf-ic + .tbf-ic{display:none}
+.tb-on .tbw-float .tbw-script{padding:10px 16px;gap:10px;background:#f4faf6;border-bottom:1px solid var(--line)}
+.tb-on .tbw-float .tbw-script.tbw-shut{padding:8px 16px}
+.tb-on .tbw-float .tbw-sh{display:flex;align-items:center;font-weight:600;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
+.tb-on .tbw-float .tbw-tog{margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;color:var(--primary);cursor:pointer}
+.tb-on .tbw-float .tbw-body{padding:0 16px;gap:0}
+.tb-on .tbw-float .tbw-body > *{padding:12px 0;border-bottom:1px solid var(--line)}
+.tb-on .tbw-float .tbw-body > .tbw-save{border-bottom:0}
+.tb-on .tbw-float .tbw-pad{padding:0 16px}
+.tb-on .tbw-float .tbw-pad > div:first-child{padding:12px 0}
+.tb-on .tbw-float .cw-step{margin:0 0 8px}
+.tb-on .tbw-float .tbw-row{padding:10px 0;border-top:1px solid #eef1f5}
+.tb-on .tbw-float .tbw-rows .cw-step{margin-bottom:2px}
+.tb-on .tbw-float .tbw-meta{margin-bottom:6px}
+.tb-on .tbw-float .tbw-seg{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.tb-on .tbw-float .tbw-seg button{padding:6px;white-space:normal;text-align:center}
+.tb-on .tbw-float .tbw-body,.tb-on .tbw-float .tbw-k1,.tb-on .tbw-float .tbw-foot,.tb-on .tbw-float .tbw-row{grid-template-columns:minmax(0,1fr)}
+.tb-on .tbw-float .tbf-r1 .cw-nm{flex:0 1 auto;font-size:15px}
+.tb-on .tbw-float .tbf-r2 .cw-pill{padding:1px 8px;font-size:12px}
+.tb-on .tbw-float .tbw-save{box-shadow:none;border-top:1px solid var(--line);margin:0 -16px -1px;padding:10px 16px 12px}
+.tb-on .tbw-float .tbw-foot .tbw-note{margin:0;padding:12px 0}
 .call-box{position:fixed;right:16px;bottom:16px;z-index:58;width:340px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:12px 14px;border-top:3px solid var(--primary)}
 .cb-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .cb-s{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:10px;background:#f0f2f5}
@@ -2610,6 +2646,9 @@ function tbSetFloat(v){
   paintCall();
   if(CUR && !vDetail.classList.contains('hidden')) tbPaintGroup(CUR); else render();
 }
+// Khung nổi: nút biểu tượng gọn trên dòng 1 của thanh (có tooltip và aria-label)
+const tbFloatIcons = () => `<button class="tbf-ic" title="Đưa lên đầu trang" aria-label="Đưa lên đầu trang" onclick="tbSetFloat(false)">⇱</button>`
+  + `<button class="tbf-ic" title="${CALL.fmin?'Mở khung':'Thu gọn khung'}" aria-label="${CALL.fmin?'Mở khung':'Thu gọn khung'}" onclick="CALL.fmin=!CALL.fmin;paintCall()">${CALL.fmin?'▴':'▾'}</button>`;
 const tbFloatLinks = () => `<a class="cw-scr" onclick="tbSetFloat(${!TB.float})">${TB.float?'⇱ Đưa lên đầu trang':'⇲ Nổi góc phải'}</a>`
   + (TB.float ? `<a class="cw-scr" onclick="CALL.fmin=!CALL.fmin;paintCall()">${CALL.fmin?'Mở ▴':'Thu gọn ▾'}</a>` : '');
 function tbSetKq(k){
@@ -2647,7 +2686,7 @@ function tbPaintCallTB(t){
   const sim = CALL.state==='DIALING' ? '<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>' : '';
   const endBtn = `<button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':(TB.float?'Kết thúc':'Kết thúc cuộc gọi')}</button>`;
   const bar = extra => TB.float
-    ? `<div class="cw-bar tbf-bar"><div class="tbf-r1"><span class="cw-pill cw-${CALL.state}">${pill}</span><b class="cw-nm">${tbEsc(t.customerName||'')}</b><span id="cwClock">${mm}</span>${endBtn}</div><div class="tbf-r2"><span class="cw-ph">☎ ${tbDialPhone(t)}</span>${sim}${extra||''}${tbFloatLinks()}</div></div>`
+    ? `<div class="cw-bar tbf-bar"><div class="tbf-r1"><b class="cw-nm" title="${tbEsc(t.customerName||'')}">${tbEsc(t.customerName||'')}</b><span id="cwClock">${mm}</span><span class="sp"></span>${tbFloatIcons()}${endBtn}</div><div class="tbf-r2"><span class="cw-pill cw-${CALL.state}">${pill}</span><span class="cw-ph">☎ ${tbDialPhone(t)}</span>${sim}${extra||''}</div></div>`
     : `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><b class="cw-nm">${tbEsc(t.customerName||'')}</b><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>${sim}${extra||''}${tbFloatLinks()}${endBtn}</div>`;
   const K = tbKq(), list = tbWList(t), onList = vDetail.classList.contains('hidden');
   callBox.classList.remove('tb-cwmini','tbw-nostick');
@@ -2668,12 +2707,12 @@ function tbPaintCallTB(t){
   const where = {'1':'chọn kết quả từng ticket bên dưới', '2':'chọn kết quả trong từng thẻ bên dưới',
     '3': onList ? 'chọn kết quả ở cột Thao tác của nhóm trong danh sách' : 'chọn kết quả ở cột <b>Kết quả xử lý</b> của bảng bên dưới',
     '4':'chọn kết quả ở cột <b>Kết quả xử lý</b> của bảng bên dưới'}[K];
-  const whereF = TB.float && (K==='3'||K==='4') ? 'chọn kết quả từng ticket bên dưới' : where;
-  const hint = !r ? 'Chọn khách có nghe máy không.' : r==='ANSWERED' ? `Bước 2: ${whereF}.` : `"${tbEsc(r)}" sẽ ghi cho cả ${N} ticket.`;
+  const whereF = TB.float && (K==='3'||K==='4') ? '' : where;
+  const hint = !r ? '' : r==='ANSWERED' ? (whereF ? `Bước 2: ${whereF}.` : '') : `"${tbEsc(r)}" sẽ ghi cho cả ${N} ticket.`;
   const noteBox = `<div class="tbw-note"><div class="cw-step">Ghi chú chung cho cuộc gọi <span class="tbw-sub">ghi vào cả ${N} ticket</span></div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách..." oninput="CALL.note=this.value">${tbEsc(CALL.note||'')}</textarea></div>`;
   const left = r==='ANSWERED' && chosen>0 && chosen<N ? `<div class="tbw-sub">${N-chosen} ticket chưa chọn sẽ chờ ghi sau bằng nút Xử lý.</div>` : '';
   const saveBox = `<div class="tbw-save">${r==='ANSWERED'?`<span class="tbw-cnt">Đã chọn ${chosen}/${N}</span>`:''}${CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}<button class="btn pri" onclick="callSave()">${r?`Lưu kết quả ${chosen}/${N} ticket`:'Lưu kết quả'}</button>${left}</div>`;
-  const s1Box = `<div><div class="cw-step">Bước 1. Khách có nghe máy không?</div>${step1}<div class="tbw-hint">${hint}</div></div>`;
+  const s1Box = `<div><div class="cw-step">Bước 1. Khách có nghe máy không?</div>${step1}${hint?`<div class="tbw-hint">${hint}</div>`:''}</div>`;
 
   if(K==='1'){ // Cách 1: lúc gọi chỉ kịch bản và ghi chú, cúp máy xong mới tổng kết
     if(CALL.state!=='ENDED'){
@@ -2706,9 +2745,13 @@ function tbPaintCallTB(t){
   // Cách 3 (màn Danh sách, hoặc màn Chi tiết khi mở để tạo đơn) và cách 4: bước 2 nằm ở bảng
   const toDetail = K==='3' && onList ? `<a class="cw-scr" onclick="go('${t.id}')">Mở Chi tiết để tạo đơn</a>` : '';
   const scrLink = `<a class="cw-scr" onclick="tbWScript()">${CALL.hideScript?'Kịch bản gợi ý ▾':'Ẩn kịch bản ▴'}</a>`;
-  const strip = CALL.hideScript ? '' : `<div class="tbw-script">${blocks.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}</div>`;
+  const has = blocks.filter(b=>b.txt), miss = blocks.filter(b=>!b.txt);
+  const missLine = miss.length ? `<div class="tbw-miss"><b>${miss.map(b=>flowName(b.f)).join(', ')}:</b> <span class="tbw-none">Chưa có kịch bản cho công việc này.</span></div>` : '';
+  const scrHead = TB.float ? `<div class="tbw-sh"><span>Kịch bản gợi ý</span><a class="tbw-tog" onclick="tbWScript()">${CALL.hideScript?'Hiện ▾':'Ẩn ▴'}</a></div>` : '';
+  const strip = CALL.hideScript ? (TB.float ? `<div class="tbw-script tbw-shut">${scrHead}</div>` : '')
+    : `<div class="tbw-script">${scrHead}${has.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}${missLine}</div>`;
   const rowsF = TB.float && r==='ANSWERED' ? `<div class="tbw-rows"><div class="cw-step">Bước 2. Kết quả từng ticket</div>` + list.map(x=>`<div class="tbw-row"><div><div class="tbw-prod">${tbProdNames(x)}</div><div class="tbw-meta">${short(x.id)} · ${flowName(x.businessFlowId)}${CALL.auto && CALL.auto[x.id] && P[x.id] ? '<span class="tbw-sug">gợi ý từ đơn vừa tạo</span>' : ''}</div></div>${tbChips(x,P)}</div>`).join('') + `</div>` : '';
-  callBox.innerHTML = bar(toDetail + scrLink) + strip + `<div class="tbw-body">${s1Box}${rowsF}${noteBox}${saveBox}</div>`;
+  callBox.innerHTML = bar(toDetail + (TB.float ? '' : scrLink)) + strip + `<div class="tbw-body">${s1Box}${rowsF}${noteBox}${saveBox}</div>`;
   return true;
 }
 // Ô kết quả khi đang gọi chung: cột Kết quả xử lý của bảng nhóm (cách 3, 4) hoặc cột Thao tác ở Danh sách (cách 3).
