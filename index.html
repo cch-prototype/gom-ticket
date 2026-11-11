@@ -2521,7 +2521,7 @@ function tbConfirmAssignGroup(){
 function tbActionsPost(t,out){
   if(MODE!=='tobe' || !TB.inGroupTable) return;
   // 11/11 (Hưng): đang gọi chung vẫn bấm Xử lý được cho ticket trong cuộc gọi (khác CI: CI khoá Xử lý khi đang gọi)
-  if(CALL.state!=='IDLE' && TB.pending && TB.pending.ids.has(t.id))
+  if(CALL.state!=='IDLE' && CALL.grpIds && CALL.grpIds.size>=2 && CALL.grpIds.has(t.id))
     for(let i=0;i<out.length;i++) if(out[i].includes('data-act="resolve"')) out[i] = out[i].replace(/ disabled( title="[^"]*")?/,'');
   for(let i=out.length-1;i>=0;i--) if(/data-act="(claim|assign|reassign)"|tb-autotag/.test(out[i])) out.splice(i,1);
 }
@@ -2661,6 +2661,7 @@ function tbOnCall(t){
   TB.called.add(key);
   const scope = tbCallScope(key), held = scope.some(x=>x.id===t.id) ? scope : [t];
   TB.pending = {key, ids:new Set(held.map(x=>x.id)), at:nowIso()}; CALL.picks = {}; CALL.reach = null;
+  CALL.grpIds = new Set(held.map(x=>x.id)); // 11/11
   CALL.auto = {}; CALL.open = 0; CALL.scrTab = 0; CALL.hideScript = false; CALL.note = null; CALL.err = null; CALL.fmin = false; // UX 11/11: trạng thái khung theo cách ghi kết quả
   // Gọi một lần tính cho mọi ticket mình giữ trong nhóm: ghi cuộc gọi vào từng ticket còn lại, tăng số lượt gọi, Đã phân công chuyển Đang xử lý.
   // Bản ghi dùng chung trạng thái, thời lượng của cuộc gọi gốc (Object.create). Kết quả xử lý ghi riêng từng ticket nên không thừa hưởng.
@@ -2677,6 +2678,7 @@ function tbOnCall(t){
 }
 // Gọi không thành công (Hưng 09/11): ticket bấm Gọi giữ hành vi CI; các ticket khác không bị tính lượt, không bị đòi ghi kết quả
 function tbOnCallFail(){
+  CALL.grpIds = null;
   if(MODE!=='tobe' || !TB.undo) return;
   const u = TB.undo; TB.undo = null;
   u.list.forEach(r=>{ const a=ATTEMPTS[r.x.id]||[], i=a.indexOf(r.cp); if(i>=0) a.splice(i,1);
@@ -2694,8 +2696,11 @@ function tbWidgetFor(t){
 /* ---------- Khung tổng đài ghi kết quả từng ticket (Hưng 09/11, decisions D-26) ----------
    Gọi chung: phần KẾT QUẢ liệt kê mọi ticket được tính trong cuộc gọi, mỗi ticket một hàng nút kết quả riêng.
    Không bắt chọn đủ; ticket chưa chọn vẫn nằm trong khung nhắc để bấm Xử lý sau. Không có "chọn cho tất cả". */
-const tbWList = t => (MODE==='tobe' && TB.pending && TB.pending.key===tbKey(t) && TB.pending.ids.size>=2)
-  ? [...TB.pending.ids].map(id=>TICKETS.find(x=>x.id===id)).filter(Boolean).sort(tbInGroup) : null;
+// 11/11: danh sách ticket của cuộc gọi chung lưu lúc bấm Gọi (CALL.grpIds), giữ tới khi cúp máy, không co lại khi Xử lý từng ticket
+const tbWList = t => { if(MODE!=='tobe') return null;
+  const g = (CALL.state!=='IDLE' && CALL.grpIds && CALL.grpIds.size>=2) ? CALL.grpIds
+    : (TB.pending && TB.pending.key===tbKey(t) && TB.pending.ids.size>=2 ? TB.pending.ids : null);
+  return g ? [...g].map(id=>TICKETS.find(x=>x.id===id)).filter(Boolean).sort(tbInGroup) : null; };
 // Hưng 09/11 (decisions D-27): khung tổng đài 2 bước. Bước 1: khách có nghe máy không (kết quả của cả cuộc gọi, áp chung cho nhóm).
 // Bước 2: khách nghe máy thì chọn kết quả nhu cầu cho từng ticket. Kết quả "không nghe máy" nhận theo nhãn chứa "Không nghe máy".
 const tbNoAns = c => /Không nghe máy/i.test((DISP_CATALOG.find(x=>x.code===c)||{}).label||'');
@@ -3335,7 +3340,7 @@ function callFail(){ // makeCall lỗi sau khi đã tạo attempt → attempt n�
   tbOnCallFail(); /*TOBE-HOOK*/
   Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh();
 }
-function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null, err:null, note:null, showScript:false}); paintCall(); refresh(); }
+function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null, err:null, note:null, showScript:false, grpIds:null}); paintCall(); refresh(); }
 function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   const t=byId(CALL.ticketId); if(!t) return;
   if(tbWidgetSave(t)) return; /*TOBE-HOOK*/
