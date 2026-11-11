@@ -2268,7 +2268,7 @@ const TB_PEND = [
   {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
   {id:'remain',     kind:'sim', txt:'Số N trong "KH còn N ticket khác" đếm trên toàn bộ data demo, chưa áp quyền xem theo vai (Sale chỉ thấy ticket của mình cộng ticket Mới).', src:'US-3 v3, mục 5.1 dòng 7. Khung As-Is cũng chưa có phạm vi theo vai.'},
   {id:'grp_act',    kind:'chot', txt:'Nhận, Phân công làm theo nhóm ở cột Thao tác của nhóm. Nút Xử lý chỉ ở màn Chi tiết. Ô Khách hàng, SĐT, Thao tác của nhóm canh chính giữa.', src:'Góp ý 11/11: Nhận, Phân công theo nhóm là hướng đã thống nhất, mockup cập nhật theo. decisions.md D-11 và US-3 còn ghi theo từng ticket, cần sửa.'},
-  {id:'cw_min',     kind:'chot', txt:'Gọi chung: khung tổng đài chỉ còn thanh Gọi và Kịch bản. Kết thúc cuộc gọi rồi ghi kết quả bằng nút Xử lý từng ticket ở bảng Ticket của khách này. Màn Chi tiết bỏ khối lặp với bảng.', src:'Góp ý BA 11/11, làm trên demo. Khác D-26, D-27 (khung tổng đài 2 bước), chưa sửa decisions.md.'},
+  {id:'cw_min',     kind:'chot', txt:'Gọi chung: khung tổng đài chỉ còn thanh Gọi và Kịch bản. Ghi kết quả bằng nút Xử lý từng ticket ở bảng Ticket của khách này, bấm được cả trong lúc đang gọi (khác CI). Không nghe máy chọn trong Xử lý như CI. Màn Chi tiết bỏ khối lặp với bảng.', src:'Góp ý BA và Hưng 11/11, làm trên demo. Khác D-26, D-27 (khung tổng đài 2 bước), chưa sửa decisions.md.'},
   {id:'grp_asg',    kind:'ba',  txt:'Phân công nhóm giao mọi ticket chưa đóng trong nhóm cho người được chọn, kể cả ticket người khác đang giữ.', src:'BA suy ra 11/11, chưa ai xác nhận.'},
   {id:'kq_ui',      kind:'ba',  txt:'Bốn cách ghi kết quả khi gọi chung, chọn bằng nút Ghi kết quả trên thanh trên cùng. BU chọn một cách.', src:'Kiro đề xuất 11/11, chưa chốt. Link có đuôi &kq=1..4 mở thẳng một cách.'},
   {id:'kq_script',  kind:'chot', txt:'Gọi chung: kịch bản gộp theo công việc, không lặp theo ticket, mở sẵn. Công việc chưa có kịch bản ghi "Chưa có kịch bản cho công việc này".', src:'Hưng chốt 11/11 trong chat. US-3 mục 4.6.11 còn NEEDS CLARIFICATION.'},
@@ -2520,6 +2520,9 @@ function tbConfirmAssignGroup(){
 // Bảng "Ticket của khách này" ở Chi tiết: mỗi ticket chỉ còn Xử lý (Nhận, Phân công làm ở cấp nhóm)
 function tbActionsPost(t,out){
   if(MODE!=='tobe' || !TB.inGroupTable) return;
+  // 11/11 (Hưng): đang gọi chung vẫn bấm Xử lý được cho ticket trong cuộc gọi (khác CI: CI khoá Xử lý khi đang gọi)
+  if(CALL.state!=='IDLE' && TB.pending && TB.pending.ids.has(t.id))
+    for(let i=0;i<out.length;i++) if(out[i].includes('data-act="resolve"')) out[i] = out[i].replace(/ disabled( title="[^"]*")?/,'');
   for(let i=out.length-1;i>=0;i--) if(/data-act="(claim|assign|reassign)"|tb-autotag/.test(out[i])) out.splice(i,1);
 }
 // Cột Gọi chỉ có ở To-Be: chèn trước Thao tác, cố định bên phải. COLUMNS gốc không đổi nên As-Is giữ nguyên.
