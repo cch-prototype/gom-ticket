@@ -226,6 +226,7 @@ td.nd{padding:0;white-space:normal}
 .cw-chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
 #cwNote{width:100%;border:1px solid #d1d5db;border-radius:5px;padding:6px 8px;font:inherit}
 .cw-save{width:100%;margin-top:8px;padding:7px}
+.cw-err{color:#dc2626;font-size:12.5px;margin-top:8px}
 .call-box{position:fixed;right:16px;bottom:16px;z-index:58;width:340px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:12px 14px;border-top:3px solid var(--primary)}
 .cb-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .cb-s{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:10px;background:#f0f2f5}
@@ -2495,8 +2496,8 @@ const tbWList = t => (MODE==='tobe' && TB.pending && TB.pending.key===tbKey(t) &
 // Bước 2: khách nghe máy thì chọn kết quả nhu cầu cho từng ticket. Kết quả "không nghe máy" nhận theo nhãn chứa "Không nghe máy".
 const tbNoAns = c => /Không nghe máy/i.test((DISP_CATALOG.find(x=>x.code===c)||{}).label||'');
 const tbCodeByLabel = (t,label) => (ALLOWED[t.businessFlowId]||[]).find(c=>DISP_CATALOG.find(x=>x.code===c).label===label);
-function tbWReach(v){ CALL.reach = CALL.reach===v ? null : v; paintCall(); }
-function tbWPick(id,c){ CALL.picks=CALL.picks||{}; CALL.picks[id] = CALL.picks[id]===c ? undefined : c; paintCall(); }
+function tbWReach(v){ CALL.reach = CALL.reach===v ? null : v; CALL.err=null; paintCall(); }
+function tbWPick(id,c){ CALL.picks=CALL.picks||{}; CALL.picks[id] = CALL.picks[id]===c ? undefined : c; CALL.err=null; paintCall(); }
 function tbWidgetMulti(t){
   const list = tbWList(t); if(!list) return '';
   const r = CALL.reach, chip = (on,txt,js,title='') => `<button class="cw-chip ${on?'on':''}" title="${tbEsc(title)}" onclick="${js}">${txt}</button>`;
@@ -2515,13 +2516,14 @@ function tbWidgetMulti(t){
 function tbWidgetSave(t){
   const list = tbWList(t); if(!list) return false;
   const r = CALL.reach;
-  if(!r){ toast('error','Vui lòng chọn khách có nghe máy không'); return true; }
+  if(!r){ tbWErr('Vui lòng chọn khách có nghe máy không'); return true; }
   const picks = r==='ANSWERED'
     ? list.map(x=>[x, DISP_CATALOG.find(z=>z.code===(CALL.picks||{})[x.id])]).filter(q=>q[1])
     : list.map(x=>[x, DISP_CATALOG.find(z=>z.code===tbCodeByLabel(x,r))]).filter(q=>q[1]);
-  if(!picks.length){ toast('error','Vui lòng chọn kết quả cho ít nhất một ticket'); return true; }
+  if(!picks.length){ tbWErr('Vui lòng chọn kết quả cho ít nhất một ticket'); return true; }
   const note=document.getElementById('cwNote').value.trim();
-  if(CALL.state==='DIALING'||CALL.state==='TALKING') callHangup();
+  // UX 11/11: giữ hành vi CI (Lưu kết thúc cuộc gọi) nhưng hỏi trước để agent không cúp máy ngang khách
+  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(!confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
   picks.forEach(([x,d])=>{ // cùng cách ghi với Lưu trong widget của CI, cho từng ticket
     const a = x.id===t.id ? CALL.attempt : (ATTEMPTS[x.id]||[]).slice(-1)[0];
     if(a) Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
@@ -2969,7 +2971,7 @@ function doCall(t, useDid){
   if(t.status==='ASSIGNED') t.status='IN_PROGRESS'; // CI test 06/11: sau cuộc gọi phiếu ở Đang xử lý
   t.updatedAt=nowIso();
   Object.assign(CALL,{state:'DIALING', ticketId:t.id, attempt:at, t0:Date.now(), pick:null});
-  clearInterval(CALL.timer); CALL.timer=setInterval(paintCall,1000);
+  clearInterval(CALL.timer); CALL.timer=setInterval(paintTick,1000);
   tbOnCall(t); /*TOBE-HOOK*/
   go(t.id); paintCall(); render();
 }
@@ -2986,35 +2988,45 @@ function callFail(){ // makeCall lỗi sau khi đã tạo attempt → attempt n�
   tbOnCallFail(); /*TOBE-HOOK*/
   Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh();
 }
-function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh(); }
+function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null, err:null}); paintCall(); refresh(); }
 function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   const t=byId(CALL.ticketId); if(!t) return;
   if(tbWidgetSave(t)) return; /*TOBE-HOOK*/
   const d=DISP_CATALOG.find(x=>x.code===CALL.pick);
-  if(!d){ toast('error','Vui lòng chọn kết quả'); return; } // [chưa kiểm] câu báo lỗi của widget
+  if(!d){ tbWErr('Vui lòng chọn kết quả'); return; }
   const note=document.getElementById('cwNote').value.trim();
-  if(CALL.state==='DIALING'||CALL.state==='TALKING') callHangup();
+  // UX 11/11: giữ hành vi CI (Lưu kết thúc cuộc gọi) nhưng hỏi trước để agent không cúp máy ngang khách
+  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(!confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
   const a=CALL.attempt; Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
   Object.assign(t,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(t.version||1)+1});
   if(d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.resolution=d.resolution; t.closedAt=nowIso(); }
   tbOnResult(t); /*TOBE-HOOK*/
   callClose();
 }
+// UX 11/11: mỗi giây chỉ đổi số trên đồng hồ, không vẽ lại khung để ô ghi chú giữ con trỏ
+function paintTick(){
+  const el = document.getElementById('cwClock'); if(!el || CALL.state==='IDLE' || CALL.state==='ENDED') return;
+  const s = Math.round((Date.now()-CALL.t0)/1000);
+  el.textContent = String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+// UX 11/11: lỗi của khung Tổng đài hiện ngay trên nút Lưu, không dùng toast tự biến mất
+function tbWErr(m){ CALL.err = m; paintCall(); }
 function paintCall(){
   const t = CALL.ticketId && byId(CALL.ticketId);
   if(CALL.state==='IDLE' || !t){ callBox.classList.add('hidden'); callBox.innerHTML=''; return; }
   callBox.classList.remove('hidden');
   const ref = CALL.state==='ENDED' ? CALL.attempt.talkDurationSec : Math.round((Date.now()-CALL.t0)/1000);
   const mm = String(Math.floor(ref/60)).padStart(2,'0')+':'+String(ref%60).padStart(2,'0');
-  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED:'⛔ Đã kết thúc - Kết thúc cuộc gọi'}[CALL.state];
+  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED:'⛔ Đã kết thúc cuộc gọi'}[CALL.state];
   const codes = ALLOWED[t.businessFlowId]||[];
   const keepNote = document.getElementById('cwNote')?.value || '';
-  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span>${mm}</span>
+  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>
       ${CALL.state==='DIALING'?'<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>':''}
-      <button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':'Hủy gọi'}</button></div>
+      <button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':'Kết thúc cuộc gọi'}</button></div>
     <div class="cw-body"><div><div class="cw-h">📋 KỊCH BẢN GỢI Ý</div><div class="cw-script">${(SCRIPTS[t.businessFlowId]||'Chưa có kịch bản cho công việc này.').replace(/\n/g,'<br>')}</div></div>
-      <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';paintCall()">${d.label}</button>`}).join('')}</div>`}
+      <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`}).join('')}</div>`}
       <div class="cw-h" style="margin-top:10px">✍ GHI CHÚ CUỘC GỌI</div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách...">${keepNote}</textarea>
+      ${CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}
       <button class="btn pri cw-save" onclick="callSave()">Lưu</button></div></div>`;
 }
 
