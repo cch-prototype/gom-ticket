@@ -308,9 +308,17 @@ td.nd{padding:0;white-space:normal}
 .tb-on .tb-infoid{color:var(--primary)}
 .tb-on .tb-ic{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-top:8px}
 .tb-on .tb-ic.cur{border-color:var(--primary);box-shadow:inset 3px 0 0 var(--primary)}
-.tb-on .tb-ich{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}.tb-on .tb-ich .link{font-weight:600}
+.tb-on .tb-ich{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}.tb-on .tb-ichl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0}.tb-on .tb-ich .link{font-weight:600}
 .tb-on .tb-ic .kv{margin:0}
 .tb-on .tb-tlid{color:var(--primary)}
+.tb-on #vDetail .sec > h3{cursor:pointer;user-select:none}
+.tb-on #vDetail .sec > h3 > span:last-child,.tb-on .tb-chev{display:inline-block;transition:transform .15s}
+.tb-on #vDetail .sec.tb-col > h3{margin-bottom:0}
+.tb-on #vDetail .sec.tb-col > h3 > span:last-child{transform:rotate(-90deg)}
+.tb-on #vDetail .sec.tb-col > :not(h3){display:none !important}
+.tb-on .tb-ich{cursor:pointer}.tb-on .tb-chev{flex:none;font-size:12px;line-height:22px}
+.tb-on .tb-ic.tb-col .kv{display:none}.tb-on .tb-ic.tb-col .tb-ich{margin-bottom:0}.tb-on .tb-ic.tb-col .tb-chev{transform:rotate(-90deg)}
+@media (prefers-reduced-motion:reduce){.tb-on #vDetail .sec > h3 > span:last-child,.tb-on .tb-chev{transition:none}}
 .tb-on #callBox .tbw-script{display:flex;flex-wrap:wrap;gap:8px 24px}.tb-on #callBox .tbw-script > div{flex:1 1 320px;min-width:0}.tb-on #callBox .tbw-script > .tbw-miss,.tb-on #callBox .tbw-script > .tbw-sh{flex-basis:100%}
 .tb-on .tb-gt tr.tb-pend td{background:#fff8e1}
 .tb-on .tb-gt tr.tb-pend td:first-child{box-shadow:inset 3px 0 0 #f59e0b}
@@ -2522,6 +2530,19 @@ function tbConfirmAssignGroup(){
   }, 600);
   return true;
 }
+/* ---------- Chi tiết To-Be: thu gọn / mở các khối bên trái và từng thẻ ticket (Hưng 11/11) ----------
+   As-Is không đổi. Trạng thái khối nằm trên chính phần tử .sec (không bị vẽ lại); trạng thái thẻ nhớ theo mã ticket. */
+function tbSecToggle(e){
+  if(MODE!=='tobe') return;
+  const card = e.target.closest('#tbInfoAll .tb-ich');
+  if(card){ const c = card.parentElement, id = c.dataset.tid; TB.cardCol = TB.cardCol || new Set();
+    const col = c.classList.toggle('tb-col'); col ? TB.cardCol.add(id) : TB.cardCol.delete(id);
+    card.setAttribute('aria-expanded', !col); card.title = col?'Mở thông tin ticket':'Thu gọn thông tin ticket'; return; }
+  const h = e.target.closest('#vDetail .sec > h3'); if(!h || e.target.closest('.link')) return;
+  const col = h.parentElement.classList.toggle('tb-col'); h.setAttribute('aria-expanded', !col);
+}
+document.addEventListener('click', tbSecToggle);
+document.addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e.target.closest && e.target.closest('#tbInfoAll .tb-ich, #vDetail .sec > h3')){ e.preventDefault(); tbSecToggle(e); } });
 /* ---------- Chi tiết: thông tin của tất cả ticket trong nhóm (Hưng 11/11) ----------
    Nhóm từ 2 ticket: Thông tin ticket hiện một thẻ cho mỗi ticket; Lịch sử phân công, Lịch sử cuộc gọi gộp cả nhóm, ghi kèm mã ticket.
    Một cuộc gọi chung tạo bản ghi trên từng ticket, gộp lại thành một dòng theo thời điểm bắt đầu. Ticket lẻ giữ như CI. */
@@ -2533,7 +2554,8 @@ function tbInfoAll(t, grp, dup){
   if(!box){ box = document.createElement('div'); box.id='tbInfoAll'; dl.after(box); }
   const kv = (k,v) => `<dt>${k}</dt><dd>${v}</dd>`;
   box.innerHTML = grp.map(x=>{ const r = resultOf(x);
-    return `<div class="tb-ic${x.id===t.id?' cur':''}"><div class="tb-ich"><span class="link" onclick="go('${x.id}')">${short(x.id)}</span><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span><span class="tag st-${x.status}">${STATUS[x.status]}</span></div>`
+    const col = TB.cardCol && TB.cardCol.has(x.id);
+    return `<div class="tb-ic${x.id===t.id?' cur':''}${col?' tb-col':''}" data-tid="${x.id}"><div class="tb-ich" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở thông tin ticket':'Thu gọn thông tin ticket'}"><span class="tb-ichl"><span class="link" onclick="event.stopPropagation();go('${x.id}')">${short(x.id)}</span><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span><span class="tag st-${x.status}">${STATUS[x.status]}</span></span><span class="tb-chev">⌄</span></div>`
       + `<dl class="kv">${kv('NV đảm trách', x.assignedAgentName||'—')}${kv('Kết quả xử lý', r.label)}${kv('Ghi chú', r.note)}${kv('Thời gian tạo', vnt(x.createdAt))}${kv('Cập nhật gần nhất', vnt(x.updatedAt))}</dl></div>`; }).join('');
   // Lịch sử phân công: gộp cả nhóm, mới nhất trên cùng
   const asg = grp.flatMap(x=>(x._asg || (x.assignedAt ? [{at:x.assignedAt, by:x.assignedBy, to:x.assignedAgentName}] : [])).map(a=>({...a, id:x.id}))).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
