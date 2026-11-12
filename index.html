@@ -2288,7 +2288,7 @@ const TBT = {
   colActions: 'Thao tác',
   newTag: 'Vừa giao',
   noData: 'Không có dữ liệu',
-  cdLabel: 'Ngày cần gọi',
+  cdLabel: 'Ngày hẹn gọi',
   cdErrOrder: 'Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc',
 
   // ---- Nút của nhóm: Nhận, Phân công ----
@@ -2796,7 +2796,7 @@ function tbPaintGroup(t){
   g.classList.remove('hidden');
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?TBT.chipViewing:''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
   const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?TBT.groupOpenTip:TBT.groupCloseTip}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">${TBT.groupTitle(grp.length)} · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
-  const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
+  const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày hẹn gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
     + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?TBT.rowViewingTip:TBT.rowPickTip}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
       <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}${copyIc(x.externalRef,'mã tham chiếu')}</td>
@@ -2815,7 +2815,7 @@ function tbToggleGroup(){
 function tbDetail(t){
   const g = document.getElementById('tbGroup'), b = document.getElementById('tbBanner');
   if(MODE!=='tobe'){ g.classList.add('hidden'); b.classList.add('hidden'); return; }
-  document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; if(dt.textContent==='Thời gian hẹn gọi') dt.textContent='Ngày cần gọi'; }); // thống nhất label với US-3
+  document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; if(dt.textContent==='Thời gian hẹn gọi') dt.textContent='Ngày hẹn gọi'; }); // thống nhất label với US-3
   const key = tbKey(t), grp = TICKETS.filter(x=>tbKey(x)===key && (tbCanSee(x) || x.id===t.id)).sort(tbInGroup);
   TB.curId = t.id;
   tbPaintGroup(t);
@@ -2824,7 +2824,7 @@ function tbDetail(t){
     da.innerHTML = `<span class="tb-callhd">${tbGroupActs({key, tickets:grp, hd:true})}</span>`;
   }
   // 11/11: nhóm từ 2 ticket thì bỏ thông tin đã có trong bảng "Ticket của khách hàng"
-  const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu','Ngày cần gọi','Thời gian hết hạn']; // 11/11: giữ Kết quả xử lý, Ghi chú như CI
+  const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu','Ngày hẹn gọi','Thời gian hết hạn']; // 11/11: giữ Kết quả xử lý, Ghi chú như CI
   document.querySelectorAll('#dInfo dt').forEach(dt=>{ const hide = dup && drop.includes(dt.textContent); dt.style.display = hide?'none':''; if(dt.nextElementSibling) dt.nextElementSibling.style.display = hide?'none':''; });
   document.getElementById('dItems').style.display = dup ? 'none' : '';
   tbInfoAll(t, grp, dup); /*TOBE-HOOK*/
@@ -2980,7 +2980,7 @@ function tbPaintBar(){
   document.getElementById('tbBar').innerHTML =
    `<div class="tb-bar-row"><b class="tb-title">To-Be: gom ticket</b>
       <span>Gom theo SĐT ${tbBadge('gkey')}</span>
-      <span>Nhóm xếp theo ngày cần gọi sớm nhất, rồi ngày tạo ${tbBadge('nodate')}</span>
+      <span>Nhóm xếp theo ngày hẹn gọi sớm nhất, rồi ngày tạo ${tbBadge('nodate')}</span>
       <span>Phân trang kéo dài đủ nhóm ${tbBadge('page')}</span>
       <a onclick="document.getElementById('tbPend').scrollIntoView({behavior:'smooth'})">Điểm chưa chốt (${TB_PEND.length})</a></div>
     <div class="tb-bar-row"><span>${TBT.crossLabel} ${tbBadge('cross_def')} ${tbBadge('cross_off')}: ${cross}</span>
