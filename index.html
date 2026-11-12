@@ -3571,7 +3571,8 @@ function cwTransfer(){ toast('info','Giả lập: mockup không làm luồng Chu
 function cwBar(t, mm, pill, opt){
   opt = opt||{};
   const sim = CALL.state==='DIALING' ? '<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>' : '';
-  const ctrls = CALL.state==='TALKING' ? `<button class="cw-ctl${CALL.hold?' on':''}" onclick="cwToggle('hold')">${CALL.hold?'▶ Tiếp tục':'⏸ Giữ máy'}</button>`
+  // Hưng 12/11 17:09: thanh màu xanh của CI luôn có Giữ máy, Tắt tiếng, Chuyển trong lúc gọi (cả lúc đang đổ chuông), chỉ ẩn khi đã kết thúc
+  const ctrls = CALL.state!=='ENDED' ? `<button class="cw-ctl${CALL.hold?' on':''}" onclick="cwToggle('hold')">${CALL.hold?'▶ Tiếp tục':'⏸ Giữ máy'}</button>`
     + `<button class="cw-ctl${CALL.mute?' on':''}" onclick="cwToggle('mute')">${CALL.mute?'🔊 Bật tiếng':'🔇 Tắt tiếng'}</button>`
     + `<button class="cw-ctl" onclick="cwTransfer()">↪ Chuyển</button>` : '';
   const endLbl = CALL.state==='ENDED' ? '✖ Đóng' : (CALL.state==='DIALING' ? '☎ Hủy gọi' : '☎ Kết thúc');
