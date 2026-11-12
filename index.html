@@ -438,6 +438,13 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-od-rx{display:flex;flex-direction:column;gap:6px;color:#595959}
 .tb-od-up{width:90px;height:80px;border:1px dashed #d9d9d9;border-radius:6px;display:flex;align-items:center;justify-content:center;text-align:center;color:#1677ff;font-size:12px}
 .tb-od-l2{background:#f0f0ff;color:#2f54eb;text-align:center;padding:8px;border-top:1px solid var(--line)}
+.tb-rb-banner{background:#fff7e6;border:1px solid #ffd591;color:#874d00;border-radius:6px;padding:8px 10px;margin-bottom:10px;font-size:12.5px}
+.tb-rb-banner a{color:var(--primary);cursor:pointer;text-decoration:underline;margin-left:6px}
+.tb-rb-h td{background:#1677ff;color:#fff;font-weight:600;padding:6px 10px}
+.tb-rb-x td{background:#fa8c16;color:#fff;padding:6px 10px}
+.tb-cart-old{border-bottom-color:transparent;color:var(--muted)}
+.tb-on .pos .card td:nth-child(2){min-width:220px}
+.tb-rb-addr{border:1px solid #d9d9d9;border-radius:6px;padding:6px 8px;font-size:12.5px}
 .tb-od-empty{padding:60px 20px;text-align:center;color:var(--muted)}
 @media (max-width:1200px){.tb-od-grid{grid-template-columns:1fr}}
 /*TOBE:END css*/
@@ -2383,9 +2390,17 @@ const TBT = {
   orderCancelTip: 'Trên RSA nút này đang bấm được khi nhúng. Đề xuất: ẩn khi nhúng trong Call Center Hub',
   orderCancelToast: 'Demo không huỷ đơn. Đề xuất: ẩn nút Hủy đơn khi nhúng trong Call Center Hub',
   orderRebuy: 'Mua lại',
-  orderRebuyToast: (n, code) => `Đã thêm ${n} sản phẩm của đơn ${code} vào giỏ (giả lập)`,
+  orderRebuyToast: (n, code) => `Đã tạo giỏ mới với ${n} sản phẩm của đơn ${code} (giả lập)`,
   saleTab: 'Bán hàng',
-  rebuyCartNote: code => `Sản phẩm thêm từ Mua lại đơn ${code}. Giả lập: chưa kiểm nút Mua lại thật trên RSA làm gì.`,
+  rebuyCartName: '64 - hôm nay',
+  rebuyPicked: n => `Sản phẩm chọn mua (${n})`,
+  rebuyStock: 'Tồn: 1,250',
+  rebuyWarehouse: 'Kho toàn quốc',
+  rebuyCross: 'Em thấy Anh/ Chị có đang quan tâm (1) sản phẩm, em tư vấn thêm các sản phẩm này được không ạ?',
+  rebuyCrossItem: 'SẢN PHẨM GỢI Ý MẪU',
+  rebuyAddr: 'Địa chỉ nhận: địa chỉ giao của đơn cũ (mẫu)',
+  rebuyBanner: 'Như RSA trên CI: bấm Mua lại thì chính khung Chi tiết đơn hàng chuyển sang màn Bán hàng với giỏ mới. Tab Bán hàng của Hub là khung khác, không thấy giỏ này. Đề xuất: RSA báo cho Hub để Hub chuyển sang tab Bán hàng và nạp giỏ.',
+  rebuyReset: 'Mở lại chi tiết đơn',
   orderCols: ['Tên sản phẩm', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Kho', 'Dự án'],
   orderOrigin: '⊕ Việt Nam',
   orderStock: 'L6-Kho hàng thường',
@@ -3244,21 +3259,39 @@ function tbOrderHtml(t){
       </div></div>
     <div class="note">${T.orderNote}</div></div>`;
 }
-function tbTab(name){ if(MODE!=='tobe' || name!==TBT.orderTab) return false; rPanel.innerHTML = tbOrderHtml(t0()); return true; }
-// Mua lại (giả lập, Hưng 12/11): chuyển sang tab Bán hàng, giỏ có sẵn sản phẩm của đơn. Chưa kiểm nút Mua lại thật trên RSA làm gì.
+function tbTab(name){
+  if(MODE!=='tobe' || name!==TBT.orderTab) return false;
+  if(TB.rebuy && CUR && TB.rebuy.id===CUR.id){ setTimeout(tbRenderRebuy); return true; } // khung đã chuyển sang màn bán, như iframe RSA
+  rPanel.innerHTML = tbOrderHtml(t0()); return true;
+}
+// Mua lại (Hưng 12/11, chọn làm giống RSA thật theo trace trên CI 12/11):
+// RSA chuyển ngay trong khung đang mở sang màn Bán hàng (/sell-ecom), mở một giỏ mới điền sẵn sản phẩm của đơn cũ
+// (giá hiện tại, Kho toàn quốc, dòng gợi ý bán kèm), khách và địa chỉ giao của đơn cũ. Dữ liệu đi qua state trình duyệt, không qua URL.
+// Trên Hub: chính tab Chi tiết đơn hàng thành màn bán; tab Bán hàng của Hub (khung khác, mở sẵn) không thấy giỏ này.
 function tbRebuy(id){
   const t = byId(id), o = t && tbOrderOf(t); if(!o) return;
   TB.rebuy = {id, code:o.code, lines:o.lines};
-  const b = [...rTabs.children].find(x=>x.textContent===TBT.saleTab); if(b) b.click();
+  tbRenderRebuy();
   toast('success', TBT.orderRebuyToast(o.lines.length, o.code));
 }
-function tbAfterTab(name){
-  if(MODE!=='tobe' || name!==TBT.saleTab || !TB.rebuy || !CUR || TB.rebuy.id!==CUR.id) return;
-  const tb = rPanel.querySelector('.pos .card tbody'); if(!tb) return;
-  tb.innerHTML = TB.rebuy.lines.map((l,i)=>`<tr><td>${i+1}</td><td>${tbEsc(l.name)}</td><td>${l.unit}</td><td>${l.qty}</td><td>${tbMoney(l.price)}</td><td><b>${tbMoney(l.qty*l.price)}</b></td><td>${TBT.orderStock}</td><td></td></tr>`).join('')
-    + `<tr><td colspan="8" class="note" style="padding:8px 10px">${TBT.rebuyCartNote(TB.rebuy.code)}</td></tr>`;
+function tbRenderRebuy(){
+  const on = rTabs.querySelector('.on');
+  TB.rebuyRender = true; tab(on, TBT.saleTab); TB.rebuyRender = false; // dựng màn Bán hàng vào khung đang mở, tab đang chọn giữ nguyên
 }
-/*TOBE:END js*/
+function tbRebuyReset(){ TB.rebuy = null; const on = rTabs.querySelector('.on'); tab(on, on.textContent); }
+function tbAfterTab(name){
+  if(MODE!=='tobe' || name!==TBT.saleTab || !TB.rebuyRender || !TB.rebuy) return;
+  const R = TB.rebuy, T = TBT;
+  const cartTabs = rPanel.querySelector('.pos-tabs');
+  if(cartTabs) cartTabs.innerHTML = `<span class="pos-cart tb-cart-old">63 - 05/11/2026 ✕</span><span class="pos-cart">${T.rebuyCartName} ✕</span><span class="pos-add">+</span>`;
+  const tb = rPanel.querySelector('.pos .card tbody');
+  if(tb) tb.innerHTML = `<tr class="tb-rb-h"><td colspan="8">${T.rebuyPicked(R.lines.length)}</td></tr>`
+    + R.lines.map((l,i)=>`<tr><td>${i+1}</td><td><b>${tbEsc(l.name)}</b><div class="note">#${l.sku}</div></td><td>${l.unit}</td><td>${l.qty}<div class="note">${T.rebuyStock}</div></td><td>${tbMoney(l.price)}</td><td><b>${tbMoney(l.qty*l.price)}</b></td><td>${T.rebuyWarehouse}</td><td></td></tr>`).join('')
+    + `<tr class="tb-rb-x"><td colspan="8">${T.rebuyCross}</td></tr><tr><td>1</td><td><b>${T.rebuyCrossItem}</b></td><td>Chai</td><td>1</td><td>${tbMoney(120000)}</td><td><b>${tbMoney(120000)}</b></td><td></td><td></td></tr>`;
+  const ship = [...rPanel.querySelectorAll('.pos-sec')].find(x=>x.firstElementChild && x.firstElementChild.textContent==='Giao hàng');
+  if(ship) ship.insertAdjacentHTML('beforeend', `<div class="tb-rb-addr">${T.rebuyAddr}</div>`);
+  rPanel.insertAdjacentHTML('afterbegin', `<div class="tb-rb-banner">${T.rebuyBanner} <a onclick="tbRebuyReset()">${T.rebuyReset}</a></div>`);
+}
 /* ---------- LIST ---------- */
 const state = {page:1, size:10};
 /* CI: thay đổi ô lọc chỉ đổi form; danh sách chỉ lọc lại khi bấm Tìm kiếm (hoặc Enter).
