@@ -393,6 +393,18 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-autotag{display:inline-block;font-size:12px;color:#065f46;background:#effaf4;border:1px dashed #86d0ac;border-radius:4px;padding:2px 8px;white-space:nowrap}
 .tb-on .tablewrap tbody tr.tb-fresh td{background:#fff8e1}
 .tb-newtag{display:table;margin-top:3px;font-size:11px;line-height:14px;padding:0 5px;border-radius:3px;background:#fde68a;color:#92400e}
+/* 12/11: tab nhúng Chi tiết đơn hàng (mô phỏng trang RSA) */
+.tb-od{display:flex;flex-direction:column;gap:12px}
+.tb-od-top{display:flex;align-items:center;gap:10px}.tb-od-sp{flex:1}
+.tb-od-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:10px}
+.tb-od-step{display:flex;align-items:center;gap:6px}.tb-od-step span{width:8px;height:8px;border-radius:50%;background:#16a34a}
+.tb-od-step.on{color:#16a34a;font-weight:600}
+.tb-od-grid{display:grid;grid-template-columns:1fr 280px;gap:12px;align-items:start}
+.tb-od-grid table{width:100%;min-width:560px}
+.tb-od-grid td:nth-child(n+2):nth-child(-n+5),.tb-od-grid th{white-space:nowrap}
+.tb-od-side{display:flex;flex-direction:column;gap:10px}
+.tb-od-empty{padding:60px 20px;text-align:center;color:var(--muted)}
+@media (max-width:1100px){.tb-od-grid{grid-template-columns:1fr}}
 /*TOBE:END css*/
 /* Trang Chi tiết phóng theo chữ chính 14px như Danh sách (Hưng 09/11). Tag trạng thái, công việc giữ 12px như Danh sách. */
 #vDetail{font-size:14px}
@@ -2193,6 +2205,8 @@ const TB_PEND = [
   {id:'nodate',     kind:'def', txt:'Thứ tự giữa các nhóm: ngày cần gọi sớm nhất của ticket chưa xong, rồi thời gian tạo. Ticket không có ngày cần gọi xếp theo thời gian tạo.', src:'Hưng chốt sáng 06/11, đã ghi vào US-3 v3 (mục 5.1 dòng 8). Phần Kiro chọn thêm, chưa có trong US-3: nhóm có ngày xếp trước nhóm không có ngày.'},
   {id:'cross_def',  kind:'def', txt:'Gom khác công việc (cross_business_flow) mặc định bật.', src:'US-3 v3, bảng cài đặt grouping_policy.'},
   {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
+  {id:'order_id',   kind:'ba',  txt:'Tab Chi tiết đơn hàng của Nhắc mua thuốc mãn tính và Nhắc Voucher gia đình cần mã đơn trên ticket. Chưa biết CDE có gửi không, và với voucher là đơn nào.', src:'Hưng 12/11 sau MoM 12/11. Deep dive 05-review/2026-11-12_Deep-dive_tab-nhung-RSA-theo-cong-viec.md'},
+  {id:'order_embed', kind:'sim', txt:'Tab Chi tiết đơn hàng dựng tĩnh. Trang RSA thật chưa nhận layout=content-only (còn sidebar, header) và nút Hủy đơn vẫn bấm được khi nhúng.', src:'Kiểm trên CI RSA 12/11 (05-review/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md)'},
   {id:'remain',     kind:'sim', txt:'Số N trong "KH còn N ticket khác" đếm trên toàn bộ data demo, chưa áp quyền xem theo vai (Sale chỉ thấy ticket của mình cộng ticket Mới).', src:'US-3 v3, mục 5.1 dòng 7. Khung As-Is cũng chưa có phạm vi theo vai.'},
   {id:'grp_act',    kind:'chot', txt:'Nhận, Phân công làm theo nhóm ở cột Thao tác của nhóm. Nút Xử lý chỉ ở màn Chi tiết. Ô Khách hàng, SĐT, Thao tác của nhóm canh chính giữa.', src:'Góp ý 11/11: Nhận, Phân công theo nhóm là hướng đã thống nhất, mockup cập nhật theo. decisions.md D-11 và US-3 còn ghi theo từng ticket, cần sửa.'},
   {id:'cw_min',     kind:'chot', txt:'Gọi chung: khung tổng đài chỉ còn thanh Gọi và Kịch bản. Ghi kết quả bằng nút Xử lý từng ticket ở bảng Ticket của khách hàng, bấm được cả trong lúc đang gọi (khác CI). Không nghe máy chọn trong Xử lý như CI. Màn Chi tiết bỏ khối lặp với bảng.', src:'Góp ý BA và Hưng 11/11, làm trên demo. Khác D-26, D-27 (khung tổng đài 2 bước), chưa sửa decisions.md.'},
@@ -2322,6 +2336,29 @@ const TBT = {
   autoUpdated: 'Đã cập nhật công việc nhận tự động',
   autoOnOk: 'Đã bật nhận phiếu tự động',
   systemName: 'Hệ thống',
+
+  // ---- Tab nhúng Chi tiết đơn hàng (RSA) ----
+  orderTab: 'Chi tiết đơn hàng',
+  orderEmpty: 'Chưa có thông tin đơn hàng cho ticket này.',
+  orderSteps: ['Đặt hàng thành công', 'Đang xử lý', 'Đang vận chuyển', 'Đã giao hàng'],
+  orderDone: 'Hoàn tất',
+  orderCancel: 'Hủy đơn',
+  orderCancelTip: 'Trên RSA nút này đang bấm được khi nhúng. Đề xuất: ẩn khi nhúng trong Call Center Hub',
+  orderRebuy: 'Mua lại',
+  orderRebuyToast: id => `Giả lập: RSA mở màn bán hàng với sản phẩm của đơn này (ticket ${id}). Chưa kiểm hành vi thật của nút Mua lại`,
+  orderCols: ['Tên sản phẩm', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Kho', 'Dự án'],
+  orderStock: 'Lẻ Kho hàng thường',
+  orderTotal: 'Tổng cộng',
+  orderSub: 'Tổng tiền ban đầu',
+  orderDiscount: 'Giảm giá trực tiếp',
+  orderShip: 'Phí giao hàng',
+  orderInfo: 'Thông tin đơn hàng',
+  orderDate: 'Ngày mua',
+  orderChannel: 'Kênh bán hàng',
+  orderChannelVal: 'Web RSA Ecom',
+  orderType: 'Loại đơn hàng',
+  orderTypeVal: 'Bán ngay',
+  orderNote: 'Mô phỏng trang Chi tiết đơn hàng của RSA (iframe /history-orders/{orderId}). Số liệu là dữ liệu mẫu.',
 };
 /* ---------- Dữ liệu minh họa thêm (chỉ nạp khi vào To-Be, gỡ khi về As-Is) ---------- */
 const TB_AG2 = AGENTS.find(a=>a.id!==ME.id);
@@ -3076,6 +3113,47 @@ function tbInit(){
   ['change','click'].forEach(ev=>document.getElementById('fFlow').addEventListener(ev, tbFlowApply, true));
   if(location.hash.startsWith('#tobe')) tbSetMode('tobe');
 }
+/* ---------- Tab nhúng "Chi tiết đơn hàng" của RSA theo công việc (Hưng 12/11, sau MoM 12/11) ----------
+   Nhắc Voucher gia đình và Nhắc mua thuốc mãn tính: thêm tab Chi tiết đơn hàng (iframe RSA `/history-orders/{orderId}`),
+   đứng đầu và mở sẵn. Nhắc CTKM giữ như CI, chờ BU. Tab cũ (Tài khoản gia đình, Bán hàng) giữ nguyên.
+   Nội dung là bản dựng tĩnh theo trang RSA trên CI ngày 12/11 (05-review/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md).
+   Mọi số liệu là dữ liệu mẫu. Bấm dòng khác ở bảng nhóm thì tab đổi theo ticket đó. */
+const TB_ORDER_FLOWS = ['PHARMA-NHAC_THUOC_MAN_TINH', 'PHARMA-NHAC_VOUCHER'];
+const tbHasOrderTab = t => MODE==='tobe' && TB_ORDER_FLOWS.includes(t.businessFlowId);
+function tbTabs(flow, t){ return tbHasOrderTab(t) ? [TBT.orderTab, ...flow.tabs] : [...flow.tabs]; }
+// Số giả nhưng cố định theo mã ticket, để chụp màn hình và test không đổi giữa các lần mở
+function tbSeed(s){ let h = 7; for(const c of String(s)) h = (h*31 + c.charCodeAt(0)) >>> 0; return h; }
+const tbMoney = n => n.toLocaleString('en-US') + ' ₫';
+function tbOrderOf(t){
+  const items = ((t.businessData||{}).items||[]);
+  if(!items.length) return null;
+  const s = tbSeed(t.id), voucher = t.businessFlowId==='PHARMA-NHAC_VOUCHER';
+  const lines = voucher
+    ? [{name:'Đơn hàng mẫu: sản phẩm của đơn đã nhận voucher', qty:1, unit:'Hộp', price:150000 + (s%5)*25000}]
+    : items.map((it,i)=>({name:it.name, qty:1 + (s>>i)%2, unit:'Hộp', price:60000 + ((s>>(i+2))%12)*15000}));
+  const sum = lines.reduce((a,l)=>a + l.qty*l.price, 0);
+  return { code: String(1300000 + s%700000), date: (items.map(i=>i.date).filter(Boolean)[0]) || '—', lines, sum, ship: 25000 };
+}
+function tbOrderHtml(t){
+  const o = tbOrderOf(t);
+  if(!o) return `<div class="tb-od-empty">${TBT.orderEmpty}</div>`;
+  const steps = TBT.orderSteps.map((x,i)=>`<div class="tb-od-step${i===3?' on':''}"><span></span>${x}</div>`).join('');
+  const rows = o.lines.map(l=>`<tr><td>${tbEsc(l.name)}</td><td>x${l.qty} ${l.unit}</td><td>${tbMoney(l.price)}</td><td><b>${tbMoney(l.qty*l.price)}</b></td><td>${TBT.orderStock}</td><td></td></tr>`).join('');
+  const kv = (k,v) => `<dt>${k}</dt><dd>${v}</dd>`;
+  return `<div class="tb-od">
+    <div class="tb-od-top"><b>‹ ${o.code}</b><span class="tag st-CLOSED">${TBT.orderDone}</span><span class="tb-od-sp"></span>
+      <button class="btn" disabled title="${TBT.orderCancelTip}">${TBT.orderCancel}</button>
+      <button class="btn pri" onclick="tbRebuy('${t.id}')">${TBT.orderRebuy}</button></div>
+    <div class="tb-od-steps">${steps}</div>
+    <div class="tb-od-grid"><div class="card" style="overflow:auto"><table><thead><tr>${TBT.orderCols.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="tb-od-side">
+        <div class="pos-sec"><b>${TBT.orderTotal} ${tbMoney(o.sum + o.ship)}</b><dl class="kv">${kv(TBT.orderSub, tbMoney(o.sum))}${kv(TBT.orderDiscount,'0 ₫')}${kv(TBT.orderShip, tbMoney(o.ship))}</dl></div>
+        <div class="pos-sec"><b>${TBT.orderInfo}</b><dl class="kv">${kv(TBT.orderDate, o.date)}${kv(TBT.orderChannel, TBT.orderChannelVal)}${kv(TBT.orderType, TBT.orderTypeVal)}</dl></div>
+      </div></div>
+    <div class="note">${TBT.orderNote}</div></div>`;
+}
+function tbTab(name){ if(MODE!=='tobe' || name!==TBT.orderTab) return false; rPanel.innerHTML = tbOrderHtml(t0()); return true; }
+function tbRebuy(id){ toast('success', TBT.orderRebuyToast(short(id))); }
 /*TOBE:END js*/
 /* ---------- LIST ---------- */
 const state = {page:1, size:10};
@@ -3152,7 +3230,7 @@ function go(id){
   dAttN.textContent = at.length;
   dAtt.innerHTML = at.map((a,i)=>`<div class="tl"><b style="color:var(--primary)">Lần ${i+1}</b><br>Nhân viên: ${a.agentName||'—'}<br>Bắt đầu: ${vnt(a.startedAt)}<br>Kết thúc: ${a.endedAt?vnt(a.endedAt):'—'}</div>`).join('') || '<div class="note">Chưa có cuộc gọi</div>';
   // Tabs panel phải theo business flow (CI: Tài khoản gia đình, Bán hàng)
-  const tabs = [...flow.tabs /* SLOT: tab mới, vd. 'Lịch sử đơn hàng' (iframe RSA) */];
+  const tabs = tbTabs(flow, t); /*TOBE-HOOK: To-Be thêm tab Chi tiết đơn hàng theo công việc*/
   rTabs.innerHTML = tabs.map((n,i)=>`<button class="${i?'':'on'}" onclick="tab(this,'${n}')">${n}</button>`).join('');
   tab(rTabs.firstChild, tabs[0]);
   tbDetail(t); /*TOBE-HOOK*/
@@ -3164,6 +3242,7 @@ let CUR = null; const t0 = () => CUR;
 const panelPhone = () => MODE==='tobe' ? (tbNorm(t0().phone)||t0().phone) : t0().phone;
 function tab(btn, name){
   [...rTabs.children].forEach(b=>b.classList.toggle('on', b===btn));
+  if(tbTab(name)) return; /*TOBE-HOOK*/
   if(name==='Tài khoản gia đình'){
     rPanel.innerHTML = `<div class="fam"><div>
         <div style="margin-bottom:6px">Tìm theo: <label><input type="radio" checked> SĐT</label> <label><input type="radio"> CCCD</label></div>
