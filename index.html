@@ -2656,7 +2656,7 @@ function tbGroupActs(g){
   const call = tbCallBtn(g);
   if(call) h += call;
   else if(c.length) h += `<button class="btn pri tb-gbtn" data-act="gclaim" data-id="${c[0].id}" data-ids="${ids(c)}"${busy?' disabled':''} title="${many&&c.length>1?TBT.claimGroupTip(c.length):TBT.claimTip}">${busy?'…':TBT.claim}</button>`;
-  else if(tbAutoOnly(ts)) h += `<span class="tb-autotag" title="${TBT.autoTagTip}">${TBT.autoTag}</span>`;
+  // Hưng 12/11: bỏ nhãn "Hệ thống tự giao" khi cả nhóm đang nhận tự động, ô để trống
   if(a.length){ const re = a.some(x=>x.assignedAgentId); h += `<button class="btn tb-gbtn" data-act="gassign" data-id="${a[0].id}" data-ids="${ids(a)}"${busy?' disabled':''} title="${many?TBT.assignGroupTip(a.length):TBT.assignTip}">${re?TBT.reassign:TBT.assign}</button>`; }
   return `<div class="tb-gacts">${h}</div>`;
 }
@@ -2843,9 +2843,9 @@ function tbActions(t,out){
     if(k>=0){ const dis = out[k].includes('is-dis'), id = (out[k].match(/data-id="([^"]+)"/)||[])[1];
       out[k] = `<button class="btn pri" data-act="call" data-id="${id}"${dis?` disabled title="${!SIM.mptLoggedIn?TBT.notLoggedIn:TBT.inCall}"`:''}>${TBT.call}</button>`; }
   }
-  if(MODE==='tobe'){ // Nút Nhận bị khoá vì đang nhận tự động: thay bằng chữ, đỡ khó hiểu
+  if(MODE==='tobe'){ // Nút Nhận bị khoá vì đang nhận tự động: bỏ hẳn (Hưng 12/11 bỏ nhãn "Hệ thống tự giao")
     const k = out.findIndex(h=>h.includes('data-act="claim"') && h.includes('nhận phiếu tự động'));
-    if(k>=0) out[k] = `<span class="tb-autotag" title="${TBT.autoTagTip}">${TBT.autoTag}</span>`;
+    if(k>=0) out.splice(k,1);
   }
   if(MODE!=='tobe' || t.assignedAgentId!==ME.id || t.status==='CLOSED' || t.status==='OPEN') return;
   if(((flowOf(t).operationConfig||{}).closure_policy||{}).manual_close) return; // đã có nút theo rule gốc
