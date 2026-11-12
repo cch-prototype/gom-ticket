@@ -393,19 +393,53 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-autotag{display:inline-block;font-size:12px;color:#065f46;background:#effaf4;border:1px dashed #86d0ac;border-radius:4px;padding:2px 8px;white-space:nowrap}
 .tb-on .tablewrap tbody tr.tb-fresh td{background:#fff8e1}
 .tb-newtag{display:table;margin-top:3px;font-size:11px;line-height:14px;padding:0 5px;border-radius:3px;background:#fde68a;color:#92400e}
-/* 12/11: tab nhúng Chi tiết đơn hàng (mô phỏng trang RSA) */
-.tb-od{display:flex;flex-direction:column;gap:12px}
-.tb-od-top{display:flex;align-items:center;gap:10px}.tb-od-sp{flex:1}
-.tb-od-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:10px}
-.tb-od-step{display:flex;align-items:center;gap:6px}.tb-od-step span{width:8px;height:8px;border-radius:50%;background:#16a34a}
-.tb-od-step.on{color:#16a34a;font-weight:600}
-.tb-od-grid{display:grid;grid-template-columns:1fr 280px;gap:12px;align-items:start}
-.tb-od-grid table{width:100%;min-width:560px}
-.tb-od-grid td:nth-child(n+2):nth-child(-n+5),.tb-od-grid th{white-space:nowrap}
-.tb-od-side{display:flex;flex-direction:column;gap:10px}
+/* 12/11: tab nhúng Chi tiết đơn hàng, dựng theo trang RSA Ecom CI v8.6.32 (ảnh Hưng gửi 12/11) */
 .tb-on .pos .card td:nth-child(n+3){white-space:nowrap} /* giỏ sau Mua lại */
+.tb-od{display:flex;flex-direction:column;gap:12px;font-size:13px}
+.tb-od-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tb-od-back{font-size:20px;color:#374151}.tb-od-code{color:#1677ff;font-size:15px;font-weight:600}
+.tb-od-cp{color:#1677ff;font-size:12px;cursor:pointer}
+.tb-od-pill{border:1px solid #595959;background:#f0f0f0;border-radius:12px;padding:1px 10px;font-size:13px}
+.tb-od-pill.warn{border-color:#fadb14;background:#fffbe6;color:#d48806}
+.tb-od-sep{width:1px;height:20px;background:#d9d9d9}.tb-od-sp{flex:1}
+.tb-od-cancel{background:#e6f4ff;border-color:#e6f4ff;color:#0050b3}
+.tb-od-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;align-items:start}
+.tb-od-main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tb-od-steps{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:6px;padding:14px 10px 10px;background:#fff}
+.tb-od-step{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;color:#8c8c8c}
+.tb-od-step i{width:8px;height:8px;border-radius:50%;background:#bfbfbf;z-index:1;margin-bottom:6px}
+.tb-od-step:not(:last-child)::after{content:'';position:absolute;top:3px;left:50%;width:100%;height:2px;background:#d9d9d9}
+.tb-od-step.done{color:#389e0d}.tb-od-step.done i,.tb-od-step.done:not(:last-child)::after{background:#52c41a}
+.tb-od-step b{font-weight:400;font-size:13px}.tb-od-step small{color:#595959;font-size:11.5px}
+.tb-od-tbl{border:1px solid var(--line);border-radius:6px;overflow:auto;background:#fff}
+.tb-od-tbl table{width:100%;min-width:620px;border-collapse:collapse}
+.tb-od-tbl th{background:#e6f4ff;text-align:left;font-weight:500;padding:8px 10px;white-space:nowrap}
+.tb-od-tbl td{padding:10px;border-top:1px solid var(--line);vertical-align:middle}
+.tb-od-tbl td:nth-child(n+2){white-space:nowrap}
+.tb-od-prod{display:flex;gap:10px;align-items:flex-start}
+.tb-od-img{flex:none;width:40px;height:32px;border-radius:4px;background:linear-gradient(135deg,#e5e7eb,#f3f4f6);border:1px solid #e5e7eb}
+.tb-od-pn{font-weight:500;font-size:12.5px}.tb-od-sku{font-size:12px;margin:2px 0}
+.tb-od-origin{display:inline-block;background:#efeafe;color:#5b3cc4;border-radius:4px;padding:1px 6px;font-size:11.5px}
+.tb-od-ok{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;border-radius:50%;background:#52c41a;color:#fff;font-size:10px}
+.tb-od-money{color:#1677ff}
+.tb-od-side{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:6px;background:#fff;overflow:hidden}
+.tb-od-box + .tb-od-box{border-top:1px solid var(--line)}
+.tb-od-bh{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fafafa;cursor:pointer;font-size:14px}
+.tb-od-total{color:#0050b3;font-size:16px;font-weight:600}
+.tb-od-bb{padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+.tb-od-box.col .tb-od-bb{display:none}
+.tb-od-r{display:flex;justify-content:space-between;gap:10px;color:#595959}.tb-od-r span:last-child{color:#1f1f1f;text-align:right}
+.tb-od-r.lk span:last-child{color:#1677ff}
+.tb-od-r span:first-child{white-space:nowrap;flex:none}
+.tb-od-bb hr{border:0;border-top:1px dashed var(--line);margin:2px 0}
+.tb-od-coin{display:inline-block;width:14px;height:14px;line-height:14px;border-radius:50%;background:#fadb14;color:#fff;font-size:9px;text-align:center}
+.tb-od-ship{background:#f0f5ff;border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.tb-od-ship .tb-od-r b{color:#1f1f1f}.tb-od-full{width:100%}
+.tb-od-rx{display:flex;flex-direction:column;gap:6px;color:#595959}
+.tb-od-up{width:90px;height:80px;border:1px dashed #d9d9d9;border-radius:6px;display:flex;align-items:center;justify-content:center;text-align:center;color:#1677ff;font-size:12px}
+.tb-od-l2{background:#f0f0ff;color:#2f54eb;text-align:center;padding:8px;border-top:1px solid var(--line)}
 .tb-od-empty{padding:60px 20px;text-align:center;color:var(--muted)}
-@media (max-width:1100px){.tb-od-grid{grid-template-columns:1fr}}
+@media (max-width:1200px){.tb-od-grid{grid-template-columns:1fr}}
 /*TOBE:END css*/
 /* Trang Chi tiết phóng theo chữ chính 14px như Danh sách (Hưng 09/11). Tag trạng thái, công việc giữ 12px như Danh sách. */
 #vDetail{font-size:14px}
@@ -2342,26 +2376,54 @@ const TBT = {
   orderTab: 'Chi tiết đơn hàng',
   orderEmpty: 'Chưa có thông tin đơn hàng cho ticket này.',
   orderSteps: ['Đặt hàng thành công', 'Đang xử lý', 'Đang vận chuyển', 'Đã giao hàng'],
-  orderDone: 'Hoàn tất',
+  orderStatus: 'Hoàn tất',
+  orderShipLabel: 'Giao hàng:',
+  orderShipStatus: 'Đã giao',
   orderCancel: 'Hủy đơn',
   orderCancelTip: 'Trên RSA nút này đang bấm được khi nhúng. Đề xuất: ẩn khi nhúng trong Call Center Hub',
+  orderCancelToast: 'Demo không huỷ đơn. Đề xuất: ẩn nút Hủy đơn khi nhúng trong Call Center Hub',
   orderRebuy: 'Mua lại',
   orderRebuyToast: (n, code) => `Đã thêm ${n} sản phẩm của đơn ${code} vào giỏ (giả lập)`,
   saleTab: 'Bán hàng',
   rebuyCartNote: code => `Sản phẩm thêm từ Mua lại đơn ${code}. Giả lập: chưa kiểm nút Mua lại thật trên RSA làm gì.`,
   orderCols: ['Tên sản phẩm', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Kho', 'Dự án'],
-  orderStock: 'Lẻ Kho hàng thường',
+  orderOrigin: '⊕ Việt Nam',
+  orderStock: 'L6-Kho hàng thường',
   orderTotal: 'Tổng cộng',
   orderSub: 'Tổng tiền ban đầu',
   orderDiscount: 'Giảm giá trực tiếp',
+  orderVoucherOff: 'Giảm giá voucher',
+  orderSave: 'Tiết kiệm',
   orderShip: 'Phí giao hàng',
+  orderPoints: 'Điểm F-Sell',
+  orderQuote: 'Xem báo giá',
+  orderDetailLink: 'Chi tiết',
   orderInfo: 'Thông tin đơn hàng',
+  orderShipCard: 'Trạng thái giao',
+  orderShipDetail: 'Xem chi tiết',
   orderDate: 'Ngày mua',
+  orderPushed: 'Thời gian đẩy đơn',
+  orderStaff: 'Nhân viên',
+  orderStaffVal: '4xxxx - Nhân viên mẫu',
+  orderShop: 'Cửa hàng',
+  orderShopVal: '8xxxx - Cửa hàng mẫu, TP. Hồ Chí Minh (06:00 - 21:00)',
   orderChannel: 'Kênh bán hàng',
   orderChannelVal: 'Web RSA Ecom',
   orderType: 'Loại đơn hàng',
   orderTypeVal: 'Bán ngay',
-  orderNote: 'Mô phỏng trang Chi tiết đơn hàng của RSA (iframe /history-orders/{orderId}). Số liệu là dữ liệu mẫu.',
+  orderSource: 'Nguồn đơn hàng',
+  orderSourceVal: 'Mua lại đơn',
+  orderEInvoice: 'Hóa đơn điện tử',
+  orderReturnInv: 'Hóa đơn hoàn trả',
+  orderPay: 'Phương thức thanh toán',
+  orderPayVal: 'Tiền mặt',
+  orderContact: 'Liên hệ',
+  orderReceive: 'Phương thức nhận hàng',
+  orderReceiveVal: 'Giao tận nhà',
+  orderRx: 'Ảnh toa thuốc',
+  orderUpload: 'Upload ảnh',
+  orderLevel2: 'Chuyển level 2',
+  orderNote: 'Mô phỏng trang Chi tiết đơn hàng của RSA (iframe /history-orders/{orderId}), dựng theo CI v8.6.32 ngày 12/11. Mã đơn, sản phẩm, số tiền, nhân viên, cửa hàng là dữ liệu mẫu.',
 };
 /* ---------- Dữ liệu minh họa thêm (chỉ nạp khi vào To-Be, gỡ khi về As-Is) ---------- */
 const TB_AG2 = AGENTS.find(a=>a.id!==ME.id);
@@ -3132,28 +3194,55 @@ function tbOrderOf(t){
   if(!items.length) return null;
   const s = tbSeed(t.id), voucher = t.businessFlowId==='PHARMA-NHAC_VOUCHER';
   const lines = voucher
-    ? [{name:'Đơn hàng mẫu: sản phẩm của đơn đã nhận voucher', qty:1, unit:'Hộp', price:150000 + (s%5)*25000}]
-    : items.map((it,i)=>({name:it.name, qty:1 + (s>>i)%2, unit:'Hộp', price:60000 + ((s>>(i+2))%12)*15000}));
-  const sum = lines.reduce((a,l)=>a + l.qty*l.price, 0);
-  return { code: String(1300000 + s%700000), date: (items.map(i=>i.date).filter(Boolean)[0]) || '—', lines, sum, ship: 25000 };
+    ? [{name:'ĐƠN HÀNG MẪU: SẢN PHẨM CỦA ĐƠN ĐÃ NHẬN VOUCHER', qty:1, unit:'Hộp', price:150000 + (s%5)*25000}]
+    : items.map((it,i)=>({name:String(it.name).toUpperCase(), qty:1 + (s>>i)%2, unit:'Hộp', price:60000 + ((s>>(i+2))%12)*15000}));
+  lines.forEach((l,i)=>{ l.sku = String(10000000 + (tbSeed(t.id+i) % 89999999)).slice(-8); });
+  const sum = lines.reduce((a,l)=>a + l.qty*l.price, 0), voucherOff = voucher ? 0 : 0, ship = 0;
+  const date = (items.map(i=>i.date).filter(Boolean)[0]) || '—';
+  return { code: String(1300000 + s%700000), date, time: '09:' + String(10 + s%40).padStart(2,'0'), lines, sum, voucherOff, ship,
+           total: sum - voucherOff + ship, points: Math.floor((sum - voucherOff)/1000) };
 }
 function tbOrderHtml(t){
   const o = tbOrderOf(t);
   if(!o) return `<div class="tb-od-empty">${TBT.orderEmpty}</div>`;
-  const steps = TBT.orderSteps.map((x,i)=>`<div class="tb-od-step${i===3?' on':''}"><span></span>${x}</div>`).join('');
-  const rows = o.lines.map(l=>`<tr><td>${tbEsc(l.name)}</td><td>x${l.qty} ${l.unit}</td><td>${tbMoney(l.price)}</td><td><b>${tbMoney(l.qty*l.price)}</b></td><td>${TBT.orderStock}</td><td></td></tr>`).join('');
-  const kv = (k,v) => `<dt>${k}</dt><dd>${v}</dd>`;
+  const T = TBT, cp = '<span class="tb-od-cp" title="Sao chép">⧉</span>';
+  const steps = T.orderSteps.map((x,i)=>`<div class="tb-od-step done"><i></i><b>${x}</b><small>${o.date} ${o.time}:${String(i*7+5).padStart(2,'0')}</small></div>`).join('');
+  const rows = o.lines.map(l=>`<tr>
+      <td><div class="tb-od-prod"><span class="tb-od-img"></span><div><div class="tb-od-pn">${tbEsc(l.name)}</div>
+        <div class="tb-od-sku">${cp} ${l.sku}</div><span class="tb-od-origin">${T.orderOrigin}</span></div></div></td>
+      <td>x${l.qty} ${l.unit} <span class="tb-od-ok">✓</span></td><td>${tbMoney(l.price)}</td>
+      <td><span class="tb-od-money">${tbMoney(l.qty*l.price)}</span></td><td>${T.orderStock}</td><td><input type="checkbox" disabled></td></tr>`).join('');
+  const r = (k,v,cls='') => `<div class="tb-od-r ${cls}"><span>${k}</span><span>${v}</span></div>`;
+  const link = T.orderDetailLink;
   return `<div class="tb-od">
-    <div class="tb-od-top"><b>‹ ${o.code}</b><span class="tag st-CLOSED">${TBT.orderDone}</span><span class="tb-od-sp"></span>
-      <button class="btn" disabled title="${TBT.orderCancelTip}">${TBT.orderCancel}</button>
-      <button class="btn pri" onclick="tbRebuy('${t.id}')">${TBT.orderRebuy}</button></div>
-    <div class="tb-od-steps">${steps}</div>
-    <div class="tb-od-grid"><div class="card" style="overflow:auto"><table><thead><tr>${TBT.orderCols.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="tb-od-top"><span class="tb-od-back">‹</span><span class="tb-od-code">${o.code} ${cp}</span>
+      <span class="tb-od-pill">${T.orderStatus}</span><span class="tb-od-sep"></span><b>${T.orderShipLabel}</b><span class="tb-od-pill warn">${T.orderShipStatus}</span>
+      <span class="tb-od-sp"></span>
+      <button class="btn tb-od-cancel" onclick="toast('error', TBT.orderCancelToast)" title="${T.orderCancelTip}">${T.orderCancel}</button>
+      <button class="btn pri" onclick="tbRebuy('${t.id}')">${T.orderRebuy}</button></div>
+    <div class="tb-od-grid">
+      <div class="tb-od-main">
+        <div class="tb-od-steps">${steps}</div>
+        <div class="tb-od-tbl"><table><thead><tr>${T.orderCols.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+      </div>
       <div class="tb-od-side">
-        <div class="pos-sec"><b>${TBT.orderTotal} ${tbMoney(o.sum + o.ship)}</b><dl class="kv">${kv(TBT.orderSub, tbMoney(o.sum))}${kv(TBT.orderDiscount,'0 ₫')}${kv(TBT.orderShip, tbMoney(o.ship))}</dl></div>
-        <div class="pos-sec"><b>${TBT.orderInfo}</b><dl class="kv">${kv(TBT.orderDate, o.date)}${kv(TBT.orderChannel, TBT.orderChannelVal)}${kv(TBT.orderType, TBT.orderTypeVal)}</dl></div>
+        <div class="tb-od-box"><div class="tb-od-bh" onclick="this.parentElement.classList.toggle('col')"><span>⌄ ${T.orderTotal}</span><span class="tb-od-total">${tbMoney(o.total)}</span></div>
+          <div class="tb-od-bb">${r(T.orderSub, tbMoney(o.sum))}${r(T.orderDiscount,'0 ₫')}${r(T.orderVoucherOff, tbMoney(o.voucherOff))}
+            <hr>${r(T.orderSave, tbMoney(o.voucherOff))}${r(T.orderShip, tbMoney(o.ship))}${r(T.orderPoints, `<span class="tb-od-coin">F</span> <span class="tb-od-money">+${o.points}</span>`)}
+            <hr>${r(T.orderQuote, link, 'lk')}</div></div>
+        <div class="tb-od-box"><div class="tb-od-bh" onclick="this.parentElement.classList.toggle('col')"><span>⌄ ${T.orderInfo}</span></div>
+          <div class="tb-od-bb">
+            <div class="tb-od-ship"><div class="tb-od-r"><b>${T.orderShipCard}</b><span class="tb-od-pill warn">${T.orderShipStatus}</span></div>
+              <button class="btn pri tb-od-full">${T.orderShipDetail} →</button></div>
+            ${r(T.orderDate, o.date+' '+o.time)}${r(T.orderPushed, o.date+' '+o.time)}${r(T.orderStaff, T.orderStaffVal)}${r(T.orderShop, T.orderShopVal)}
+            ${r(T.orderChannel, T.orderChannelVal)}${r(T.orderType, T.orderTypeVal)}${r(T.orderSource, T.orderSourceVal)}
+            ${r(T.orderEInvoice, link, 'lk')}${r(T.orderReturnInv, link, 'lk')}${r(T.orderPay, T.orderPayVal, 'lk')}${r(T.orderContact, link, 'lk')}
+            ${r(T.orderReceive, T.orderReceiveVal)}
+            <div class="tb-od-rx"><span>${T.orderRx}</span><div class="tb-od-up">⊕<br>${T.orderUpload}</div></div>
+          </div></div>
+        <div class="tb-od-l2">${T.orderLevel2} →</div>
       </div></div>
-    <div class="note">${TBT.orderNote}</div></div>`;
+    <div class="note">${T.orderNote}</div></div>`;
 }
 function tbTab(name){ if(MODE!=='tobe' || name!==TBT.orderTab) return false; rPanel.innerHTML = tbOrderHtml(t0()); return true; }
 // Mua lại (giả lập, Hưng 12/11): chuyển sang tab Bán hàng, giỏ có sẵn sản phẩm của đơn. Chưa kiểm nút Mua lại thật trên RSA làm gì.
