@@ -403,6 +403,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-od-grid table{width:100%;min-width:560px}
 .tb-od-grid td:nth-child(n+2):nth-child(-n+5),.tb-od-grid th{white-space:nowrap}
 .tb-od-side{display:flex;flex-direction:column;gap:10px}
+.tb-on .pos .card td:nth-child(n+3){white-space:nowrap} /* giỏ sau Mua lại */
 .tb-od-empty{padding:60px 20px;text-align:center;color:var(--muted)}
 @media (max-width:1100px){.tb-od-grid{grid-template-columns:1fr}}
 /*TOBE:END css*/
@@ -2345,7 +2346,9 @@ const TBT = {
   orderCancel: 'Hủy đơn',
   orderCancelTip: 'Trên RSA nút này đang bấm được khi nhúng. Đề xuất: ẩn khi nhúng trong Call Center Hub',
   orderRebuy: 'Mua lại',
-  orderRebuyToast: id => `Giả lập: RSA mở màn bán hàng với sản phẩm của đơn này (ticket ${id}). Chưa kiểm hành vi thật của nút Mua lại`,
+  orderRebuyToast: (n, code) => `Đã thêm ${n} sản phẩm của đơn ${code} vào giỏ (giả lập)`,
+  saleTab: 'Bán hàng',
+  rebuyCartNote: code => `Sản phẩm thêm từ Mua lại đơn ${code}. Giả lập: chưa kiểm nút Mua lại thật trên RSA làm gì.`,
   orderCols: ['Tên sản phẩm', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Kho', 'Dự án'],
   orderStock: 'Lẻ Kho hàng thường',
   orderTotal: 'Tổng cộng',
@@ -3153,7 +3156,19 @@ function tbOrderHtml(t){
     <div class="note">${TBT.orderNote}</div></div>`;
 }
 function tbTab(name){ if(MODE!=='tobe' || name!==TBT.orderTab) return false; rPanel.innerHTML = tbOrderHtml(t0()); return true; }
-function tbRebuy(id){ toast('success', TBT.orderRebuyToast(short(id))); }
+// Mua lại (giả lập, Hưng 12/11): chuyển sang tab Bán hàng, giỏ có sẵn sản phẩm của đơn. Chưa kiểm nút Mua lại thật trên RSA làm gì.
+function tbRebuy(id){
+  const t = byId(id), o = t && tbOrderOf(t); if(!o) return;
+  TB.rebuy = {id, code:o.code, lines:o.lines};
+  const b = [...rTabs.children].find(x=>x.textContent===TBT.saleTab); if(b) b.click();
+  toast('success', TBT.orderRebuyToast(o.lines.length, o.code));
+}
+function tbAfterTab(name){
+  if(MODE!=='tobe' || name!==TBT.saleTab || !TB.rebuy || !CUR || TB.rebuy.id!==CUR.id) return;
+  const tb = rPanel.querySelector('.pos .card tbody'); if(!tb) return;
+  tb.innerHTML = TB.rebuy.lines.map((l,i)=>`<tr><td>${i+1}</td><td>${tbEsc(l.name)}</td><td>${l.unit}</td><td>${l.qty}</td><td>${tbMoney(l.price)}</td><td><b>${tbMoney(l.qty*l.price)}</b></td><td>${TBT.orderStock}</td><td></td></tr>`).join('')
+    + `<tr><td colspan="8" class="note" style="padding:8px 10px">${TBT.rebuyCartNote(TB.rebuy.code)}</td></tr>`;
+}
 /*TOBE:END js*/
 /* ---------- LIST ---------- */
 const state = {page:1, size:10};
@@ -3278,6 +3293,7 @@ function tab(btn, name){
   } else {
     rPanel.innerHTML = `<div class="slot">SLOT: ${name}</div>`;
   }
+  tbAfterTab(name); /*TOBE-HOOK*/
 }
 
 
