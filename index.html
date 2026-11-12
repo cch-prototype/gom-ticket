@@ -2613,8 +2613,8 @@ function tbCallBtn(g){
   // Hưng 09/11: vừa gọi xong, còn ticket chưa ghi kết quả thì không hiện nút Gọi. Hưng 12/11: bỏ luôn nút Gọi lại, chỉ còn dòng chữ.
   const pd = TB.pending && TB.pending.key===g.key && TB.pending.ids.size && CALL.state==='IDLE' ? TB.pending : null;
   if(pd){
-    const hm = vnt(pd.at).slice(-5), n = pd.ids.size;
-    return `<div class="tb-callg tb-called${g.hd?' hd':''}"><span class="tb-calledtx">${TBT.calledAt(hm)}${g.hd?` · ${TBT.pendingLeft(n)}`:''}</span>${g.hd?'':`<span class="tb-calledtx">· ${TBT.pendingLeft(n)}</span>`}</div>`;
+    // Hưng 12/11: bỏ dòng "Đã gọi lúc … · còn N ticket chưa ghi kết quả". Vẫn trả ô rỗng (không rỗng chuỗi) để tbGroupActs không hiện Nhận khi còn ticket chưa ghi kết quả.
+    return `<div class="tb-callg tb-called${g.hd?' hd':''}"></div>`;
   }
   const n = tbCallScope(g.key).length;
   const why = !SIM.mptLoggedIn ? TBT.notLoggedIn : (CALL.state!=='IDLE' ? TBT.inCall : '');
