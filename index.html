@@ -2194,7 +2194,7 @@ const TB_PEND = [
   {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
   {id:'remain',     kind:'sim', txt:'Số N trong "KH còn N ticket khác" đếm trên toàn bộ data demo, chưa áp quyền xem theo vai (Sale chỉ thấy ticket của mình cộng ticket Mới).', src:'US-3 v3, mục 5.1 dòng 7. Khung As-Is cũng chưa có phạm vi theo vai.'},
   {id:'grp_act',    kind:'chot', txt:'Nhận, Phân công làm theo nhóm ở cột Thao tác của nhóm. Nút Xử lý chỉ ở màn Chi tiết. Ô Khách hàng, SĐT, Thao tác của nhóm canh chính giữa.', src:'Góp ý 11/11: Nhận, Phân công theo nhóm là hướng đã thống nhất, mockup cập nhật theo. decisions.md D-11 và US-3 còn ghi theo từng ticket, cần sửa.'},
-  {id:'cw_min',     kind:'chot', txt:'Gọi chung: khung tổng đài chỉ còn thanh Gọi và Kịch bản. Ghi kết quả bằng nút Xử lý từng ticket ở bảng Ticket của khách này, bấm được cả trong lúc đang gọi (khác CI). Không nghe máy chọn trong Xử lý như CI. Màn Chi tiết bỏ khối lặp với bảng.', src:'Góp ý BA và Hưng 11/11, làm trên demo. Khác D-26, D-27 (khung tổng đài 2 bước), chưa sửa decisions.md.'},
+  {id:'cw_min',     kind:'chot', txt:'Gọi chung: khung tổng đài chỉ còn thanh Gọi và Kịch bản. Ghi kết quả bằng nút Xử lý từng ticket ở bảng Ticket của khách hàng, bấm được cả trong lúc đang gọi (khác CI). Không nghe máy chọn trong Xử lý như CI. Màn Chi tiết bỏ khối lặp với bảng.', src:'Góp ý BA và Hưng 11/11, làm trên demo. Khác D-26, D-27 (khung tổng đài 2 bước), chưa sửa decisions.md.'},
   {id:'grp_asg',    kind:'ba',  txt:'Phân công nhóm giao mọi ticket chưa đóng trong nhóm cho người được chọn, kể cả ticket người khác đang giữ.', src:'BA suy ra 11/11, chưa ai xác nhận.'},
   {id:'kq_script',  kind:'chot', txt:'Gọi chung: kịch bản gộp theo công việc, không lặp theo ticket, mở sẵn. Công việc chưa có kịch bản ghi "Chưa có kịch bản cho công việc này".', src:'Hưng chốt 11/11 trong chat. US-3 mục 4.6.11 còn NEEDS CLARIFICATION.'},
   {id:'kq_var',     kind:'sim', txt:'Ô trống [---] trong kịch bản tự điền từ dữ liệu ticket (tên voucher, HSD).', src:'Hưng chốt 11/11 trong chat. Chưa biết trang Settings hub-core có hỗ trợ biến trong kịch bản không.'},
@@ -2396,7 +2396,7 @@ function tbCallBtn(g){
 /* ---------- Thao tác cấp nhóm (góp ý 11/11, Hưng cho làm thử trên demo, đảo D-11) ----------
    Nhận: nhận một lần mọi ticket Mới trong nhóm mà mình nhận được, không lấy ticket người khác, bỏ qua công việc đang nhận tự động.
    Phân công (Sale Lead): giao mọi ticket chưa đóng trong nhóm cho một người, kể cả ticket người khác đang giữ (BA suy ra).
-   Xử lý: không còn ở màn Danh sách, chỉ ở màn Chi tiết (bảng Ticket của khách này, thanh nhắc). */
+   Xử lý: không còn ở màn Danh sách, chỉ ở màn Chi tiết (bảng Ticket của khách hàng, thanh nhắc). */
 const tbAutoLock = x => auto.on && auto.flows.includes(x.businessFlowId);
 const tbClaimable = ts => ts.filter(x=>x.status==='OPEN' && ((flowOf(x).operationConfig||{}).routing_policy||{}).self_claim_enabled && !tbAutoLock(x));
 const tbAutoOnly = ts => { const o = ts.filter(x=>x.status==='OPEN'); return o.length>0 && o.every(tbAutoLock); };
@@ -2450,7 +2450,7 @@ function tbSecToggle(e){
 document.addEventListener('click', tbSecToggle);
 document.addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e.target.closest && e.target.closest('#vDetail .sec > h3')){ e.preventDefault(); tbSecToggle(e); } });
 /* ---------- Chi tiết: cột trái theo ticket đang chọn (Hưng 12/11, thay cách hiện thẻ cho mọi ticket ngày 11/11) ----------
-   Nhóm từ 2 ticket: bấm một dòng ở bảng "Ticket của khách này" thì cột trái (Thông tin ticket, Lịch sử phân công,
+   Nhóm từ 2 ticket: bấm một dòng ở bảng "Ticket của khách hàng" thì cột trái (Thông tin ticket, Lịch sử phân công,
    Lịch sử cuộc gọi) chỉ nói về ticket đó, như CI. Cuộc gọi chung vẫn ghi rõ tính cho những ticket nào. Ticket lẻ giữ như CI. */
 function tbInfoAll(t, grp, dup){
   const dl = document.getElementById('dInfo'), h = dl.previousElementSibling;
@@ -2462,14 +2462,14 @@ function tbInfoAll(t, grp, dup){
   dAttN.textContent = at.length;
   dAtt.innerHTML = at.map((a,i)=>({a,i,ids:withIds(a)})).reverse().map(({a,i,ids})=>`<div class="tl"><b style="color:var(--primary)">Lần ${i+1}</b>${ids.length>1?` · gọi chung ${ids.length} ticket<br>Tính cho: ${ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}`:''}<br>Nhân viên: ${a.agentName||'—'}<br>Bắt đầu: ${vnt(a.startedAt)}<br>Kết thúc: ${a.endedAt?vnt(a.endedAt):'—'}</div>`).join('') || '<div class="note">Chưa có cuộc gọi</div>';
 }
-// Chọn ticket ở bảng "Ticket của khách này": bấm cả dòng, giữ vị trí cuộn (Hưng 12/11)
+// Chọn ticket ở bảng "Ticket của khách hàng": bấm cả dòng, giữ vị trí cuộn (Hưng 12/11)
 function tbPick(id){ if(!id || (CUR && CUR.id===id)) return; const y = window.scrollY; go(id); window.scrollTo(0,y); }
 function tbRowPick(e,id){
   if(e.target.closest('button,a,input,select,textarea,.copy,[data-act]')) return; // nút trong dòng làm việc của nút
   const sel = window.getSelection && String(window.getSelection()); if(sel) return; // đang bôi đen chữ để copy
   tbPick(id);
 }
-// Bảng "Ticket của khách này" ở Chi tiết: mỗi ticket chỉ còn Xử lý (Nhận, Phân công làm ở cấp nhóm)
+// Bảng "Ticket của khách hàng" ở Chi tiết: mỗi ticket chỉ còn Xử lý (Nhận, Phân công làm ở cấp nhóm)
 function tbActionsPost(t,out){
   if(MODE!=='tobe' || !TB.inGroupTable) return;
   // 11/11 (Hưng): đang gọi chung vẫn bấm Xử lý được cho ticket trong cuộc gọi (khác CI: CI khoá Xử lý khi đang gọi)
@@ -2533,7 +2533,7 @@ function renderToBe(){
 function tbInvalidate(){ TB.snap = null; }
 
 /* ---------- Chi tiết To-Be: hiện cả nhóm ---------- */
-// Bảng "Ticket của khách này" thu gọn được (Hưng 09/11, phương án A): thu gọn thì còn một dòng gồm các chip mã yêu cầu + trạng thái,
+// Bảng "Ticket của khách hàng" thu gọn được (Hưng 09/11, phương án A): thu gọn thì còn một dòng gồm các chip mã yêu cầu + trạng thái,
 // bấm chip để chuyển ticket. Mặc định mở. Trạng thái nhớ trong phiên (TB.gCollapsed), tải lại trang thì mở lại.
 function tbPaintGroup(t){
   const g = document.getElementById('tbGroup');
@@ -2542,7 +2542,7 @@ function tbPaintGroup(t){
   const col = !!TB.gCollapsed && !(MODE==='tobe' && CALL.state!=='IDLE' && TB.pending && TB.pending.key===key); // đang gọi chung thì luôn mở bảng để chọn kết quả
   g.classList.remove('hidden');
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?' (đang xem)':''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
-  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở bảng ticket của khách':'Thu gọn bảng ticket của khách'}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
+  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở bảng ticket của khách hàng':'Thu gọn bảng ticket của khách hàng'}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">Ticket của khách hàng (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
   const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
     + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?'Đang xem ticket này':'Xem thông tin ticket này'}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
@@ -2570,7 +2570,7 @@ function tbDetail(t){
     const da=document.getElementById('dActs'); // góp ý 11/11: chỉ còn nút cấp nhóm, Xử lý từng ticket nằm ở bảng bên dưới
     da.innerHTML = `<span class="tb-callhd">${tbGroupActs({key, tickets:grp, hd:true})}</span>`;
   }
-  // 11/11: nhóm từ 2 ticket thì bỏ thông tin đã có trong bảng "Ticket của khách này"
+  // 11/11: nhóm từ 2 ticket thì bỏ thông tin đã có trong bảng "Ticket của khách hàng"
   const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu','Ngày cần gọi','Thời gian hết hạn']; // 11/11: giữ Kết quả xử lý, Ghi chú như CI
   document.querySelectorAll('#dInfo dt').forEach(dt=>{ const hide = dup && drop.includes(dt.textContent); dt.style.display = hide?'none':''; if(dt.nextElementSibling) dt.nextElementSibling.style.display = hide?'none':''; });
   document.getElementById('dItems').style.display = dup ? 'none' : '';
@@ -2696,7 +2696,7 @@ function tbPaintCallTB(t){
   }
   if(!list) return false;
   // 11/11 (góp ý BA): gọi chung thì khung chỉ còn thanh Gọi và Kịch bản. Kết quả ghi bằng nút Xử lý từng ticket ở bảng
-  // "Ticket của khách này", bấm được cả trong lúc đang gọi (khác CI: CI khoá Xử lý khi đang gọi).
+  // "Ticket của khách hàng", bấm được cả trong lúc đang gọi (khác CI: CI khoá Xử lý khi đang gọi).
   const blocks = tbScriptBlocks(list);
   const has = blocks.filter(b=>b.txt), miss = blocks.filter(b=>!b.txt);
   const missLine = miss.length ? `<div class="tbw-miss"><b>${miss.map(b=>flowName(b.f)).join(', ')}:</b> <span class="tbw-none">Chưa có kịch bản cho công việc này.</span></div>` : '';
