@@ -250,19 +250,13 @@ td.nd{padding:0;white-space:normal}
 .tb-on #callBox .tbw-miss{grid-column:1/-1}
 /* Góp ý 11/11: ô của nhóm canh giữa, nút cấp nhóm xếp dọc giữa ô */
 .tb-on .tablewrap td.tb-gc{vertical-align:middle;text-align:center}
-.tb-on .tb-ic{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-top:8px}
-.tb-on .tb-ic.cur{border-color:var(--primary);box-shadow:inset 3px 0 0 var(--primary)}
-.tb-on .tb-ich{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}.tb-on .tb-ichl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0}.tb-on .tb-ich .link{font-weight:600}
-.tb-on .tb-ic .kv{margin:0}
 .tb-on .tb-tlid{color:var(--primary)}
 .tb-on #vDetail .sec > h3{cursor:pointer;user-select:none}
-.tb-on #vDetail .sec > h3 > span:last-child,.tb-on .tb-chev{display:inline-block;transition:transform .15s}
+.tb-on #vDetail .sec > h3 > span:last-child{display:inline-block;transition:transform .15s}
 .tb-on #vDetail .sec.tb-col > h3{margin-bottom:0}
 .tb-on #vDetail .sec.tb-col > h3 > span:last-child{transform:rotate(-90deg)}
 .tb-on #vDetail .sec.tb-col > :not(h3){display:none !important}
-.tb-on .tb-ich{cursor:pointer}.tb-on .tb-chev{flex:none;font-size:12px;line-height:22px}
-.tb-on .tb-ic.tb-col .kv{display:none}.tb-on .tb-ic.tb-col .tb-ich{margin-bottom:0}.tb-on .tb-ic.tb-col .tb-chev{transform:rotate(-90deg)}
-@media (prefers-reduced-motion:reduce){.tb-on #vDetail .sec > h3 > span:last-child,.tb-on .tb-chev{transition:none}}
+@media (prefers-reduced-motion:reduce){.tb-on #vDetail .sec > h3 > span:last-child{transition:none}}
 .tb-on #callBox .tbw-script{display:flex;flex-wrap:wrap;gap:8px 24px}.tb-on #callBox .tbw-script > div{flex:1 1 320px;min-width:0}.tb-on #callBox .tbw-script > .tbw-miss{flex-basis:100%}
 .tb-on .tb-gt tr.tb-pend td{background:#fff8e1}
 .tb-on .tb-gt tr.tb-pend td:first-child{box-shadow:inset 3px 0 0 #f59e0b}
@@ -337,6 +331,11 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-gt td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:top}
 .tb-gt td.nd{padding:0;min-width:280px}
 .tb-gt tr.tb-cur td{background:#f3f7ff}
+.tb-on .tb-gt tr.tb-row{cursor:pointer} /* 12/11: bấm dòng để xem ticket đó */
+.tb-on .tb-gt tr.tb-row:not(.tb-cur):not(.tb-pend):hover td{background:#f8fafc}
+.tb-on .tb-gt tr.tb-cur td:first-child{box-shadow:inset 3px 0 0 var(--primary)}
+.tb-on .tb-gt tr.tb-row:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.tb-on .tb-infoid{color:var(--primary);font-weight:600}
 .tb-cur-tag{display:inline-block;margin-left:6px;font-size:11px;line-height:14px;padding:0 5px;border-radius:3px;background:#dbe6ff;color:var(--primary)}
 .tb-pend{margin-top:12px;padding:10px 14px}
 .tb-pend h3{margin:0 0 8px;font-size:12px;text-transform:uppercase}
@@ -2445,41 +2444,30 @@ function tbConfirmAssignGroup(){
    As-Is không đổi. Trạng thái khối nằm trên chính phần tử .sec (không bị vẽ lại); trạng thái thẻ nhớ theo mã ticket. */
 function tbSecToggle(e){
   if(MODE!=='tobe') return;
-  const card = e.target.closest('#tbInfoAll .tb-ich');
-  if(card){ const c = card.parentElement, id = c.dataset.tid; TB.cardCol = TB.cardCol || new Set();
-    const col = c.classList.toggle('tb-col'); col ? TB.cardCol.add(id) : TB.cardCol.delete(id);
-    card.setAttribute('aria-expanded', !col); card.title = col?'Mở thông tin ticket':'Thu gọn thông tin ticket'; return; }
   const h = e.target.closest('#vDetail .sec > h3'); if(!h || e.target.closest('.link')) return;
   const col = h.parentElement.classList.toggle('tb-col'); h.setAttribute('aria-expanded', !col);
 }
 document.addEventListener('click', tbSecToggle);
-document.addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e.target.closest && e.target.closest('#tbInfoAll .tb-ich, #vDetail .sec > h3')){ e.preventDefault(); tbSecToggle(e); } });
-/* ---------- Chi tiết: thông tin của tất cả ticket trong nhóm (Hưng 11/11) ----------
-   Nhóm từ 2 ticket: Thông tin ticket hiện một thẻ cho mỗi ticket; Lịch sử phân công, Lịch sử cuộc gọi gộp cả nhóm, ghi kèm mã ticket.
-   Một cuộc gọi chung tạo bản ghi trên từng ticket, gộp lại thành một dòng theo thời điểm bắt đầu. Ticket lẻ giữ như CI. */
+document.addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e.target.closest && e.target.closest('#vDetail .sec > h3')){ e.preventDefault(); tbSecToggle(e); } });
+/* ---------- Chi tiết: cột trái theo ticket đang chọn (Hưng 12/11, thay cách hiện thẻ cho mọi ticket ngày 11/11) ----------
+   Nhóm từ 2 ticket: bấm một dòng ở bảng "Ticket của khách này" thì cột trái (Thông tin ticket, Lịch sử phân công,
+   Lịch sử cuộc gọi) chỉ nói về ticket đó, như CI. Cuộc gọi chung vẫn ghi rõ tính cho những ticket nào. Ticket lẻ giữ như CI. */
 function tbInfoAll(t, grp, dup){
   const dl = document.getElementById('dInfo'), h = dl.previousElementSibling;
-  let box = document.getElementById('tbInfoAll');
-  if(!dup){ h.innerHTML = 'Thông tin ticket <span>⌄</span>'; dl.style.display=''; if(box) box.remove(); return; }
-  h.innerHTML = `<span>Thông tin ticket (${grp.length})</span><span>⌄</span>`; dl.style.display='none';
-  if(!box){ box = document.createElement('div'); box.id='tbInfoAll'; dl.after(box); }
-  const kv = (k,v) => `<dt>${k}</dt><dd>${v}</dd>`;
-  box.innerHTML = grp.map(x=>{ const r = resultOf(x);
-    const col = TB.cardCol && TB.cardCol.has(x.id);
-    return `<div class="tb-ic${x.id===t.id?' cur':''}${col?' tb-col':''}" data-tid="${x.id}"><div class="tb-ich" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở thông tin ticket':'Thu gọn thông tin ticket'}"><span class="tb-ichl"><span class="link" onclick="event.stopPropagation();go('${x.id}')">${short(x.id)}</span><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span><span class="tag st-${x.status}">${STATUS[x.status]}</span></span><span class="tb-chev">⌄</span></div>`
-      + `<dl class="kv">${kv('NV đảm trách', x.assignedAgentName||'—')}${kv('Kết quả xử lý', r.label)}${kv('Ghi chú', r.note)}${kv('Thời gian tạo', vnt(x.createdAt))}${kv('Cập nhật gần nhất', vnt(x.updatedAt))}</dl></div>`; }).join('');
-  // Lịch sử phân công: gộp cả nhóm, mới nhất trên cùng
-  const asg = grp.flatMap(x=>(x._asg || (x.assignedAt ? [{at:x.assignedAt, by:x.assignedBy, to:x.assignedAgentName}] : [])).map(a=>({...a, id:x.id}))).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
-  const ag = new Map(); asg.forEach(a=>{ const k=a.at+'|'+a.by+'|'+a.to; if(!ag.has(k)) ag.set(k,{...a, ids:[]}); ag.get(k).ids.push(a.id); }); // giao cùng lúc cho nhiều ticket: một dòng
-  const al = [...ag.values()];
-  dAsgN.textContent = al.length;
-  dAsg.innerHTML = al.map(a=>`<div class="tl">${vnt(a.at)}<br>Ticket: ${a.ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}<br>Phân công bởi: <b>${a.by}</b><br>Người nhận: <b>${a.to}</b></div>`).join('') || '<div class="note">Chưa phân công</div>';
-  // Lịch sử cuộc gọi: một cuộc gọi chung là một dòng, ghi các ticket được tính
-  const calls = new Map();
-  grp.forEach(x=>(ATTEMPTS[x.id]||[]).forEach(a=>{ const k = a.startedAt+'|'+(a.agentName||''); if(!calls.has(k)) calls.set(k,{a, ids:[]}); calls.get(k).ids.push(x.id); }));
-  const cl = [...calls.values()].sort((p,q)=>String(q.a.startedAt).localeCompare(String(p.a.startedAt)));
-  dAttN.textContent = cl.length;
-  dAtt.innerHTML = cl.map((c,i)=>`<div class="tl"><b style="color:var(--primary)">Lần ${cl.length-i}</b>${c.ids.length>1?` · gọi chung ${c.ids.length} ticket`:''}<br>Ticket: ${c.ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}<br>Nhân viên: ${c.a.agentName||'—'}<br>Bắt đầu: ${vnt(c.a.startedAt)}<br>Kết thúc: ${c.a.endedAt?vnt(c.a.endedAt):'—'}</div>`).join('') || '<div class="note">Chưa có cuộc gọi</div>';
+  h.innerHTML = dup ? `<span>Thông tin ticket <span class="tb-infoid">${short(t.id)}</span></span><span>⌄</span>` : 'Thông tin ticket <span>⌄</span>';
+  if(!dup) return;
+  // Lịch sử cuộc gọi của ticket đang chọn; lần nào là cuộc gọi chung thì ghi kèm các ticket được tính
+  const at = ATTEMPTS[t.id]||[];
+  const withIds = a => grp.filter(x=>(ATTEMPTS[x.id]||[]).some(b=>b.startedAt===a.startedAt && (b.agentName||'')===(a.agentName||''))).map(x=>x.id);
+  dAttN.textContent = at.length;
+  dAtt.innerHTML = at.map((a,i)=>({a,i,ids:withIds(a)})).reverse().map(({a,i,ids})=>`<div class="tl"><b style="color:var(--primary)">Lần ${i+1}</b>${ids.length>1?` · gọi chung ${ids.length} ticket<br>Tính cho: ${ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}`:''}<br>Nhân viên: ${a.agentName||'—'}<br>Bắt đầu: ${vnt(a.startedAt)}<br>Kết thúc: ${a.endedAt?vnt(a.endedAt):'—'}</div>`).join('') || '<div class="note">Chưa có cuộc gọi</div>';
+}
+// Chọn ticket ở bảng "Ticket của khách này": bấm cả dòng, giữ vị trí cuộn (Hưng 12/11)
+function tbPick(id){ if(!id || (CUR && CUR.id===id)) return; const y = window.scrollY; go(id); window.scrollTo(0,y); }
+function tbRowPick(e,id){
+  if(e.target.closest('button,a,input,select,textarea,.copy,[data-act]')) return; // nút trong dòng làm việc của nút
+  const sel = window.getSelection && String(window.getSelection()); if(sel) return; // đang bôi đen chữ để copy
+  tbPick(id);
 }
 // Bảng "Ticket của khách này" ở Chi tiết: mỗi ticket chỉ còn Xử lý (Nhận, Phân công làm ở cấp nhóm)
 function tbActionsPost(t,out){
@@ -2556,7 +2544,7 @@ function tbPaintGroup(t){
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?' (đang xem)':''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
   const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở bảng ticket của khách':'Thu gọn bảng ticket của khách'}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">Ticket của khách này (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
   const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
-    + grp.map(x=>`<tr class="${x.id===t.id?'tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}"><td><span class="link" onclick="go('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
+    + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?'Đang xem ticket này':'Xem thông tin ticket này'}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
       <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}${copyIc(x.externalRef,'mã tham chiếu')}</td>
       <td class="nd">${tbContent(x)}</td>
