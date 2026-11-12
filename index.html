@@ -101,7 +101,6 @@ td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .tablewrap td .tag{line-height:16px;padding:2px 8px;vertical-align:top}
 .tablewrap td .copy{visibility:hidden} .tablewrap tr:hover .copy{visibility:visible}
 .copy[data-copy]{cursor:pointer;user-select:none}.copy[data-copy]:hover{color:var(--primary)}.copy.done{color:var(--green);visibility:visible!important}
-.tb-gt .copy{visibility:hidden}.tb-gt tr:hover .copy{visibility:visible}
 td.cust b{font-weight:600}
 td.act{white-space:nowrap;font-size:0;padding:4px 8px;overflow:visible}
 td.act .btn{font-size:12px;height:24px;line-height:22px;padding:0 8px;margin-right:6px;vertical-align:top}
@@ -156,7 +155,6 @@ td.nd{padding:0;white-space:normal}
 .ndl-n{min-width:0;overflow-wrap:anywhere}
 .ndl-d{font-size:12px;color:var(--muted);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .ndl+.ndl{border-top:1px dashed #e9ecf1}
-.tb-gt .ndl{padding:6px 10px}
 .it.nd-txt{display:block;white-space:pre-line;line-height:18px;padding-top:7px;padding-bottom:7px} /* Nội dung là một chuỗi (Hưng 09/11) */
 .it{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px;padding:6px 8px;min-height:32px;border-bottom:1px dashed #e9ecf1;font-size:12px;line-height:20px}
 .it:last-child{border-bottom:none}
@@ -226,6 +224,20 @@ td.nd{padding:0;white-space:normal}
 #cwNote{width:100%;border:1px solid #d1d5db;border-radius:5px;padding:6px 8px;font:inherit}
 .cw-save{width:100%;margin-top:8px;padding:7px}
 .cw-err{color:#dc2626;font-size:12.5px;margin-top:8px}
+.call-box{position:fixed;right:16px;bottom:16px;z-index:58;width:340px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:12px 14px;border-top:3px solid var(--primary)}
+.cb-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cb-s{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:10px;background:#f0f2f5}
+.cb-DIALING{background:#fff7e6;color:#ad4e00}.cb-TALKING{background:#f6ffed;color:#237804}.cb-FAILED{background:#fff1f0;color:#cf1322}
+.cb-m{font-size:12px;color:var(--muted);margin:6px 0}
+.cb-a{display:flex;gap:6px;flex-wrap:wrap}
+.btn-red{background:#ff4d4f;border-color:#ff4d4f;color:#fff}
+.hidden{display:none}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+@media (max-width:760px){.filters{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.banner{display:none}}
+/*TOBE:BEGIN css*/
+/* ---- Dời từ 1-asis.css ngày 12/11 (bước 3): rule To-Be từng nằm lẫn trong CSS As-Is. Giữ nguyên thứ tự cũ. ---- */
+.tb-gt .copy{visibility:hidden}.tb-gt tr:hover .copy{visibility:visible}
+.tb-gt .ndl{padding:6px 10px}
 /* UX 11/11: khung tổng đài To-Be bản gọn, chỉ áp khi body có .tb-on */
 .tb-on .call-w{position:sticky;top:48px;z-index:3;box-shadow:0 4px 12px rgba(0,0,0,.08)}
 .tb-on .cw-nm{font-size:14px}
@@ -272,17 +284,6 @@ td.nd{padding:0;white-space:normal}
 /* Khung nổi: lề đều 16px, đường chia giữa các phần, nút biểu tượng, phần Lưu nền trắng liền */
 /* UX 11/11: nút bước 1 cùng kiểu nút kết quả bước 2 (nút rời, viền mảnh, chọn thì tô xanh), cả khung nổi lẫn khung trên đầu */
 .tb-on #callBox .cw-chip:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-.call-box{position:fixed;right:16px;bottom:16px;z-index:58;width:340px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:12px 14px;border-top:3px solid var(--primary)}
-.cb-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.cb-s{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:10px;background:#f0f2f5}
-.cb-DIALING{background:#fff7e6;color:#ad4e00}.cb-TALKING{background:#f6ffed;color:#237804}.cb-FAILED{background:#fff1f0;color:#cf1322}
-.cb-m{font-size:12px;color:var(--muted);margin:6px 0}
-.cb-a{display:flex;gap:6px;flex-wrap:wrap}
-.btn-red{background:#ff4d4f;border-color:#ff4d4f;color:#fff}
-.hidden{display:none}
-.note{font-size:12px;color:var(--muted);margin-top:8px}
-@media (max-width:760px){.filters{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.banner{display:none}}
-/*TOBE:BEGIN css*/
 /* Chế độ To-Be: mọi rule nằm trong khối này. Gỡ bằng _backup/tobe-rollback.py */
 .tb-sw{display:inline-flex;border:1px solid var(--primary);border-radius:6px;overflow:hidden}
 .tb-sw button{border:none;background:#fff;color:var(--primary);padding:4px 14px;font-weight:600}
@@ -2202,6 +2203,126 @@ const TB_PEND = [
 const tbEsc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 const tbBadge = id => { const p = TB_PEND.find(x=>x.id===id); return `<span class="tb-b tb-b-${p.kind}" title="${tbEsc(TB_KIND[p.kind]+': '+p.txt)}">${TB_KIND[p.kind]}</span>`; };
 
+/* ---------- Chữ hiển thị của To-Be (gom 12/11, bước 3) ----------
+   Muốn đổi chữ trên màn hình To-Be thì sửa ở đây, không sửa trong các file khác.
+   Mục nào có (n) là hàm: chữ có chèn số hoặc tên. Chữ của As-Is và chữ lấy theo CI (tên cột, trạng thái) không nằm ở đây.
+   Bảng "Điểm chưa chốt" nằm ở 00-core-notes.js (TB_PEND). */
+const TBT = {
+  // ---- Dùng chung ----
+  notLoggedIn: 'Chưa đăng nhập tổng đài',
+  inCall: 'Đang có cuộc gọi',
+  autoTag: 'Hệ thống tự giao',
+  autoTagTip: 'Bạn đang bật nhận tự động cho công việc này. Hệ thống sẽ tự giao, không cần bấm Nhận.',
+  resolve: 'Xử lý',
+
+  // ---- Màn Danh sách ----
+  moreTickets: n => `KH còn ${n} ticket khác`,
+  moreTicketsTip: 'Bấm để mở trang Chi tiết, xem đủ ticket của khách',
+  phoneInvalid: 'SĐT không hợp lệ',
+  phoneInvalidTip: 'Sau chuẩn hoá phải là 10 số bắt đầu bằng 0',
+  phoneMissing: 'Chưa có SĐT',
+  call: 'Gọi',
+  callGroupTip: n => 'Gọi một lần, tính cho ' + n + ' ticket mình giữ trong nhóm',
+  callFixedTip: 'Gọi số cố định',
+  callAgain: 'Gọi lại',
+  callAgainTip: 'Gọi lại cho khách',
+  calledAt: hm => `Đã gọi lúc ${hm}`,
+  pendingLeft: n => `còn ${n} ticket chưa ghi kết quả`,
+  colActions: 'Thao tác',
+  newTag: 'Vừa giao',
+  noData: 'Không có dữ liệu',
+
+  // ---- Nút của nhóm: Nhận, Phân công ----
+  claim: 'Nhận',
+  claimTip: 'Nhận ticket',
+  claimGroupTip: n => `Nhận ${n} ticket Mới của khách`,
+  claimOk: n => n > 1 ? `Nhận ${n} ticket thành công` : 'Nhận ticket thành công',
+  assign: 'Phân công',
+  reassign: 'Phân công lại',
+  assignTip: 'Phân công ticket',
+  assignGroupTip: n => `Phân công cả ${n} ticket của khách`,
+  assignGroupTitle: (n, name) => `Phân công ${n} ticket của khách ${name}`,
+  assignHeldBy: 'Đang giữ: ',
+  assignHeldNone: 'Chưa ai giữ ticket nào trong nhóm.',
+  assignGroupOk: n => `Phân công ${n} ticket thành công`,
+  assignInCallErr: 'Yêu cầu đang có cuộc gọi ra. Vui lòng thử lại sau',
+
+  // ---- Màn Chi tiết của nhóm ----
+  groupTitle: n => `Ticket của khách hàng (${n})`,
+  groupOpenTip: 'Mở bảng ticket của khách hàng',
+  groupCloseTip: 'Thu gọn bảng ticket của khách hàng',
+  chipViewing: ' (đang xem)',
+  rowViewingTip: 'Đang xem ticket này',
+  rowPickTip: 'Xem thông tin ticket này',
+  infoTitle: 'Thông tin ticket',
+  attemptNo: i => `Lần ${i}`,
+  attemptShared: n => ` · gọi chung ${n} ticket`,
+  attemptFor: 'Tính cho: ',
+  attemptAgent: 'Nhân viên: ',
+  attemptStart: 'Bắt đầu: ',
+  attemptEnd: 'Kết thúc: ',
+  attemptNone: 'Chưa có cuộc gọi',
+
+  // ---- Khung tổng đài khi gọi ----
+  cwTitle: 'Tổng đài',
+  cwDialing: '📞 Đang gọi ra',
+  cwTalking: '📞 Đang nói chuyện',
+  cwEnded: '⛔ Đã kết thúc cuộc gọi',
+  cwSim: 'Giả lập: ',
+  cwSimAnswer: 'khách bắt máy',
+  cwSimFail: 'gọi lỗi',
+  cwEnd: 'Kết thúc cuộc gọi',
+  cwClose: 'Đóng',
+  cwBack: 'Về màn Chi tiết ›',
+  scriptShow: 'Kịch bản gợi ý ▾',
+  scriptHide: 'Ẩn kịch bản ▴',
+  scriptNone: 'Chưa có kịch bản cho công việc này.',
+  cwForOne: (id, flow, others) => `Kết quả chọn ở đây ghi cho ticket <b>${id}</b> · ${flow}. ${others} ticket còn lại của khách: bấm Xử lý sau khi đóng khung này.`,
+
+  // ---- Khung ghi kết quả 2 bước (quyết định 09/11; hiện khung gọi chung không dùng tới, giữ để BU chọn lại) ----
+  w2Step1: '1. Khách có nghe máy không?',
+  w2Answered: 'Khách nghe máy',
+  w2NoAnsAll: (r, n) => `"${r}" sẽ ghi cho cả ${n} ticket của khách.`,
+  w2Step2: '2. Kết quả từng ticket',
+  w2Later: 'Ticket chưa chọn sẽ chờ ghi sau bằng nút Xử lý.',
+  w2ErrReach: 'Vui lòng chọn khách có nghe máy không',
+  w2ErrPick: 'Vui lòng chọn kết quả cho ít nhất một ticket',
+  w2ConfirmEnd: 'Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?',
+  w2Saved: n => 'Đã ghi kết quả cho ' + n + ' ticket',
+
+  // ---- Thanh điều khiển demo ----
+  pendTitle: n => `Điểm chưa chốt trong khung To-Be (${n})`,
+  pendNote: 'Nhãn đọc từ mảng TB_PEND trong code, BU chốt điểm nào thì sửa hoặc xoá dòng đó. Tải lại trang để về dữ liệu gốc.',
+  modeBusyErr: 'Đang có cuộc gọi. Kết thúc cuộc gọi trước khi đổi chế độ',
+  demoLabel: 'Bản demo:',
+  simBtn: 'Giả lập ▾',
+  roleLabel: 'Vai trò:',
+  roleAgent: ' Agent',
+  roleLead: ' Sale Lead',
+  crossLabel: 'Gom khác công việc',
+
+  // ---- Nhận phiếu tự động ----
+  autoBtn: 'Nhận phiếu tự động',
+  autoOnLabel: 'Đang nhận tự động: ',
+  autoOnTip: names => 'Đang nhận tự động:\n- ' + names.join('\n- ') + '\nBấm để đổi hoặc tắt.',
+  autoAllFlows: n => `Tất cả (${n})`,
+  autoSearch: 'Tìm công việc',
+  autoSelectAll: ' Chọn tất cả',
+  autoNotOnCI: '(chưa có trên CI)',
+  autoOff: 'Tắt nhận tự động',
+  autoOffOk: 'Đã tắt nhận phiếu tự động',
+  autoSave: 'Lưu',
+  autoConfirm: 'Xác nhận',
+  autoAssigned: ids => `Hệ thống vừa giao ${ids.length} ticket cho bạn: ${ids.join(', ')}`,
+  autoCount: (n, total) => `Đã chọn ${n}/${total}`,
+  autoDesc: 'Chọn công việc bạn muốn nhận tự động. Hệ thống sẽ tự giao ticket của các công việc này cho bạn, và nút Nhận của các công việc này bị khoá cho tới khi bạn tắt.',
+  autoTitle: 'Nhận phiếu tự động',
+  autoTitleAsis: 'Loại công việc',
+  autoErrNone: 'Vui lòng chọn ít nhất 1 loại công việc',
+  autoUpdated: 'Đã cập nhật công việc nhận tự động',
+  autoOnOk: 'Đã bật nhận phiếu tự động',
+  systemName: 'Hệ thống',
+};
 /* ---------- Dữ liệu minh họa thêm (chỉ nạp khi vào To-Be, gỡ khi về As-Is) ---------- */
 const TB_AG2 = AGENTS.find(a=>a.id!==ME.id);
 const NOASG = {assignedAgentId:null, assignedAgentName:null, assignedBy:null, assignedAt:null};
@@ -2357,11 +2478,11 @@ const tbIsMine = t => t.assignedAgentId===ME.id && t.status!=='CLOSED';
 const tbMine = t => ''; // Bỏ nhãn "Của tôi" (Hưng 06/11): hệ thống tự phân công, agent chỉ thấy ticket của mình
 function tbCustCell(g){
   const nm = g.tickets.map(t=>t.customerName).find(Boolean) || '—';
-  const more = g.hidden>0 ? `<div class="tb-more" onclick="go('${g.tickets[0].id}')" title="Bấm để mở trang Chi tiết, xem đủ ticket của khách">KH còn ${g.hidden} ticket khác</div>` : '';
+  const more = g.hidden>0 ? `<div class="tb-more" onclick="go('${g.tickets[0].id}')" title="${TBT.moreTicketsTip}">${TBT.moreTickets(g.hidden)}</div>` : '';
   return `<b title="${tbEsc(nm)}">${tbEsc(nm)}</b>${more}`;
 }
 const tbPhoneCell = g => g.norm ? `<span class="mask">${maskPhone(g.norm)}</span>${copyIc(g.norm,'SĐT')}`
-  : (String(g.tickets[0].phone||'').trim() ? `<span class="tb-noph" title="Sau chuẩn hoá phải là 10 số bắt đầu bằng 0">SĐT không hợp lệ</span>` : `<span class="tb-noph">Chưa có SĐT</span>`);
+  : (String(g.tickets[0].phone||'').trim() ? `<span class="tb-noph" title="${TBT.phoneInvalidTip}">${TBT.phoneInvalid}</span>` : `<span class="tb-noph">${TBT.phoneMissing}</span>`);
 // Gọi theo nhóm (Hưng chốt 06/11): một lần Gọi tính cho mọi ticket mình giữ trong nhóm, Xử lý vẫn bấm từng ticket.
 // Nút Gọi nằm trong cột "Gọi" cố định bên phải, ngay trước Thao tác (tiêu đề Thao tác trải hai cột). Nhóm từ 2 dòng gộp ô theo nhóm.
 // Dòng riêng và nhóm một dòng có nút Gọi ở chính dòng đó. Bỏ nút Gọi khỏi ô Thao tác ở To-Be.
@@ -2386,12 +2507,12 @@ function tbCallBtn(g){
   const pd = TB.pending && TB.pending.key===g.key && TB.pending.ids.size && CALL.state==='IDLE' ? TB.pending : null;
   if(pd){
     const hm = vnt(pd.at).slice(-5), n = pd.ids.size, dis = !SIM.mptLoggedIn;
-    return `<div class="tb-callg tb-called${g.hd?' hd':''}"><span class="tb-calledtx">Đã gọi lúc ${hm}${g.hd?` · còn ${n} ticket chưa ghi kết quả`:''}</span>${g.hd?'':`<span class="tb-calledtx">· còn ${n} ticket chưa ghi kết quả</span>`}`
-      + `<span class="btn split${dis?' is-dis':''}" title="${dis?'Chưa đăng nhập tổng đài':'Gọi lại cho khách'}"><span data-act="call" data-id="${rep.id}">Gọi lại</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span></div>`;
+    return `<div class="tb-callg tb-called${g.hd?' hd':''}"><span class="tb-calledtx">${TBT.calledAt(hm)}${g.hd?` · ${TBT.pendingLeft(n)}`:''}</span>${g.hd?'':`<span class="tb-calledtx">· ${TBT.pendingLeft(n)}</span>`}`
+      + `<span class="btn split${dis?' is-dis':''}" title="${dis?TBT.notLoggedIn:TBT.callAgainTip}"><span data-act="call" data-id="${rep.id}">${TBT.callAgain}</span><em data-act="calldd" data-id="${rep.id}" title="${TBT.callFixedTip}">▾</em></span></div>`;
   }
   const n = tbCallScope(g.key).length;
-  const why = !SIM.mptLoggedIn ? 'Chưa đăng nhập tổng đài' : (CALL.state!=='IDLE' ? 'Đang có cuộc gọi' : '');
-  return `<div class="tb-callg"><span class="btn pri split${why?' is-dis':''}" title="${tbEsc(why || (n>1 ? 'Gọi một lần, tính cho '+n+' ticket mình giữ trong nhóm' : 'Gọi'))}"><span data-act="call" data-id="${rep.id}">Gọi</span><em data-act="calldd" data-id="${rep.id}" title="Gọi số cố định">▾</em></span></div>`; // 11/11 (Hưng): bỏ dòng "Cho N ticket" dưới nút Gọi, số ticket vẫn ở tooltip
+  const why = !SIM.mptLoggedIn ? TBT.notLoggedIn : (CALL.state!=='IDLE' ? TBT.inCall : '');
+  return `<div class="tb-callg"><span class="btn pri split${why?' is-dis':''}" title="${tbEsc(why || (n>1 ? TBT.callGroupTip(n) : TBT.call))}"><span data-act="call" data-id="${rep.id}">${TBT.call}</span><em data-act="calldd" data-id="${rep.id}" title="${TBT.callFixedTip}">▾</em></span></div>`; // 11/11 (Hưng): bỏ dòng "Cho N ticket" dưới nút Gọi, số ticket vẫn ở tooltip
 }
 /* ---------- Thao tác cấp nhóm (góp ý 11/11, Hưng cho làm thử trên demo, đảo D-11) ----------
    Nhận: nhận một lần mọi ticket Mới trong nhóm mà mình nhận được, không lấy ticket người khác, bỏ qua công việc đang nhận tự động.
@@ -2405,10 +2526,10 @@ function tbGroupActs(g){
   const ts = g.tickets, many = ts.length>1, c = tbClaimable(ts), a = tbAssignable(ts), ids = l => l.map(x=>x.id).join(',');
   const busy = ts.some(x=>BUSY.has(x.id));
   let h = ''; // 11/11: thứ tự Nhận, Gọi, Phân công (như CI)
-  if(c.length) h += `<button class="btn pri tb-gbtn" data-act="gclaim" data-id="${c[0].id}" data-ids="${ids(c)}"${busy?' disabled':''} title="${many&&c.length>1?`Nhận ${c.length} ticket Mới của khách`:'Nhận ticket'}">${busy?'…':'Nhận'}</button>`;
-  else if(tbAutoOnly(ts)) h += `<span class="tb-autotag" title="Bạn đang bật nhận tự động cho công việc này. Hệ thống sẽ tự giao, không cần bấm Nhận.">Hệ thống tự giao</span>`;
+  if(c.length) h += `<button class="btn pri tb-gbtn" data-act="gclaim" data-id="${c[0].id}" data-ids="${ids(c)}"${busy?' disabled':''} title="${many&&c.length>1?TBT.claimGroupTip(c.length):TBT.claimTip}">${busy?'…':TBT.claim}</button>`;
+  else if(tbAutoOnly(ts)) h += `<span class="tb-autotag" title="${TBT.autoTagTip}">${TBT.autoTag}</span>`;
   h += tbCallBtn(g);
-  if(a.length){ const re = a.some(x=>x.assignedAgentId); h += `<button class="btn tb-gbtn" data-act="gassign" data-id="${a[0].id}" data-ids="${ids(a)}"${busy?' disabled':''} title="${many?`Phân công cả ${a.length} ticket của khách`:'Phân công ticket'}">${re?'Phân công lại':'Phân công'}</button>`; }
+  if(a.length){ const re = a.some(x=>x.assignedAgentId); h += `<button class="btn tb-gbtn" data-act="gassign" data-id="${a[0].id}" data-ids="${ids(a)}"${busy?' disabled':''} title="${many?TBT.assignGroupTip(a.length):TBT.assignTip}">${re?TBT.reassign:TBT.assign}</button>`; }
   return `<div class="tb-gacts">${h}</div>`;
 }
 function tbClaimGroup(idList){
@@ -2417,7 +2538,7 @@ function tbClaimGroup(idList){
   setTimeout(()=>{
     list.forEach(x=>{ BUSY.delete(x.id); logAssign(x, ME.name, ME.name, 'CLAIM');
       Object.assign(x,{status:'ASSIGNED', assignedAgentId:ME.id, assignedAgentName:ME.name, assignedBy:ME.name, assignedAt:nowIso(), updatedAt:nowIso(), version:(x.version||1)+1}); });
-    refresh(); toast('success', list.length>1 ? `Nhận ${list.length} ticket thành công` : 'Nhận ticket thành công');
+    refresh(); toast('success', TBT.claimOk(list.length));
   }, 600);
 }
 function tbAssignGroup(idList){
@@ -2425,18 +2546,18 @@ function tbAssignGroup(idList){
   openAssign(list[0], list.some(x=>x.assignedAgentId) ? 'reassign' : 'assign');
   if(list.length<2) return; // một ticket: hộp phân công như CI
   ASG.group = list;
-  mAsgTitle.textContent = `Phân công ${list.length} ticket của khách ${list[0].customerName||''}`;
+  mAsgTitle.textContent = TBT.assignGroupTitle(list.length, list[0].customerName||'');
   const held = list.filter(x=>x.assignedAgentName);
-  mAsgCur.innerHTML = (held.length ? 'Đang giữ: ' + held.map(x=>`${short(x.id)} <strong>${tbEsc(x.assignedAgentName)}</strong>`).join(' · ') : 'Chưa ai giữ ticket nào trong nhóm.') + ' ' + tbBadge('grp_asg');
+  mAsgCur.innerHTML = (held.length ? TBT.assignHeldBy + held.map(x=>`${short(x.id)} <strong>${tbEsc(x.assignedAgentName)}</strong>`).join(' · ') : TBT.assignHeldNone) + ' ' + tbBadge('grp_asg');
 }
 function tbConfirmAssignGroup(){
   const {group, pick} = ASG; if(!group || !pick) return false;
-  if(CALL.state!=='IDLE' && group.some(x=>x.id===CALL.ticketId)){ toast('error','Yêu cầu đang có cuộc gọi ra. Vui lòng thử lại sau'); return true; }
+  if(CALL.state!=='IDLE' && group.some(x=>x.id===CALL.ticketId)){ toast('error',TBT.assignInCallErr); return true; }
   mAsg.classList.add('hidden'); group.forEach(x=>BUSY.add(x.id)); refresh();
   setTimeout(()=>{
     group.forEach(x=>{ BUSY.delete(x.id); logAssign(x, ME.name, pick.name, 'MANUAL'); if(x.status==='OPEN') x.status='ASSIGNED';
       Object.assign(x,{assignedAgentId:pick.id, assignedAgentName:pick.name, assignedBy:ME.name, assignedAt:nowIso(), updatedAt:nowIso(), version:(x.version||1)+1}); });
-    ASG.group = null; refresh(); toast('success', `Phân công ${group.length} ticket thành công`);
+    ASG.group = null; refresh(); toast('success', TBT.assignGroupOk(group.length));
   }, 600);
   return true;
 }
@@ -2454,13 +2575,13 @@ document.addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e
    Lịch sử cuộc gọi) chỉ nói về ticket đó, như CI. Cuộc gọi chung vẫn ghi rõ tính cho những ticket nào. Ticket lẻ giữ như CI. */
 function tbInfoAll(t, grp, dup){
   const dl = document.getElementById('dInfo'), h = dl.previousElementSibling;
-  h.innerHTML = dup ? `<span>Thông tin ticket <span class="tb-infoid">${short(t.id)}</span></span><span>⌄</span>` : 'Thông tin ticket <span>⌄</span>';
+  h.innerHTML = dup ? `<span>${TBT.infoTitle} <span class="tb-infoid">${short(t.id)}</span></span><span>⌄</span>` : TBT.infoTitle+' <span>⌄</span>';
   if(!dup) return;
   // Lịch sử cuộc gọi của ticket đang chọn; lần nào là cuộc gọi chung thì ghi kèm các ticket được tính
   const at = ATTEMPTS[t.id]||[];
   const withIds = a => grp.filter(x=>(ATTEMPTS[x.id]||[]).some(b=>b.startedAt===a.startedAt && (b.agentName||'')===(a.agentName||''))).map(x=>x.id);
   dAttN.textContent = at.length;
-  dAtt.innerHTML = at.map((a,i)=>({a,i,ids:withIds(a)})).reverse().map(({a,i,ids})=>`<div class="tl"><b style="color:var(--primary)">Lần ${i+1}</b>${ids.length>1?` · gọi chung ${ids.length} ticket<br>Tính cho: ${ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}`:''}<br>Nhân viên: ${a.agentName||'—'}<br>Bắt đầu: ${vnt(a.startedAt)}<br>Kết thúc: ${a.endedAt?vnt(a.endedAt):'—'}</div>`).join('') || '<div class="note">Chưa có cuộc gọi</div>';
+  dAtt.innerHTML = at.map((a,i)=>({a,i,ids:withIds(a)})).reverse().map(({a,i,ids})=>`<div class="tl"><b style="color:var(--primary)">${TBT.attemptNo(i+1)}</b>${ids.length>1?`${TBT.attemptShared(ids.length)}<br>${TBT.attemptFor}${ids.map(id=>`<b class="tb-tlid">${short(id)}</b>`).join(', ')}`:''}<br>${TBT.attemptAgent}${a.agentName||'—'}<br>${TBT.attemptStart}${vnt(a.startedAt)}<br>${TBT.attemptEnd}${a.endedAt?vnt(a.endedAt):'—'}</div>`).join('') || `<div class="note">${TBT.attemptNone}</div>`;
 }
 // Chọn ticket ở bảng "Ticket của khách hàng": bấm cả dòng, giữ vị trí cuộn (Hưng 12/11)
 function tbPick(id){ if(!id || (CUR && CUR.id===id)) return; const y = window.scrollY; go(id); window.scrollTo(0,y); }
@@ -2482,7 +2603,7 @@ function tbCols(){
   if(TB.cols) return TB.cols;
   const act = COLUMNS[COLUMNS.length-1];
   // Góp ý 11/11: một cột Thao tác cấp nhóm (Gọi, Nhận, Phân công), bỏ Thao tác từng ticket và nút Xử lý khỏi Danh sách
-  return TB.cols = [...COLUMNS.slice(0,-1), {h:'Thao tác', w:280, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
+  return TB.cols = [...COLUMNS.slice(0,-1), {h:TBT.colActions, w:280, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
 }
 const tbFixCls = (c,cs) => c.fix==='r' ? ' fr'+(cs.find(x=>x.fix==='r')===c?' fr-first':'') : fixCls(c);
 function tbRow(g,t,i,gi){
@@ -2501,7 +2622,7 @@ function tbRow(g,t,i,gi){
       return `<td ${at.replace('class="','class="tb-gc ')} rowspan="${gN}">${ci===1 ? tbCustCell(g) : tbPhoneCell(g)}</td>`;
     }
     let h;
-    if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?'<span class="tb-newtag">Vừa giao</span>':''}`;
+    if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?`<span class="tb-newtag">${TBT.newTag}</span>`:''}`;
         else if(ci===6) h = `<span class="link" onclick="go('${t.id}')">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>${copyIc(t.externalRef,'mã tham chiếu')}`; // US-3 v3: bấm Mã tham chiếu mở Chi tiết
     else h = (c.cls||'').includes('nd') ? ls[0] : c.r(t);
     return `<td ${at}${(c.cls||'').includes('nd') ? '' : rs(n)}>${h}</td>`;
@@ -2518,12 +2639,12 @@ function renderToBe(){
   cols.innerHTML = cs.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('');
   cols.parentElement.style.width = cs.reduce((n,c)=>n+(c.w||0),0)+'px';
   // Tiêu đề Thao tác trải hai cột (Gọi và Thao tác)
-  thead.innerHTML = cs.map((c,ci)=> c.k==='callg' ? `<th class="fr fr-first tb-gth" style="right:0">Thao tác</th>` : `<th class="${tbFixCls(c,cs)}${ci===1||ci===2?' tb-gcth':''}"${fixAttr(c)}>${c.h}</th>`).join('');
+  thead.innerHTML = cs.map((c,ci)=> c.k==='callg' ? `<th class="fr fr-first tb-gth" style="right:0">${TBT.colActions}</th>` : `<th class="${tbFixCls(c,cs)}${ci===1||ci===2?' tb-gcth':''}"${fixAttr(c)}>${c.h}</th>`).join('');
   const snap = tbSnap(), pages = tbPages(snap.groups, state.size);
   state.page = Math.min(state.page, pages.length);
   const view = pages[state.page-1] || [];
   tbody.innerHTML = view.map((g,gi)=>g.tickets.map((t,i)=>tbRow(g,t,i,gi)).join('')).join('')
-    || `<tr><td colspan="${cs.length}" style="padding:0"><div style="position:sticky;left:0;width:${document.querySelector('.tablewrap').clientWidth}px;text-align:center;color:var(--muted);padding:40px 0">Không có dữ liệu</div></td></tr>`;
+    || `<tr><td colspan="${cs.length}" style="padding:0"><div style="position:sticky;left:0;width:${document.querySelector('.tablewrap').clientWidth}px;text-align:center;color:var(--muted);padding:40px 0">${TBT.noData}</div></td></tr>`;
   pager.innerHTML = `<span>Tổng ${snap.total} ticket</span>
     <button class="pg" ${state.page<=1?'disabled':''} onclick="state.page=Math.max(1,state.page-1);render()">‹</button>
     ${Array.from({length:pages.length},(_,i)=>`<button class="pg ${i+1===state.page?'on':''}" onclick="state.page=${i+1};render()">${i+1}</button>`).join('')}
@@ -2541,10 +2662,10 @@ function tbPaintGroup(t){
   if(grp.length<2){ g.classList.add('hidden'); g.innerHTML=''; return; }
   const col = !!TB.gCollapsed && !(MODE==='tobe' && CALL.state!=='IDLE' && TB.pending && TB.pending.key===key); // đang gọi chung thì luôn mở bảng để chọn kết quả
   g.classList.remove('hidden');
-  const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?' (đang xem)':''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
-  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?'Mở bảng ticket của khách hàng':'Thu gọn bảng ticket của khách hàng'}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">Ticket của khách hàng (${grp.length}) · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
+  const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?TBT.chipViewing:''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
+  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?TBT.groupOpenTip:TBT.groupCloseTip}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">${TBT.groupTitle(grp.length)} · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
   const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày cần gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
-    + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?'Đang xem ticket này':'Xem thông tin ticket này'}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
+    + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?TBT.rowViewingTip:TBT.rowPickTip}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
       <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}${copyIc(x.externalRef,'mã tham chiếu')}</td>
       <td class="nd">${tbContent(x)}</td>
@@ -2587,13 +2708,13 @@ function tbActions(t,out){
   }
   if(MODE==='tobe'){ // Nút Nhận bị khoá vì đang nhận tự động: thay bằng chữ, đỡ khó hiểu
     const k = out.findIndex(h=>h.includes('data-act="claim"') && h.includes('nhận phiếu tự động'));
-    if(k>=0) out[k] = `<span class="tb-autotag" title="Bạn đang bật nhận tự động cho công việc này. Hệ thống sẽ tự giao, không cần bấm Nhận.">Hệ thống tự giao</span>`;
+    if(k>=0) out[k] = `<span class="tb-autotag" title="${TBT.autoTagTip}">${TBT.autoTag}</span>`;
   }
   if(MODE!=='tobe' || t.assignedAgentId!==ME.id || t.status==='CLOSED' || t.status==='OPEN') return;
   if(((flowOf(t).operationConfig||{}).closure_policy||{}).manual_close) return; // đã có nút theo rule gốc
   if(!TB.called.has(tbKey(t))) return;
-  const dis = !SIM.mptLoggedIn ? ' disabled title="Chưa đăng nhập tổng đài"' : (CALL.state!=='IDLE' ? ' disabled title="Đang có cuộc gọi"' : '');
-  const btn = `<button class="btn pri" data-act="resolve" data-id="${t.id}"${dis}>Xử lý</button>`;
+  const dis = !SIM.mptLoggedIn ? ` disabled title="${TBT.notLoggedIn}"` : (CALL.state!=='IDLE' ? ` disabled title="${TBT.inCall}"` : '');
+  const btn = `<button class="btn pri" data-act="resolve" data-id="${t.id}"${dis}>${TBT.resolve}</button>`;
   const i = out.findIndex(h=>/data-act="(assign|reassign)"/.test(h));
   if(i<0) out.push(btn); else out.splice(i,0,btn);
 }
@@ -2634,7 +2755,7 @@ const tbDialPhone = t => (MODE==='tobe' && tbNorm(t.phone)) ? tbNorm(t.phone) : 
 function tbWidgetFor(t){
   if(MODE!=='tobe') return '';
   const others = TB.pending && TB.pending.key===tbKey(t) ? [...TB.pending.ids].filter(id=>id!==t.id).length : 0;
-  return others ? `<div class="cw-for">Kết quả chọn ở đây ghi cho ticket <b>${short(t.id)}</b> · ${flowName(t.businessFlowId)}. ${others} ticket còn lại của khách: bấm Xử lý sau khi đóng khung này.</div>` : '';
+  return others ? `<div class="cw-for">${TBT.cwForOne(short(t.id), flowName(t.businessFlowId), others)}</div>` : '';
 }
 /* ---------- Khung tổng đài ghi kết quả từng ticket (Hưng 09/11, decisions D-26) ----------
    Gọi chung: phần KẾT QUẢ liệt kê mọi ticket được tính trong cuộc gọi, mỗi ticket một hàng nút kết quả riêng.
@@ -2672,7 +2793,7 @@ function tbScriptBlocks(list){
   return [...m.entries()].map(([f,ts])=>({f, ts, txt:tbScriptText(f,ts)}));
 }
 const tbScriptHtml = b => b.txt ? tbEscN(b.txt).replace(/\n/g,'<br>') /* 11/11 (Hưng): bỏ nhãn MÔ PHỎNG trong kịch bản, điểm này vẫn ở bảng Điểm chưa chốt */
-  : '<span class="tbw-none">Chưa có kịch bản cho công việc này.</span>';
+  : `<span class="tbw-none">${TBT.scriptNone}</span>`;
 /* ---------- Khung tổng đài To-Be (UX 11/11, chỉ To-Be) ----------
    Màn Danh sách: thu gọn còn một thanh có tên khách và nút về màn Chi tiết.
    Gọi chung từ 2 ticket: khung chỉ còn thanh Gọi và Kịch bản. Gọi một ticket: dùng khung cũ (trả false).
@@ -2681,17 +2802,17 @@ function tbPaintCallTB(t){
   const ne = document.getElementById('cwNote'); if(ne) CALL.note = ne.value; // giữ ghi chú khi vẽ lại hoặc đổi màn
   const ref = CALL.state==='ENDED' ? CALL.attempt.talkDurationSec : Math.round((Date.now()-CALL.t0)/1000);
   const mm = String(Math.floor(ref/60)).padStart(2,'0')+':'+String(ref%60).padStart(2,'0');
-  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED:'⛔ Đã kết thúc cuộc gọi'}[CALL.state];
-  const sim = CALL.state==='DIALING' ? '<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>' : '';
+  const pill = {DIALING:TBT.cwDialing, TALKING:TBT.cwTalking, ENDED:TBT.cwEnded}[CALL.state];
+  const sim = CALL.state==='DIALING' ? `<span class="cw-sim">${TBT.cwSim}<a onclick="callAnswer()">${TBT.cwSimAnswer}</a> · <a onclick="callFail()">${TBT.cwSimFail}</a></span>` : '';
   const grpCall = !!tbWList(t); // gọi chung: Kết thúc là đóng khung luôn, ghi kết quả bằng Xử lý
   const endJs = grpCall ? 'callHangup();callClose()' : (CALL.state==='ENDED'?'callClose()':'callHangup()');
-  const endBtn = `<button class="cw-x" onclick="${endJs}">✖ ${CALL.state==='ENDED'&&!grpCall?'Đóng':'Kết thúc cuộc gọi'}</button>`;
-  const bar = extra => `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span><b class="cw-nm">${tbEsc(t.customerName||'')}</b><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>${sim}${extra||''}${endBtn}</div>`;
+  const endBtn = `<button class="cw-x" onclick="${endJs}">✖ ${CALL.state==='ENDED'&&!grpCall?TBT.cwClose:TBT.cwEnd}</button>`;
+  const bar = extra => `<div class="cw-bar"><b>${TBT.cwTitle}</b><span class="cw-pill cw-${CALL.state}">${pill}</span><b class="cw-nm">${tbEsc(t.customerName||'')}</b><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>${sim}${extra||''}${endBtn}</div>`;
   const list = tbWList(t), onList = vDetail.classList.contains('hidden');
   callBox.classList.remove('tb-cwmini');
   if(onList){
     callBox.classList.add('tb-cwmini');
-    callBox.innerHTML = bar(`<button class="cw-back" onclick="go('${t.id}')">Về màn Chi tiết ›</button>`);
+    callBox.innerHTML = bar(`<button class="cw-back" onclick="go('${t.id}')">${TBT.cwBack}</button>`);
     return true;
   }
   if(!list) return false;
@@ -2699,8 +2820,8 @@ function tbPaintCallTB(t){
   // "Ticket của khách hàng", bấm được cả trong lúc đang gọi (khác CI: CI khoá Xử lý khi đang gọi).
   const blocks = tbScriptBlocks(list);
   const has = blocks.filter(b=>b.txt), miss = blocks.filter(b=>!b.txt);
-  const missLine = miss.length ? `<div class="tbw-miss"><b>${miss.map(b=>flowName(b.f)).join(', ')}:</b> <span class="tbw-none">Chưa có kịch bản cho công việc này.</span></div>` : '';
-  const scrLink = `<a class="cw-scr" onclick="tbWScript()">${CALL.hideScript?'Kịch bản gợi ý ▾':'Ẩn kịch bản ▴'}</a>`;
+  const missLine = miss.length ? `<div class="tbw-miss"><b>${miss.map(b=>flowName(b.f)).join(', ')}:</b> <span class="tbw-none">${TBT.scriptNone}</span></div>` : '';
+  const scrLink = `<a class="cw-scr" onclick="tbWScript()">${CALL.hideScript?TBT.scriptShow:TBT.scriptHide}</a>`;
   const strip = CALL.hideScript ? ''
     : `<div class="tbw-script">${has.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}${missLine}</div>`;
   callBox.innerHTML = bar(scrLink) + strip;
@@ -2710,13 +2831,13 @@ function tbWidgetMulti(t){
   const list = tbWList(t); if(!list) return '';
   const r = CALL.reach, chip = (on,txt,js,title='') => `<button class="cw-chip ${on?'on':''}" title="${tbEsc(title)}" onclick="${js}">${txt}</button>`;
   const noAns = (ALLOWED[t.businessFlowId]||[]).filter(tbNoAns).map(c=>DISP_CATALOG.find(x=>x.code===c));
-  let h = `<div class="cw-step">1. Khách có nghe máy không?</div><div class="cw-chips">`
-    + chip(r==='ANSWERED','Khách nghe máy',"tbWReach('ANSWERED')")
+  let h = `<div class="cw-step">${TBT.w2Step1}</div><div class="cw-chips">`
+    + chip(r==='ANSWERED',TBT.w2Answered,"tbWReach('ANSWERED')")
     + noAns.map(d=>chip(r===d.label, d.label, `tbWReach('${tbEsc(d.label)}')`, d.src)).join('') + `</div>`;
-  if(r && r!=='ANSWERED') return h + `<div class="cw-for">"${tbEsc(r)}" sẽ ghi cho cả ${list.length} ticket của khách.</div>`;
+  if(r && r!=='ANSWERED') return h + `<div class="cw-for">${TBT.w2NoAnsAll(tbEsc(r), list.length)}</div>`;
   if(r!=='ANSWERED') return h;
   const P = CALL.picks||{};
-  return h + `<div class="cw-step">2. Kết quả từng ticket</div><div class="cw-for">Ticket chưa chọn sẽ chờ ghi sau bằng nút Xử lý.</div>`
+  return h + `<div class="cw-step">${TBT.w2Step2}</div><div class="cw-for">${TBT.w2Later}</div>`
     + list.map(x=>`<div class="cw-row"><div class="cw-rowh"><b>${short(x.id)}</b> · ${flowName(x.businessFlowId)}</div><div class="cw-chips">`
       + (ALLOWED[x.businessFlowId]||[]).filter(c=>!tbNoAns(c)).map(c=>{const d=DISP_CATALOG.find(z=>z.code===c);return chip(P[x.id]===c, d.label, `tbWPick('${x.id}','${c}')`, d.src)}).join('')
       + `</div></div>`).join('');
@@ -2724,21 +2845,21 @@ function tbWidgetMulti(t){
 function tbWidgetSave(t){
   const list = tbWList(t); if(!list) return false;
   const r = CALL.reach;
-  if(!r){ tbWErr('Vui lòng chọn khách có nghe máy không'); return true; }
+  if(!r){ tbWErr(TBT.w2ErrReach); return true; }
   const picks = r==='ANSWERED'
     ? list.map(x=>[x, DISP_CATALOG.find(z=>z.code===(CALL.picks||{})[x.id])]).filter(q=>q[1])
     : list.map(x=>[x, DISP_CATALOG.find(z=>z.code===tbCodeByLabel(x,r))]).filter(q=>q[1]);
-  if(!picks.length){ tbWErr('Vui lòng chọn kết quả cho ít nhất một ticket'); return true; }
+  if(!picks.length){ tbWErr(TBT.w2ErrPick); return true; }
   const note=document.getElementById('cwNote').value.trim();
   // UX 11/11: giữ hành vi CI (Lưu kết thúc cuộc gọi) nhưng hỏi trước để agent không cúp máy ngang khách
-  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(MODE==='tobe' && !confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
+  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(MODE==='tobe' && !confirm(TBT.w2ConfirmEnd)) return true; callHangup(); }
   picks.forEach(([x,d])=>{ // cùng cách ghi với Lưu trong widget của CI, cho từng ticket
     const a = x.id===t.id ? CALL.attempt : (ATTEMPTS[x.id]||[]).slice(-1)[0];
     if(a) Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
     Object.assign(x,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(x.version||1)+1});
     if(d.behavior.startsWith('CLOSE_')){ x.status='CLOSED'; x.resolution=d.resolution; x.closedAt=nowIso(); }
     tbOnResult(x); });
-  toast('success','Đã ghi kết quả cho '+picks.length+' ticket');
+  toast('success',TBT.w2Saved(picks.length));
   CALL.reach=null; CALL.picks={};
   callClose(); return true;
 }
@@ -2762,7 +2883,7 @@ function tbPaintBar(){
       <span>Nhóm xếp theo ngày cần gọi sớm nhất, rồi ngày tạo ${tbBadge('nodate')}</span>
       <span>Phân trang kéo dài đủ nhóm ${tbBadge('page')}</span>
       <a onclick="document.getElementById('tbPend').scrollIntoView({behavior:'smooth'})">Điểm chưa chốt (${TB_PEND.length})</a></div>
-    <div class="tb-bar-row"><span>Gom khác công việc ${tbBadge('cross_def')} ${tbBadge('cross_off')}: ${cross}</span>
+    <div class="tb-bar-row"><span>${TBT.crossLabel} ${tbBadge('cross_def')} ${tbBadge('cross_off')}: ${cross}</span>
       </div>
     <div class="tb-bar-row tb-legend"><span>Chú giải:</span>
       <span><span class="tb-b tb-b-chot">BA CHỐT, CHỜ BU</span> Hưng đã chốt, BU chưa xác nhận</span>
@@ -2773,9 +2894,9 @@ function tbPaintBar(){
       <span>Không gắn nhãn: đã chốt hoặc đã kiểm trên CI</span></div>`;
 }
 function tbPaintPend(){
-  document.getElementById('tbPend').innerHTML = `<h3>Điểm chưa chốt trong khung To-Be (${TB_PEND.length})</h3><table><tbody>`
+  document.getElementById('tbPend').innerHTML = `<h3>${TBT.pendTitle(TB_PEND.length)}</h3><table><tbody>`
     + TB_PEND.map(p=>`<tr><td style="width:110px">${tbBadge(p.id)}</td><td>${p.txt}</td><td style="width:38%;color:var(--muted)">${p.src}</td></tr>`).join('')
-    + `</tbody></table><div class="note" style="margin-top:8px">Nhãn đọc từ mảng TB_PEND trong code, BU chốt điểm nào thì sửa hoặc xoá dòng đó. Tải lại trang để về dữ liệu gốc.</div>`;
+    + `</tbody></table><div class="note" style="margin-top:8px">${TBT.pendNote}</div>`;
 }
 // Ô giả lập của To-Be nằm chung chỗ "Giả lập" trên header, chỉ hiện khi ở To-Be
 function tbPaintSim(){
@@ -2786,9 +2907,9 @@ function tbPaintSim(){
   // Bỏ ô "Nhắc CTKM tắt đóng tay" khỏi Giả lập (Hưng 09/11). Hàm tbSimCtkm giữ lại, không còn nút gọi tới.
   // 11/11 (Hưng): Giả lập chọn vai Agent / Sale Lead; bỏ ô Gom khác công việc, demo luôn gom theo SĐT kể cả khác công việc
   if(!crossOn) tbCrossAll(true);
-  el.innerHTML = `<span class="tb-role" role="radiogroup" aria-label="Vai trò">Vai trò:`
-    + `<label><input type="radio" name="tbRole" ${SIM.isManager?'':'checked'} onchange="tbSetRole(false)"> Agent</label>`
-    + `<label><input type="radio" name="tbRole" ${SIM.isManager?'checked':''} onchange="tbSetRole(true)"> Sale Lead</label></span>`;
+  el.innerHTML = `<span class="tb-role" role="radiogroup" aria-label="Vai trò">${TBT.roleLabel}`
+    + `<label><input type="radio" name="tbRole" ${SIM.isManager?'':'checked'} onchange="tbSetRole(false)">${TBT.roleAgent}</label>`
+    + `<label><input type="radio" name="tbRole" ${SIM.isManager?'checked':''} onchange="tbSetRole(true)">${TBT.roleLead}</label></span>`;
 }
 function tbSetRole(mgr){
   SIM.isManager = !!mgr; const c = document.getElementById('simMgr'); if(c) c.checked = SIM.isManager; // giữ khớp ô của As-Is
@@ -2822,7 +2943,7 @@ function tbMoveDate(on){
 }
 function tbSetMode(m){
   if(!TOBE_ENABLED || m===MODE) return;
-  if(CALL.state!=='IDLE'){ toast('error','Đang có cuộc gọi. Kết thúc cuộc gọi trước khi đổi chế độ'); return; }
+  if(CALL.state!=='IDLE'){ toast('error',TBT.modeBusyErr); return; }
   if(m==='tobe'){ // vào To-Be: nạp data minh họa, chọn đủ 3 công việc để thấy gom ngay
     TB.savedFlows = [...MS.fFlow.val];
     TOBE_EXTRA.forEach(x=>{ if(!TICKETS.includes(x)) TICKETS.push(x); });
@@ -2843,25 +2964,25 @@ function tbSetMode(m){
 /* ---------- Nhận phiếu tự động: To-Be cho user biết mình đã bật nhận công việc nào ---------- */
 function tbAutoChips(){
   if(MODE!=='tobe') return;
-  if(!auto.on){ autoChips.innerHTML = `<button class="tb-autobtn" onclick="tbAutoOpen()"><span class="dot"></span>Nhận phiếu tự động</button>`; return; }
+  if(!auto.on){ autoChips.innerHTML = `<button class="tb-autobtn" onclick="tbAutoOpen()"><span class="dot"></span>${TBT.autoBtn}</button>`; return; }
   // Không liệt kê tên trên nút: BU thêm nhiều công việc thì nút dài vô hạn. 1 công việc ghi tên, nhiều thì ghi số, rê chuột xem danh sách.
   const full = auto.flows.map(id=>(AUTO_FLOWS.find(f=>f.id===id)||{name:id}).name);
   // Giống ô lọc Công việc: tên đầu tiên + số còn lại
-  const names = full.length===AUTO_FLOWS.length && full.length>1 ? `Tất cả (${full.length})` : full[0] + (full.length>1 ? ` +${full.length-1}` : '');
-  autoChips.innerHTML = `<button class="tb-autobtn on" onclick="tbAutoOpen()" title="${tbEsc('Đang nhận tự động:\n- '+full.join('\n- ')+'\nBấm để đổi hoặc tắt.')}"><span class="dot"></span>Đang nhận tự động: <b>${tbEsc(names)}</b><span class="car">▾</span></button>`;
+  const names = full.length===AUTO_FLOWS.length && full.length>1 ? TBT.autoAllFlows(full.length) : full[0] + (full.length>1 ? ` +${full.length-1}` : '');
+  autoChips.innerHTML = `<button class="tb-autobtn on" onclick="tbAutoOpen()" title="${tbEsc(TBT.autoOnTip(full))}"><span class="dot"></span>${TBT.autoOnLabel}<b>${tbEsc(names)}</b><span class="car">▾</span></button>`;
 }
 function tbAutoOpen(){
   autoErr.textContent='';
   const many = AUTO_FLOWS.length>6;
-  autoList.innerHTML = `<div class="tb-alhead">${many?'<input class="tb-alq" placeholder="Tìm công việc" oninput="tbAutoFilter(this.value)">':''}<label class="tb-all"><input type="checkbox" onchange="tbAutoAll(this.checked)"> Chọn tất cả</label><span class="tb-alcnt"></span></div><div class="tb-alist">`
-    + AUTO_FLOWS.map(f=>`<label><input type="checkbox" value="${f.id}" ${auto.flows.includes(f.id)?'checked':''} onchange="tbAutoCount()"> ${f.name}${f.mock?' <span class="note">(chưa có trên CI)</span>':''}</label>`).join('') + `</div>`;
+  autoList.innerHTML = `<div class="tb-alhead">${many?'<input class="tb-alq" placeholder="'+TBT.autoSearch+'" oninput="tbAutoFilter(this.value)">':''}<label class="tb-all"><input type="checkbox" onchange="tbAutoAll(this.checked)">${TBT.autoSelectAll}</label><span class="tb-alcnt"></span></div><div class="tb-alist">`
+    + AUTO_FLOWS.map(f=>`<label><input type="checkbox" value="${f.id}" ${auto.flows.includes(f.id)?'checked':''} onchange="tbAutoCount()"> ${f.name}${f.mock?` <span class="note">${TBT.autoNotOnCI}</span>`:''}</label>`).join('') + `</div>`;
   tbAutoCount();
   let off = document.getElementById('tbAutoOff');
-  if(!off){ off=document.createElement('button'); off.id='tbAutoOff'; off.className='btn'; off.textContent='Tắt nhận tự động';
-    off.onclick=()=>{ autoModal.classList.add('hidden'); auto.on=false; auto.flows=[]; state.page=1; autoPaint(); toast('success','Đã tắt nhận phiếu tự động'); };
+  if(!off){ off=document.createElement('button'); off.id='tbAutoOff'; off.className='btn'; off.textContent=TBT.autoOff;
+    off.onclick=()=>{ autoModal.classList.add('hidden'); auto.on=false; auto.flows=[]; state.page=1; autoPaint(); toast('success',TBT.autoOffOk); };
     autoModal.querySelector('.mbox > div:last-child').prepend(off); }
   off.style.display = (MODE==='tobe' && auto.on) ? '' : 'none';
-  autoModal.querySelector('.btn.pri').textContent = (MODE==='tobe' && auto.on) ? 'Lưu' : 'Xác nhận';
+  autoModal.querySelector('.btn.pri').textContent = (MODE==='tobe' && auto.on) ? TBT.autoSave : TBT.autoConfirm;
   autoModal.classList.remove('hidden');
 }
 // Giả lập engine phân công tự động giao ticket cho mình sau khi bật (ưu tiên ngày cần gọi hôm nay, rồi quá ngày, theo D-09)
@@ -2873,22 +2994,22 @@ function tbAutoAssignDemo(){
   const pick = TICKETS.filter(t=>t.status==='OPEN' && auto.flows.includes(t.businessFlowId) && tbNorm(t.phone))
     .sort((a,b)=>rank(a)-rank(b) || tbT(a.callScheduledDate)-tbT(b.callScheduledDate) || tbT(a.createdAt)-tbT(b.createdAt)).slice(0,2);
   if(!pick.length) return;
-  pick.forEach(t=>{ logAssign(t,'Hệ thống',ME.name,'AUTO'); t.status='ASSIGNED'; t.assignedAgentId=ME.id; t.assignedAgentName=ME.name; t.assignedBy='Hệ thống'; t.assignedAt=nowIso(); t.updatedAt=nowIso(); });
+  pick.forEach(t=>{ logAssign(t,TBT.systemName,ME.name,'AUTO'); t.status='ASSIGNED'; t.assignedAgentId=ME.id; t.assignedAgentName=ME.name; t.assignedBy=TBT.systemName; t.assignedAt=nowIso(); t.updatedAt=nowIso(); });
   TB.fresh = new Set(pick.map(t=>t.id)); TB.snap=null; render();
-  toast('success', `Hệ thống vừa giao ${pick.length} ticket cho bạn: ${pick.map(t=>short(t.id)).join(', ')}`);
+  toast('success', TBT.autoAssigned(pick.map(t=>short(t.id))));
   setTimeout(()=>{ TB.fresh=null; if(MODE==='tobe') render(); }, 8000);
 }
 function tbAutoBoxes(){ return [...autoList.querySelectorAll('.tb-alist input')]; }
 function tbAutoAll(on){ tbAutoBoxes().forEach(i=>{ if(i.closest('label').style.display!=='none') i.checked=on; }); tbAutoCount(); }
 function tbAutoFilter(q){ q=q.trim().toLowerCase(); tbAutoBoxes().forEach(i=>{ i.closest('label').style.display = i.closest('label').textContent.toLowerCase().includes(q)?'':'none'; }); }
-function tbAutoCount(){ const b=tbAutoBoxes(), n=b.filter(i=>i.checked).length; const c=autoList.querySelector('.tb-alcnt'); if(c) c.textContent=`Đã chọn ${n}/${b.length}`; const a=autoList.querySelector('.tb-all input'); if(a){ a.checked = n===b.length; a.indeterminate = n>0 && n<b.length; } }
+function tbAutoCount(){ const b=tbAutoBoxes(), n=b.filter(i=>i.checked).length; const c=autoList.querySelector('.tb-alcnt'); if(c) c.textContent=TBT.autoCount(n, b.length); const a=autoList.querySelector('.tb-all input'); if(a){ a.checked = n===b.length; a.indeterminate = n>0 && n<b.length; } }
 function tbAutoModalText(){
   const box = autoModal.querySelector('.mbox'), h = box.querySelector('h3');
   let d = document.getElementById('tbAutoDesc');
   if(!d){ d=document.createElement('div'); d.id='tbAutoDesc'; d.className='tb-auto-desc'; box.insertBefore(d, document.getElementById('autoList')); }
-  d.textContent = 'Chọn công việc bạn muốn nhận tự động. Hệ thống sẽ tự giao ticket của các công việc này cho bạn, và nút Nhận của các công việc này bị khoá cho tới khi bạn tắt.';
-  h.textContent = MODE==='tobe' ? 'Nhận phiếu tự động' : 'Loại công việc';
-  if(MODE!=='tobe'){ const off=document.getElementById('tbAutoOff'); if(off) off.style.display='none'; autoModal.querySelector('.btn.pri').textContent='Xác nhận'; }
+  d.textContent = TBT.autoDesc;
+  h.textContent = MODE==='tobe' ? TBT.autoTitle : TBT.autoTitleAsis;
+  if(MODE!=='tobe'){ const off=document.getElementById('tbAutoOff'); if(off) off.style.display='none'; autoModal.querySelector('.btn.pri').textContent=TBT.autoConfirm; }
 }
 function tbAutoInstall(){
   const op = autoPaint, ot = autoToggle, oc = autoConfirm;
@@ -2899,20 +3020,20 @@ function tbAutoInstall(){
   autoConfirm = function(){
     if(MODE!=='tobe') return oc();
     const sel = tbAutoBoxes().filter(i=>i.checked).map(i=>i.value);
-    if(!sel.length){ autoErr.textContent='Vui lòng chọn ít nhất 1 loại công việc'; return; }
+    if(!sel.length){ autoErr.textContent=TBT.autoErrNone; return; }
     const was = auto.on; auto.on=true; auto.flows=sel; state.page=1; autoModal.classList.add('hidden');
     // Hưng 09/11 (decisions D-23): ô lọc Công việc tự chọn theo công việc nhận tự động, nhân viên vẫn đổi lại được
     if(!TB.fltBak) TB.fltBak=[...MS.fFlow.val];
     MS.fFlow.val=[...sel]; MS.fFlow.repaint(); applyFilters();
     autoPaint();
-    toast('success', was ? 'Đã cập nhật công việc nhận tự động' : 'Đã bật nhận phiếu tự động');
+    toast('success', was ? TBT.autoUpdated : TBT.autoOnOk);
     if(!was) setTimeout(tbAutoAssignDemo, 1500);
   };
 }
 function tbDockInstall(){
-  const dock = document.createElement('div'); dock.className='tb-dock'; dock.innerHTML='<span>Bản demo:</span>';
+  const dock = document.createElement('div'); dock.className='tb-dock'; dock.innerHTML='<span>'+TBT.demoLabel+'</span>';
   dock.appendChild(document.getElementById('tbSw'));
-  const btn = document.createElement('button'); btn.className='tb-simbtn'; btn.textContent='Giả lập ▾';
+  const btn = document.createElement('button'); btn.className='tb-simbtn'; btn.textContent=TBT.simBtn;
   btn.onclick = e=>{ e.stopPropagation(); const pop=document.getElementById('tbSimPop'); pop.classList.toggle('hidden'); const r=btn.getBoundingClientRect(); pop.style.left=r.left+'px'; };
   dock.appendChild(btn);
   const crumb = document.querySelector('header.top .crumb'); crumb.after(dock);
