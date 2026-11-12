@@ -2438,11 +2438,12 @@ const TOBE_EXTRA = [
     // Mẫu nội dung CTKM (Hưng chốt 09/11, tài liệu Data Ecom): danh sách sản phẩm khách đã mua kèm Ngày mua hàng. Ngày mua = ngày cần gọi trừ 27. Tên sản phẩm là dữ liệu minh hoạ.
     businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'10/10/2026'}]},
     callScheduledDate:'2026-11-05T17:00:00Z', createdAt:'2026-11-04T08:10:00Z', updatedAt:'2026-11-04T08:10:00Z'}),
-  mk(902,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'+84 987 654 321', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
+  mk(902,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'+84 987 654 321', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'IN_PROGRESS', attemptCount:1,
+    dispositionLabel:'Không nghe máy lần 1', dispositionCode:'Không nghe máy lần 1', // 12/11: có sẵn 1 lần gọi để bấm dòng thấy Lịch sử cuộc gọi đổi theo ticket
     // Hưng 12/11: ví dụ 3 SKU mua khác ngày. Rule BU chốt (MoM 12/11): ngày cần gọi lấy theo SKU sớm nhất (15/10 + 24 ngày = 08/11);
     // ngày hết hạn của Nhắc mua thuốc mãn tính = ngày cần gọi + 3 ngày (11/11 23:59). Tên thuốc và chu kỳ 24 ngày là dữ liệu mẫu.
     businessData:{items:[{name:'Amlodipin 5mg x 30 viên', date:'15/10/2026'},{name:'Metformin 500mg x 60 viên', date:'18/10/2026'},{name:'Losartan 50mg x 30 viên', date:'22/10/2026'}]},
-    callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-11T16:59:59Z', createdAt:'2026-11-03T08:00:00Z', updatedAt:'2026-11-03T08:00:00Z'}),
+    callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-11T16:59:59Z', createdAt:'2026-11-03T08:00:00Z', updatedAt:'2026-11-08T02:15:25Z'}),
   mk(903,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'0987.654.321', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'20/11/2026'}]},
     callScheduledDate:null, createdAt:'2026-11-02T08:00:00Z', updatedAt:'2026-11-02T08:00:00Z'}),
@@ -2517,6 +2518,16 @@ const TOBE_EXTRA = [
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 100,000Đ khi tiêm Zona', date:'29/11/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-29T16:59:59Z', createdAt:'2026-11-02T07:00:00Z', updatedAt:'2026-11-02T07:00:00Z'})
 ];
 
+/* Lịch sử cuộc gọi mẫu (Hưng 12/11 17:13: lịch sử cuộc gọi đi theo từng ticket, bấm dòng nào thấy lịch sử ticket đó).
+   Ticket nào có "Không nghe máy lần 1" hoặc attemptCount thì có lần gọi tương ứng. Giờ gọi, thời lượng là dữ liệu mẫu. */
+(()=>{
+  const id = n => '01a1a0ce-0000-7000-8000-000000000'+n;
+  const noAns = (at, agent) => ({id:'att-seed-'+at, status:'ENDED', callResult:'HANDLED', startedAt:at, endedAt:new Date(Date.parse(at)+25e3).toISOString(), talkDurationSec:0,
+    dispositionCode:'KHONG_NGHE_MAY', dispositionLabel:'Không nghe máy lần 1', dispositionBehavior:'RETRY', agentName:agent});
+  ATTEMPTS[id(902)] = [noAns('2026-11-08T02:15:00Z', ME.name)];
+  ATTEMPTS[id(942)] = [noAns('2026-11-08T03:00:00Z', ME.name)];
+  ATTEMPTS[id(905)] = [noAns('2026-11-03T03:00:00Z', TB_AG2.name)];
+})();
 /* ---------- Khoá gom và sắp xếp ---------- */
 // SĐT chuẩn hoá theo US-3 v3 mục 6.2: bỏ khoảng trắng, dấu chấm, dấu gạch; đầu số +84 hoặc 84 đổi thành 0.
 // Sau chuẩn hoá không phải 10 số bắt đầu bằng 0 thì coi như không có SĐT, hiện row riêng.
@@ -2693,6 +2704,10 @@ document.addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e
 function tbInfoAll(t, grp, dup){
   const dl = document.getElementById('dInfo'), h = dl.previousElementSibling;
   h.innerHTML = dup ? `<span>${TBT.infoTitle} <span class="tb-infoid">${short(t.id)}</span></span><span>⌄</span>` : TBT.infoTitle+' <span>⌄</span>';
+  // Hưng 12/11 17:13: tiêu đề Lịch sử cuộc gọi ghi mã ticket đang chọn, để thấy lịch sử đi theo từng ticket
+  const ah = dAtt.previousElementSibling.firstElementChild; let tag = ah.querySelector('.tb-infoid');
+  if(dup){ if(!tag){ tag=document.createElement('span'); tag.className='tb-infoid'; ah.append(' ', tag); } tag.textContent = short(t.id); }
+  else if(tag){ tag.previousSibling && tag.previousSibling.nodeType===3 && tag.previousSibling.remove(); tag.remove(); }
   if(!dup) return;
   // Lịch sử cuộc gọi của ticket đang chọn; lần nào là cuộc gọi chung thì ghi kèm các ticket được tính
   const at = ATTEMPTS[t.id]||[];
