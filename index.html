@@ -214,7 +214,11 @@ td.nd{padding:0;white-space:normal}
 .cw-bar{display:flex;align-items:center;gap:12px;background:#1d4ed8;color:#fff;padding:8px 12px;border-radius:8px;margin:6px}
 .cw-pill{background:rgba(255,255,255,.18);border-radius:5px;padding:3px 8px;font-size:12.5px}.cw-ENDED{background:#ff7a45}
 .cw-ph{font-weight:700;font-size:15px}.cw-sim{font-size:12px;opacity:.85}.cw-sim a{color:#fff;text-decoration:underline;cursor:pointer}
-.cw-x{margin-left:auto;background:#ef4444;color:#fff;border:none;border-radius:5px;padding:5px 10px}
+.cw-x{background:#ef4444;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-weight:600;cursor:pointer}
+/* 12/11: thanh tổng đài theo CI v8.6.32: chấm xanh trong pill, cụm nút điều khiển dồn phải */
+.cw-acts{margin-left:auto;display:flex;align-items:center;gap:6px}
+.cw-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#facc15;margin-right:6px;vertical-align:1px}.cw-TALKING .cw-dot{background:#22c55e}.cw-ENDED .cw-dot{background:#fff}
+.cw-ctl{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:5px;padding:5px 10px;cursor:pointer}.cw-ctl.on{background:#fff;color:#1d4ed8}
 .cw-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px 14px 12px}
 .cw-h{font-size:12px;font-weight:600;color:#374151;margin-bottom:6px}
 .cw-script{background:#f0fdf4;border-left:3px solid #86efac;padding:8px 10px;font-size:12.5px;line-height:1.6}
@@ -240,24 +244,20 @@ td.nd{padding:0;white-space:normal}
 .tb-gt .ndl{padding:6px 10px}
 /* UX 11/11: khung tổng đài To-Be bản gọn, chỉ áp khi body có .tb-on */
 .tb-on .call-w{position:sticky;top:48px;z-index:3;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.tb-on .cw-nm{font-size:14px}
-.tb-on .cw-scr{margin-left:auto;color:#fff;text-decoration:underline;cursor:pointer;font-size:12.5px}
-.tb-on .cw-back{margin-left:auto;background:#fff;color:var(--primary);border:none;border-radius:5px;padding:5px 10px;font-weight:600;cursor:pointer}
-.tb-on .cw-scr + .cw-x,.tb-on .cw-back + .cw-x{margin-left:8px}
+.tb-on .cw-back{background:#fff;color:var(--primary);border:none;border-radius:5px;padding:5px 10px;font-weight:600;cursor:pointer}
 .tb-on .tb-cwmini .cw-bar{margin:0;border-radius:0}
 .tbw-script{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;padding:8px 14px;background:#f0fdf4;font-size:12.5px;line-height:1.6;border-bottom:1px solid var(--line)}
 /* UX 11/11: bốn cách ghi kết quả */
 .tb-on .tb-dock,.tb-on .tb-dock .tb-sw button{white-space:nowrap}
 .tb-on .call-w{z-index:10}
-.tb-on .cw-scr + .cw-scr{margin-left:14px}
 .tbw-none{color:var(--muted);font-style:italic}
 /* Hướng B (UX 11/11): khung tổng đài nổi góc phải dưới, nội dung xếp dọc */
 /* UX 11/11: thống nhất chữ trong khung tổng đài To-Be. 3 cỡ: 14 (đọc, tiêu đề), 13 (nút), 12 (chữ phụ). 2 độ đậm: 400, 600. */
 .tb-on #callBox{font-size:14px;line-height:1.5}
-.tb-on #callBox .cw-nm,.tb-on #callBox .cw-ph,.tb-on #callBox .cw-step,.tb-on #callBox .tbw-script b,.tb-on #callBox .cw-bar > b{font-size:14px;font-weight:600}
+.tb-on #callBox .cw-ph,.tb-on #callBox .cw-step,.tb-on #callBox .tbw-script b,.tb-on #callBox .cw-bar > b{font-size:14px;font-weight:600}
 .tb-on #callBox .tbw-script,.tb-on #callBox .cw-script,.tb-on #callBox .tbw-none,.tb-on #callBox textarea,.tb-on #callBox #cwClock{font-size:14px;line-height:1.5}
-.tb-on #callBox .cw-pill,.tb-on #callBox .cw-x,.tb-on #callBox .cw-chip,.tb-on #callBox .cw-back{font-size:13px;line-height:1.4}
-.tb-on #callBox .cw-scr,.tb-on #callBox .cw-sim,.tb-on #callBox .cw-for{font-size:12px;line-height:1.4}
+.tb-on #callBox .cw-pill,.tb-on #callBox .cw-x,.tb-on #callBox .cw-ctl,.tb-on #callBox .cw-chip,.tb-on #callBox .cw-back{font-size:13px;line-height:1.4}
+.tb-on #callBox .cw-sim,.tb-on #callBox .cw-for{font-size:12px;line-height:1.4}
 .tb-on #callBox .cw-chip.on{font-weight:600}
 .tb-on #callBox .tbw-miss{grid-column:1/-1}
 /* Góp ý 11/11: ô của nhóm canh giữa, nút cấp nhóm xếp dọc giữa ô */
@@ -269,7 +269,8 @@ td.nd{padding:0;white-space:normal}
 .tb-on #vDetail .sec.tb-col > h3 > span:last-child{transform:rotate(-90deg)}
 .tb-on #vDetail .sec.tb-col > :not(h3){display:none !important}
 @media (prefers-reduced-motion:reduce){.tb-on #vDetail .sec > h3 > span:last-child{transition:none}}
-.tb-on #callBox .tbw-script{display:flex;flex-wrap:wrap;gap:8px 24px}.tb-on #callBox .tbw-script > div{flex:1 1 320px;min-width:0}.tb-on #callBox .tbw-script > .tbw-miss{flex-basis:100%}
+.tb-on #callBox .tbw-script{display:flex;flex-direction:column;gap:8px;padding:8px 10px;border-bottom:0} /* 12/11: kịch bản gộp nằm ở cột trái như CI, các công việc xếp dọc */
+.tb-on #callBox .cw-h2{margin-top:10px}
 .tb-on .tb-gt tr.tb-pend td{background:#fff8e1}
 .tb-on .tb-gt tr.tb-pend td:first-child{box-shadow:inset 3px 0 0 #f59e0b}
 .tb-on .tablewrap th.tb-gcth{text-align:center}
@@ -445,8 +446,6 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-cart-old{border-bottom-color:transparent;color:var(--muted)}
 .tb-on .pos .card td:nth-child(2){min-width:220px}
 .tb-rb-addr{border:1px solid #d9d9d9;border-radius:6px;padding:6px 8px;font-size:12.5px}
-.tb-on #callBox .tbw-res{padding:10px 14px 12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line)} /* 12/11: kết quả cho ticket đầu tiên khi gọi chung */
-.tb-on #callBox .tbw-res .cw-save{align-self:flex-start;width:auto;padding:6px 24px;margin-top:0}
 .tb-on #dActs > .btn + .btn{margin-left:8px} /* 12/11: Gọi thành nút đơn, cách nút bên cạnh */
 .tb-od-empty{padding:60px 20px;text-align:center;color:var(--muted)}
 @media (max-width:1200px){.tb-od-grid{grid-template-columns:1fr}}
@@ -2322,17 +2321,13 @@ const TBT = {
 
   // ---- Khung tổng đài khi gọi ----
   cwTitle: 'Tổng đài',
-  cwDialing: '📞 Đang gọi ra',
-  cwTalking: '📞 Đang nói chuyện',
-  cwEnded: '⛔ Đã kết thúc cuộc gọi',
-  cwSim: 'Giả lập: ',
-  cwSimAnswer: 'khách bắt máy',
-  cwSimFail: 'gọi lỗi',
-  cwEnd: 'Kết thúc cuộc gọi',
+  cwDialing: 'Đang gọi ra',
+  cwTalking: 'Đang nói chuyện',
+  cwEnded: 'Đã kết thúc cuộc gọi',
+  cwScriptTitle: '📋 KỊCH BẢN GỢI Ý',
+  cwNoteTitle: '✍ GHI CHÚ CUỘC GỌI',
   cwClose: 'Đóng',
   cwBack: 'Về màn Chi tiết ›',
-  scriptShow: 'Kịch bản gợi ý ▾',
-  scriptHide: 'Ẩn kịch bản ▴',
   scriptNone: 'Chưa có kịch bản cho công việc này.',
   cwForOne: (id, flow, others) => `Kết quả chọn ở đây ghi cho ticket <b>${id}</b> · ${flow}.` + (others ? ` ${others} ticket còn lại của khách: bấm Xử lý ở bảng Ticket của khách hàng.` : ''),
   cwResTitle: '✅ KẾT QUẢ',
@@ -2846,7 +2841,7 @@ function tbOnCall(t){
   const scope = tbCallScope(key), held = scope.some(x=>x.id===t.id) ? scope : [t];
   TB.pending = {key, ids:new Set(held.map(x=>x.id)), at:nowIso()};
   CALL.grpIds = new Set(held.map(x=>x.id)); // 11/11
-  CALL.hideScript = false; CALL.note = null; CALL.err = null; // UX 11/11: trạng thái khung tổng đài khi gọi chung
+  CALL.note = null; CALL.err = null; // UX 11/11: trạng thái khung tổng đài khi gọi chung
   // Gọi một lần tính cho mọi ticket mình giữ trong nhóm: ghi cuộc gọi vào từng ticket còn lại, tăng số lượt gọi, Đã phân công chuyển Đang xử lý.
   // Bản ghi dùng chung trạng thái, thời lượng của cuộc gọi gốc (Object.create). Kết quả xử lý ghi riêng từng ticket nên không thừa hưởng.
   const at = CALL.attempt;
@@ -2884,7 +2879,6 @@ const tbWList = t => { if(MODE!=='tobe') return null;
   const g = (CALL.state!=='IDLE' && CALL.grpIds && CALL.grpIds.size>=2) ? CALL.grpIds
     : (TB.pending && TB.pending.key===tbKey(t) && TB.pending.ids.size>=2 ? TB.pending.ids : null);
   return g ? [...g].map(id=>TICKETS.find(x=>x.id===id)).filter(Boolean).sort(tbInGroup) : null; };
-function tbWScript(){ CALL.hideScript = !CALL.hideScript; paintCall(); }
 function tbRepaintCall(){
   paintCall();
   if(MODE!=='tobe') return;
@@ -2907,19 +2901,16 @@ function tbScriptBlocks(list){
 const tbScriptHtml = b => b.txt ? tbEscN(b.txt).replace(/\n/g,'<br>') /* 11/11 (Hưng): bỏ nhãn MÔ PHỎNG trong kịch bản, điểm này vẫn ở bảng Điểm chưa chốt */
   : `<span class="tbw-none">${TBT.scriptNone}</span>`;
 /* ---------- Khung tổng đài To-Be (UX 11/11, chỉ To-Be) ----------
-   Màn Danh sách: thu gọn còn một thanh có tên khách và nút về màn Chi tiết.
-   Gọi chung từ 2 ticket: khung chỉ còn thanh Gọi và Kịch bản. Gọi một ticket: dùng khung cũ (trả false).
+   Màn Danh sách: thu gọn còn một thanh (giống thanh CI) và nút về màn Chi tiết.
+   Gọi chung từ 2 ticket: thanh Gọi + 2 cột (Kịch bản | Kết quả cho ticket đầu tiên). Gọi một ticket: dùng khung cũ (trả false).
    Khung dính đầu màn hình khi cuộn (CSS .tb-on .call-w). */
 function tbPaintCallTB(t){
   const ne = document.getElementById('cwNote'); if(ne) CALL.note = ne.value; // giữ ghi chú khi vẽ lại hoặc đổi màn
   const ref = CALL.state==='ENDED' ? CALL.attempt.talkDurationSec : Math.round((Date.now()-CALL.t0)/1000);
   const mm = String(Math.floor(ref/60)).padStart(2,'0')+':'+String(ref%60).padStart(2,'0');
   const pill = {DIALING:TBT.cwDialing, TALKING:TBT.cwTalking, ENDED:TBT.cwEnded}[CALL.state];
-  const sim = CALL.state==='DIALING' ? `<span class="cw-sim">${TBT.cwSim}<a onclick="callAnswer()">${TBT.cwSimAnswer}</a> · <a onclick="callFail()">${TBT.cwSimFail}</a></span>` : '';
-  // Hưng 12/11: có lại phần chọn kết quả nên Kết thúc cuộc gọi như CI: cúp máy, khung còn mở để Lưu, rồi Đóng
-  const endJs = CALL.state==='ENDED'?'callClose()':'callHangup()';
-  const endBtn = `<button class="cw-x" onclick="${endJs}">✖ ${CALL.state==='ENDED'?TBT.cwClose:TBT.cwEnd}</button>`;
-  const bar = extra => `<div class="cw-bar"><b>${TBT.cwTitle}</b><span class="cw-pill cw-${CALL.state}">${pill}</span><b class="cw-nm">${tbEsc(t.customerName||'')}</b><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>${sim}${extra||''}${endBtn}</div>`;
+  // 12/11: thanh theo CI v8.6.32, dùng chung cwBar với As-Is (không còn tên khách, không còn link Ẩn kịch bản)
+  const bar = extra => cwBar(t, mm, pill, {extra});
   const list = tbWList(t), onList = vDetail.classList.contains('hidden');
   callBox.classList.remove('tb-cwmini');
   if(onList){
@@ -2934,18 +2925,17 @@ function tbPaintCallTB(t){
   const blocks = tbScriptBlocks(list);
   const has = blocks.filter(b=>b.txt), miss = blocks.filter(b=>!b.txt);
   const missLine = miss.length ? `<div class="tbw-miss"><b>${miss.map(b=>flowName(b.f)).join(', ')}:</b> <span class="tbw-none">${TBT.scriptNone}</span></div>` : '';
-  const scrLink = `<a class="cw-scr" onclick="tbWScript()">${CALL.hideScript?TBT.scriptShow:TBT.scriptHide}</a>`;
-  const strip = CALL.hideScript ? ''
-    : `<div class="tbw-script">${has.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}${missLine}</div>`;
+  // 12/11: thân khung chia 2 cột như CI: Kịch bản gợi ý bên trái, Kết quả + Ghi chú + Lưu bên phải
+  const scr = `<div><div class="cw-h">${TBT.cwScriptTitle}</div><div class="cw-script tbw-script">${has.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}${missLine}</div></div>`;
   const codes = ALLOWED[t.businessFlowId]||[];
   const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('');
-  const res = `<div class="tbw-res"><div class="cw-h">${TBT.cwResTitle}</div>
+  const res = `<div><div class="cw-h">${TBT.cwResTitle}</div>
       <div class="cw-for">${TBT.cwForOne(short(t.id), flowName(t.businessFlowId), list.length-1)}</div>
       <div class="cw-chips">${chips}</div>
-      <textarea id="cwNote" rows="2" placeholder="${TBT.cwNotePh}">${tbEsc(CALL.note||'')}</textarea>
+      <div class="cw-h cw-h2">${TBT.cwNoteTitle}</div><textarea id="cwNote" rows="2" placeholder="${TBT.cwNotePh}">${tbEsc(CALL.note||'')}</textarea>
       ${CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}
       <button class="btn pri cw-save" onclick="callSave()">${TBT.cwSave}</button></div>`;
-  callBox.innerHTML = bar(scrLink) + strip + res;
+  callBox.innerHTML = bar() + `<div class="cw-body">${scr}${res}</div>`;
   return true;
 }
 // Khung 2 bước (quyết định 09/11) đã bỏ ngày 12/11: Hưng chọn chỉ ghi kết quả cho ticket đầu tiên. Giữ hai hàm rỗng vì As-Is gọi qua hook.
@@ -3516,7 +3506,7 @@ function confirmAssign(){
 /* ---------- Gọi: widget tổng đài (dựng theo CI test 06/11) ----------
    CI: bấm Gọi ở list → mở Detail của phiếu, widget tổng đài hiện trên đầu trang.
    Widget: "Tổng đài" · trạng thái · SĐT · đồng hồ · Hủy gọi | Kịch bản gợi ý | Kết quả (chip) | Ghi chú cuộc gọi | Lưu.
-   Hủy gọi → "Đã kết thúc - Kết thúc cuộc gọi", nút đổi thành Đóng. Lưu → ghi kết quả qua tổng đài (resolutionSource = DISPOSITION).
+   Hủy gọi → "Đã kết thúc - Kết thúc cuộc gọi", nút đổi thành Đóng. Thanh dựng lại theo CI v8.6.32 ngày 12/11 (cwBar). Lưu → ghi kết quả qua tổng đài (resolutionSource = DISPOSITION).
    Trong lúc widget mở: nút Gọi, Xử lý ở header bị khoá. */
 function doCall(t, useDid){
   if(CALL.state!=='IDLE') return;
@@ -3525,7 +3515,7 @@ function doCall(t, useDid){
   t.attemptCount=(t.attemptCount||0)+1; t.currentAttemptId=at.id;
   if(t.status==='ASSIGNED') t.status='IN_PROGRESS'; // CI test 06/11: sau cuộc gọi phiếu ở Đang xử lý
   t.updatedAt=nowIso();
-  Object.assign(CALL,{state:'DIALING', ticketId:t.id, attempt:at, t0:Date.now(), pick:null});
+  Object.assign(CALL,{state:'DIALING', ticketId:t.id, attempt:at, t0:Date.now(), pick:null, hold:false, mute:false});
   clearInterval(CALL.timer); CALL.timer=setInterval(MODE==='tobe'?paintTick:paintCall,1000); // As-Is giữ như bản gốc
   tbOnCall(t); /*TOBE-HOOK*/
   go(t.id); paintCall(); render();
@@ -3543,7 +3533,7 @@ function callFail(){ // makeCall lỗi sau khi đã tạo attempt → attempt n�
   tbOnCallFail(); /*TOBE-HOOK*/
   Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null}); paintCall(); refresh();
 }
-function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null, err:null, note:null, showScript:false, grpIds:null}); paintCall(); refresh(); }
+function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE', ticketId:null, attempt:null, err:null, note:null, showScript:false, grpIds:null, hold:false, mute:false}); paintCall(); refresh(); }
 function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   const t=byId(CALL.ticketId); if(!t) return;
   if(tbWidgetSave(t)) return; /*TOBE-HOOK*/
@@ -3566,6 +3556,22 @@ function paintTick(){
 }
 // UX 11/11: lỗi của khung Tổng đài hiện ngay trên nút Lưu, không dùng toast tự biến mất
 function tbWErr(m){ CALL.err = m; paintCall(); }
+// 12/11: thanh tổng đài theo CI v8.6.32 (dùng chung As-Is và To-Be).
+// Pill có chấm xanh · ☎ số · đồng hồ · (khi đang nói chuyện) Giữ máy, Tắt tiếng, Chuyển · nút đỏ: Hủy gọi / Kết thúc / Đóng.
+// Giữ máy, Tắt tiếng, Chuyển là giả lập: chỉ đổi trạng thái nút, không đổi dữ liệu cuộc gọi.
+function cwToggle(k){ CALL[k] = !CALL[k]; paintCall(); }
+function cwTransfer(){ toast('info','Giả lập: mockup không làm luồng Chuyển cuộc gọi'); }
+function cwBar(t, mm, pill, opt){
+  opt = opt||{};
+  const sim = CALL.state==='DIALING' ? '<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>' : '';
+  const ctrls = CALL.state==='TALKING' ? `<button class="cw-ctl${CALL.hold?' on':''}" onclick="cwToggle('hold')">${CALL.hold?'▶ Tiếp tục':'⏸ Giữ máy'}</button>`
+    + `<button class="cw-ctl${CALL.mute?' on':''}" onclick="cwToggle('mute')">${CALL.mute?'🔊 Bật tiếng':'🔇 Tắt tiếng'}</button>`
+    + `<button class="cw-ctl" onclick="cwTransfer()">↪ Chuyển</button>` : '';
+  const endLbl = CALL.state==='ENDED' ? '✖ Đóng' : (CALL.state==='DIALING' ? '☎ Hủy gọi' : '☎ Kết thúc');
+  const endJs = CALL.state==='ENDED' ? 'callClose()' : 'callHangup()';
+  return `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}"><i class="cw-dot"></i>${pill}</span><span class="cw-ph">☎ ${tbDialPhone(t)}</span><span id="cwClock">${mm}</span>${sim}`
+    + `<span class="cw-acts">${opt.extra||''}${ctrls}<button class="cw-x" onclick="${endJs}">${endLbl}</button></span></div>`;
+}
 function paintCall(){
   const t = CALL.ticketId && byId(CALL.ticketId);
   if(CALL.state==='IDLE' || !t){ callBox.classList.add('hidden'); callBox.innerHTML=''; return; }
@@ -3574,12 +3580,10 @@ function paintCall(){
   const mm = String(Math.floor(ref/60)).padStart(2,'0')+':'+String(ref%60).padStart(2,'0');
   if(MODE==='tobe' && tbPaintCallTB(t)) return; /*TOBE-HOOK*/
   const TBM = MODE==='tobe'; // As-Is giữ chữ của CI
-  const pill = {DIALING:'📞 Đang gọi ra', TALKING:'📞 Đang nói chuyện', ENDED: TBM ? '⛔ Đã kết thúc cuộc gọi' : '⛔ Đã kết thúc - Kết thúc cuộc gọi'}[CALL.state];
+  const pill = {DIALING:'Đang gọi ra', TALKING:'Đang nói chuyện', ENDED: TBM ? 'Đã kết thúc cuộc gọi' : 'Đã kết thúc - Kết thúc cuộc gọi'}[CALL.state];
   const codes = ALLOWED[t.businessFlowId]||[];
   const keepNote = document.getElementById('cwNote')?.value || (TBM ? CALL.note||'' : '');
-  callBox.innerHTML = `<div class="cw-bar"><b>Tổng đài</b><span class="cw-pill cw-${CALL.state}">${pill}</span>${TBM?`<b class="cw-nm">${tbEsc(t.customerName||'')}</b>`:''}<span class="cw-ph">☎ ${tbDialPhone(t)}</span><span${TBM?' id="cwClock"':''}>${mm}</span>
-      ${CALL.state==='DIALING'?'<span class="cw-sim">Giả lập: <a onclick="callAnswer()">khách bắt máy</a> · <a onclick="callFail()">gọi lỗi</a></span>':''}
-      <button class="cw-x" onclick="${CALL.state==='ENDED'?'callClose()':'callHangup()'}">✖ ${CALL.state==='ENDED'?'Đóng':(TBM?'Kết thúc cuộc gọi':'Hủy gọi')}</button></div>
+  callBox.innerHTML = cwBar(t, mm, pill) + `
     <div class="cw-body"><div><div class="cw-h">📋 KỊCH BẢN GỢI Ý</div><div class="cw-script">${(TBM ? (tbScriptText(t.businessFlowId,[t])||'Chưa có kịch bản cho công việc này.') : (SCRIPTS[t.businessFlowId]||'Chưa có kịch bản cho công việc này.')).replace(/\n/g,'<br>')}</div></div>
       <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';${TBM?'CALL.err=null;':''}paintCall()">${d.label}</button>`}).join('')}</div>`}
       <div class="cw-h" style="margin-top:10px">✍ GHI CHÚ CUỘC GỌI</div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách...">${keepNote}</textarea>
