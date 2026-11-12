@@ -2253,6 +2253,7 @@ const TB_PEND = [
   {id:'order_id',   kind:'ba',  txt:'Tab Chi tiết đơn hàng của Nhắc mua thuốc mãn tính và Nhắc Voucher gia đình cần mã đơn trên ticket. Chưa biết CDE có gửi không, và với voucher là đơn nào.', src:'Hưng 12/11 sau MoM 12/11. Deep dive 05-review/2026-11-12_Deep-dive_tab-nhung-RSA-theo-cong-viec.md'},
   {id:'order_embed', kind:'sim', txt:'Tab Chi tiết đơn hàng dựng tĩnh. Trang RSA thật chưa nhận layout=content-only (còn sidebar, header) và nút Hủy đơn vẫn bấm được khi nhúng.', src:'Kiểm trên CI RSA 12/11 (05-review/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md)'},
   {id:'remain',     kind:'sim', txt:'Số N trong "KH còn N ticket khác" đếm trên toàn bộ data demo, chưa áp quyền xem theo vai (Sale chỉ thấy ticket của mình cộng ticket Mới).', src:'US-3 v3, mục 5.1 dòng 7. Khung As-Is cũng chưa có phạm vi theo vai.'},
+  {id:'grp_new',    kind:'chot', txt:'Ticket Mới không vào nhóm đã có người giữ. Ticket Mới cùng khách gom thành nhóm Mới riêng, chỉ có nút Nhận. Nhận xong ticket sang nhóm đang xử lý của khách (danh sách sắp lại ở lần Tìm kiếm sau). Bỏ quy định Gọi trước, Nhận sau.', src:'Hưng chốt 12/11 chiều (chat). Chưa ghi decisions.md và US-3.'},
   {id:'grp_act',    kind:'chot', txt:'Nhận, Phân công làm theo nhóm ở cột Thao tác của nhóm. Nút Xử lý chỉ ở màn Chi tiết. Ô Khách hàng, SĐT, Thao tác của nhóm canh chính giữa.', src:'Góp ý 11/11: Nhận, Phân công theo nhóm là hướng đã thống nhất, mockup cập nhật theo. decisions.md D-11 và US-3 còn ghi theo từng ticket, cần sửa.'},
   {id:'cw_min',     kind:'chot', txt:'Gọi chung: khung tổng đài chỉ còn thanh Gọi và Kịch bản. Ghi kết quả bằng nút Xử lý từng ticket ở bảng Ticket của khách hàng, bấm được cả trong lúc đang gọi (khác CI). Không nghe máy chọn trong Xử lý như CI. Màn Chi tiết bỏ khối lặp với bảng.', src:'Góp ý BA và Hưng 11/11, làm trên demo. Khác D-26, D-27 (khung tổng đài 2 bước), chưa sửa decisions.md.'},
   {id:'grp_asg',    kind:'ba',  txt:'Phân công nhóm giao mọi ticket chưa đóng trong nhóm cho người được chọn, kể cả ticket người khác đang giữ.', src:'BA suy ra 11/11, chưa ai xác nhận.'},
@@ -2432,7 +2433,7 @@ const TBT = {
 const TB_AG2 = AGENTS.find(a=>a.id!==ME.id);
 const NOASG = {assignedAgentId:null, assignedAgentName:null, assignedBy:null, assignedAt:null};
 const TOBE_EXTRA = [
-  // Nhóm 3 ticket, 3 công việc, SĐT viết 3 kiểu (0987654321, +84 987 654 321, 0987.654.321): 1 ticket Mới, 2 ticket do ME giữ
+  // Nhóm 3 ticket, 3 công việc, SĐT viết 3 kiểu (0987654321, +84 987 654 321, 0987.654.321): 2 ticket do ME giữ; 000901 Mới tách thành nhóm Mới riêng (Hưng 12/11 chiều)
   mk(901,{_tobe:true, customerName:'Nguyễn Thị Hoa', phone:'0987654321', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
     // Mẫu nội dung CTKM (Hưng chốt 09/11, tài liệu Data Ecom): danh sách sản phẩm khách đã mua kèm Ngày mua hàng. Ngày mua = ngày cần gọi trừ 27. Tên sản phẩm là dữ liệu minh hoạ.
     businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'10/10/2026'}]},
@@ -2483,7 +2484,7 @@ const TOBE_EXTRA = [
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'28/11/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-28T16:59:59Z', createdAt:'2026-11-06T03:00:00Z', updatedAt:'2026-11-06T03:00:00Z'}),
   mk(923,{_tobe:true, customerName:'Lý Thu Hằng', phone:'0938222333', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
     businessData:{items:[{name:'Amlodipin 5mg x 30 viên', date:'15/10/2026'}]}, callScheduledDate:'2026-11-10T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-05T03:00:00Z', updatedAt:'2026-11-05T03:00:00Z'}),
-  // Nhóm có một ticket Mới: bấm Nhận xong nút Gọi đổi từ "Cho 1 ticket" thành "Cho 2 ticket"
+  // Cùng SĐT với nhóm đang xử lý: ticket Mới đứng nhóm riêng có nút Nhận; Nhận xong sang nhóm đang xử lý (Hưng 12/11 chiều)
   mk(931,{_tobe:true, customerName:'Hồ Ngọc Lan', phone:'0966444555', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'27/11/2026'}]}, callScheduledDate:'2026-11-12T17:00:00Z', expiredTime:'2026-11-27T16:59:59Z', createdAt:'2026-11-03T04:00:00Z', updatedAt:'2026-11-03T04:00:00Z'}),
   mk(932,{_tobe:true, customerName:'Hồ Ngọc Lan', phone:'0966444555', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'OPEN', ...NOASG,
@@ -2527,7 +2528,9 @@ function tbNorm(p){
 // SĐT mẫu của mockup BU trong dữ liệu gốc chỉ có 8 số. Khi ở To-Be đổi sang 10 số (thêm 0900 trước 6 số cuối), về As-Is trả lại nguyên.
 function tbDemoPhone(p){ return /^\d{8}$/.test(String(p)) ? '0900'+String(p).slice(-6) : p; }
 // Cùng tenant + cùng SĐT. Công việc tắt gom khác công việc thì khoá có thêm mã công việc.
-function tbKey(t){ const n=tbNorm(t.phone); if(!n) return 'solo|'+t.id; return t.tenant+'|'+n+'|'+(TB.cross[t.businessFlowId]===false ? t.businessFlowId : '*'); }
+// Hưng 12/11: ticket Mới không vào nhóm đã có người giữ. Ticket Mới cùng khách gom thành nhóm Mới riêng;
+// khi được Nhận hoặc Phân công thì khoá đổi, ticket tự sang nhóm đang xử lý của khách.
+function tbKey(t){ const n=tbNorm(t.phone); if(!n) return 'solo|'+t.id; return t.tenant+'|'+n+'|'+(TB.cross[t.businessFlowId]===false ? t.businessFlowId : '*')+(t.status==='OPEN'?'|new':''); }
 const tbT = iso => iso ? new Date(iso).getTime() : Infinity;
 // Trong nhóm: CTKM, thuốc mãn tính, voucher; cùng công việc thì ngày cần gọi, rồi ngày tạo
 function tbInGroup(a,b){
@@ -2564,7 +2567,8 @@ function tbBuild(){
     return a.created-b.created;
   });
   // Nhóm riêng của công việc tắt gom khác công việc: đặt ngay sau nhóm chính cùng SĐT
-  const isSat = g => !g.key.startsWith('solo|') && !g.key.endsWith('|*');
+  // Nhóm Mới (khoá có '|new') là nhóm khác của khách, xếp theo ngày của chính nó, không bám sau nhóm chính (Hưng 12/11)
+  const isSat = g => !g.key.startsWith('solo|') && !g.key.endsWith('|*') && !g.key.endsWith('|new');
   const mainOf = g => g.key.split('|').slice(0,2).join('|')+'|*';
   const sats = groups.filter(g=>isSat(g) && groups.some(m=>m.key===mainOf(g)));
   const out = [];
@@ -2614,6 +2618,7 @@ function tbCallBtn(g){
   const pd = TB.pending && TB.pending.key===g.key && TB.pending.ids.size && CALL.state==='IDLE' ? TB.pending : null;
   if(pd){
     // Hưng 12/11: bỏ dòng "Đã gọi lúc … · còn N ticket chưa ghi kết quả". Vẫn trả ô rỗng (không rỗng chuỗi) để tbGroupActs không hiện Nhận khi còn ticket chưa ghi kết quả.
+    // (Sửa tay trong file HTML lúc 16:57 ngày 12/11, chép lại vào src ngày 12/11.)
     return `<div class="tb-callg tb-called${g.hd?' hd':''}"></div>`;
   }
   const n = tbCallScope(g.key).length;
@@ -2630,10 +2635,12 @@ const tbClaimable = ts => ts.filter(x=>x.status==='OPEN' && ((flowOf(x).operatio
 const tbAutoOnly = ts => { const o = ts.filter(x=>x.status==='OPEN'); return o.length>0 && o.every(tbAutoLock); };
 const tbAssignable = ts => SIM.isManager ? ts.filter(x=>x.status!=='CLOSED' && ((flowOf(x).operationConfig||{}).routing_policy||{}).manual_assign) : [];
 function tbGroupActs(g){
+  // Danh sách giữ nguyên thứ tự tới lần Tìm kiếm sau (TB.snap). Nhận xong thì khoá của ticket đã đổi (bỏ '|new'), nên lấy khoá hiện tại.
+  if(!g.key.startsWith('solo|')) g = {...g, key: tbKey(g.tickets[0])};
   const ts = g.tickets, many = ts.length>1, c = tbClaimable(ts), a = tbAssignable(ts), ids = l => l.map(x=>x.id).join(',');
   const busy = ts.some(x=>BUSY.has(x.id));
-  // Hưng 12/11: Gọi trước, Nhận sau, không hiện cùng lúc. Nhóm còn ticket mình giữ thì chỉ có Gọi (hoặc dòng "Đã gọi lúc…");
-  // ticket Mới cùng khách chờ tới khi mình không còn giữ ticket nào trong nhóm mới hiện Nhận. Phân công của Sale Lead giữ nguyên bên cạnh.
+  // Hưng 12/11 (chiều): ticket Mới đã tách thành nhóm Mới riêng (tbKey), nên Nhận chỉ hiện ở nhóm toàn ticket Mới, Gọi ở nhóm đang xử lý;
+  // hai nút không còn gặp nhau. Bỏ quy định "Gọi trước, Nhận sau" chốt sáng 12/11. Phân công của Sale Lead giữ nguyên bên cạnh.
   let h = '';
   const call = tbCallBtn(g);
   if(call) h += call;
