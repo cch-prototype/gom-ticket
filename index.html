@@ -2324,6 +2324,7 @@ const TBT = {
   cwDialing: 'Đang gọi ra',
   cwTalking: 'Đang nói chuyện',
   cwEnded: 'Đã kết thúc cuộc gọi',
+  cwSavedToast: 'Lưu kết quả thành công',
   cwScriptTitle: '📋 KỊCH BẢN GỢI Ý',
   cwNoteTitle: '✍ GHI CHÚ CUỘC GỌI',
   cwClose: 'Đóng',
@@ -3573,8 +3574,8 @@ function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   Object.assign(t,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(t.version||1)+1});
   if(d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.resolution=d.resolution; t.closedAt=nowIso(); }
   tbOnResult(t); /*TOBE-HOOK*/
-  if(live && MODE==='tobe'){ CALL.saved = {label:d.label, id:t.id, at:nowIso()}; CALL.err=null; // không hiện dòng xác nhận (Hưng 13/11 14:20 bỏ)
-    CALL.note=note; paintCall(); refresh(); return; }
+  if(live && MODE==='tobe'){ CALL.saved = {label:d.label, id:t.id, at:nowIso()}; CALL.err=null; // không hiện dòng xác nhận trong khung (Hưng 13/11 14:20 bỏ); báo bằng thông báo góc màn hình như các thao tác khác trên CI (Hưng 13/11 14:33)
+    toast('success', TBT.cwSavedToast); CALL.note=note; paintCall(); refresh(); return; }
   callClose();
 }
 // UX 11/11: mỗi giây chỉ đổi số trên đồng hồ, không vẽ lại khung để ô ghi chú giữ con trỏ
