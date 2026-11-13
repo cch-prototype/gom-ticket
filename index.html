@@ -450,8 +450,6 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-od-empty{padding:60px 20px;text-align:center;color:var(--muted)}
 @media (max-width:1200px){.tb-od-grid{grid-template-columns:1fr}}
 /*TOBE:END css*/
-/* Hưng 13/11: dòng xác nhận đã lưu kết quả, cuộc gọi vẫn tiếp tục */
-.tb-on #callBox .cw-ok{margin-top:8px;padding:6px 10px;border-radius:6px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:13px}
 /* Trang Chi tiết phóng theo chữ chính 14px như Danh sách (Hưng 09/11). Tag trạng thái, công việc giữ 12px như Danh sách. */
 #vDetail{font-size:14px}
 #vDetail .kv{font-size:14px;grid-template-columns:140px 1fr;gap:8px 10px}
@@ -2326,7 +2324,6 @@ const TBT = {
   cwDialing: 'Đang gọi ra',
   cwTalking: 'Đang nói chuyện',
   cwEnded: 'Đã kết thúc cuộc gọi',
-  cwSaved: (label, id, hm, live) => `✓ Đã lưu kết quả "${label}" cho ticket ${id} lúc ${hm}.`+(live?' Cuộc gọi vẫn tiếp tục, bấm Kết thúc khi nói chuyện xong.':''),
   cwScriptTitle: '📋 KỊCH BẢN GỢI Ý',
   cwNoteTitle: '✍ GHI CHÚ CUỘC GỌI',
   cwClose: 'Đóng',
@@ -2958,7 +2955,7 @@ function tbPaintCallTB(t){
       <div class="cw-for">${TBT.cwForOne(short(t.id), flowName(t.businessFlowId), list.length-1)}</div>
       <div class="cw-chips">${chips}</div>
       <div class="cw-h cw-h2">${TBT.cwNoteTitle}</div><textarea id="cwNote" rows="2" placeholder="${TBT.cwNotePh}">${tbEsc(CALL.note||'')}</textarea>
-      ${CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}${tbSavedLine()}
+      ${CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}
       <button class="btn pri cw-save" onclick="callSave()">${TBT.cwSave}</button></div>`;
   callBox.innerHTML = bar() + `<div class="cw-body">${scr}${res}</div>`;
   return true;
@@ -2976,12 +2973,6 @@ function tbOnResult(t){
   if(TB.pending && TB.pending.key===key) TB.pending.ids.delete(t.id);
 }
 
-// Hưng 13/11: Lưu khi đang gọi chỉ ghi kết quả, cuộc gọi vẫn tiếp tục. Dòng xác nhận để tổng đài viên biết đã lưu, có thể đổi kết quả và Lưu lại.
-function tbSavedLine(){
-  if(MODE!=='tobe' || !CALL.saved) return '';
-  const s = CALL.saved;
-  return `<div class="cw-ok" role="status">${TBT.cwSaved(s.label, short(s.id), vnt(s.at).slice(-5), CALL.state!=='ENDED')}</div>`;
-}
 /* ---------- Thanh điều khiển, nhãn, switch ---------- */
 function tbPaintBar(){
   const cross = FLOWS.map(f=>`<label><input type="checkbox" ${TB.cross[f.id]===false?'':'checked'} onchange="tbCross('${f.id}',this.checked)"> ${f.name}</label>`).join('');
@@ -3582,7 +3573,8 @@ function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   Object.assign(t,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(t.version||1)+1});
   if(d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.resolution=d.resolution; t.closedAt=nowIso(); }
   tbOnResult(t); /*TOBE-HOOK*/
-  if(live && MODE==='tobe'){ CALL.saved = {label:d.label, id:t.id, at:nowIso()}; CALL.err=null; CALL.note=note; paintCall(); refresh(); return; }
+  if(live && MODE==='tobe'){ CALL.saved = {label:d.label, id:t.id, at:nowIso()}; CALL.err=null; // không hiện dòng xác nhận (Hưng 13/11 14:20 bỏ)
+    CALL.note=note; paintCall(); refresh(); return; }
   callClose();
 }
 // UX 11/11: mỗi giây chỉ đổi số trên đồng hồ, không vẽ lại khung để ô ghi chú giữ con trỏ
@@ -3625,7 +3617,7 @@ function paintCall(){
     <div class="cw-body"><div><div class="cw-h">📋 KỊCH BẢN GỢI Ý</div><div class="cw-script">${(TBM ? (tbScriptText(t.businessFlowId,[t])||'Chưa có kịch bản cho công việc này.') : (SCRIPTS[t.businessFlowId]||'Chưa có kịch bản cho công việc này.')).replace(/\n/g,'<br>')}</div></div>
       <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';${TBM?'CALL.err=null;':''}paintCall()">${d.label}</button>`}).join('')}</div>`}
       <div class="cw-h" style="margin-top:10px">✍ GHI CHÚ CUỘC GỌI</div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách...">${keepNote}</textarea>
-      ${TBM && CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}${tbSavedLine()}
+      ${TBM && CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}
       <button class="btn pri cw-save" onclick="callSave()">Lưu</button></div></div>`;
 }
 
