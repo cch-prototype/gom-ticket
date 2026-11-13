@@ -2233,13 +2233,12 @@ function actions(t){
 const TOBE_ENABLED = true;
 let MODE = 'asis';
 const TB = {snap:null, cross:{}, savedFlows:null, called:new Set(), pending:null, ctkmManual:null, phoneBak:null};
-const tbHash = () => '#tobe';
 const TB_FLOW_ORDER = ['PHARMA-NHAC_CTKM','PHARMA-NHAC_THUOC_MAN_TINH','PHARMA-NHAC_VOUCHER'];
 const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XUẤT', def:'MẶC ĐỊNH', sim:'MÔ PHỎNG'};
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
-  {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
+  {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày hẹn gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
   {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
   {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
   {id:'norm',       kind:'dev', txt:'Chuẩn hoá SĐT bằng cột riêng kèm backfill ticket cũ: bỏ khoảng trắng, dấu chấm, dấu gạch; đầu số +84 hoặc 84 đổi thành 0. Sau chuẩn hoá không phải 10 số bắt đầu bằng 0 thì coi như không có SĐT, hiện row riêng.', src:'US-3 v3 mục 6.2, dev đề xuất. Backend CCH hiện chưa chuẩn hoá khi lưu (RAI 06/11). Khung chuẩn hoá ở FE. SĐT mẫu của mockup BU có 8 số, nên khung đổi sang 10 số khi ở To-Be (xem tbDemoPhone).'},
@@ -2247,7 +2246,7 @@ const TB_PEND = [
   {id:'listapi',    kind:'sim', txt:'Thứ tự gom và phân trang do API danh sách trả về. Backend chưa có, khung xếp ở FE.', src:'Dev 06/11: API danh sách hiện chưa nhận tiêu chí sắp xếp.'},
   {id:'mine',       kind:'dev', txt:'Nhãn "Của tôi" trên ticket mình đang giữ.', src:'US-3 v3, dev đề xuất.'},
   {id:'rowkeep',    kind:'dev', txt:'Sau mỗi thao tác chỉ cập nhật đúng row đó, không xếp lại nhóm cho tới khi bấm Tìm kiếm.', src:'US-3 v3, dev đề xuất.'},
-  {id:'nodate',     kind:'def', txt:'Thứ tự giữa các nhóm: ngày cần gọi sớm nhất của ticket chưa xong, rồi thời gian tạo. Ticket không có ngày cần gọi xếp theo thời gian tạo.', src:'Hưng chốt sáng 06/11, đã ghi vào US-3 v3 (mục 5.1 dòng 8). Phần Kiro chọn thêm, chưa có trong US-3: nhóm có ngày xếp trước nhóm không có ngày.'},
+  {id:'nodate',     kind:'def', txt:'Thứ tự giữa các nhóm: ngày hẹn gọi sớm nhất của ticket chưa xong, rồi thời gian tạo. Ticket không có ngày hẹn gọi xếp theo thời gian tạo.', src:'Hưng chốt sáng 06/11, đã ghi vào US-3 v3 (mục 5.1 dòng 8). Phần Kiro chọn thêm, chưa có trong US-3: nhóm có ngày xếp trước nhóm không có ngày.'},
   {id:'cross_def',  kind:'def', txt:'Gom khác công việc (cross_business_flow) mặc định bật.', src:'US-3 v3, bảng cài đặt grouping_policy.'},
   {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
   {id:'order_id',   kind:'ba',  txt:'Tab Chi tiết đơn hàng của Nhắc mua thuốc mãn tính và Nhắc Voucher gia đình cần mã đơn trên ticket. Chưa biết CDE có gửi không, và với voucher là đơn nào.', src:'Hưng 12/11 sau MoM 12/11. Deep dive 05-review/2026-11-12_Deep-dive_tab-nhung-RSA-theo-cong-viec.md'},
@@ -2782,6 +2781,7 @@ function renderToBe(){
     ${Array.from({length:pages.length},(_,i)=>`<button class="pg ${i+1===state.page?'on':''}" onclick="state.page=${i+1};render()">${i+1}</button>`).join('')}
     <button class="pg" ${state.page>=pages.length?'disabled':''} onclick="state.page=Math.min(${pages.length},state.page+1);render()">›</button>
     <select onchange="state.size=+this.value;state.page=1;render()">${[10,20,50].map(n=>`<option ${n===state.size?'selected':''} value="${n}">${n} / trang</option>`).join('')}</select>`;
+  if(typeof navSync==='function') navSync(); // URL theo màn hình (asis/14-router.js)
 }
 function tbInvalidate(){ TB.snap = null; }
 
@@ -3078,7 +3078,7 @@ function tbSetMode(m){
   }
   MODE = m; document.body.classList.toggle('tb-on', m==='tobe');
   TB.snap = null; state.page = 1; tbSyncUI();
-  history.replaceState(null,'', m==='tobe' ? tbHash() : location.pathname+location.search);
+  // 13/11: URL do asis/14-router.js ghi (navSync sau render)
   applyFilters(); render();
 }
 /* ---------- Nhận phiếu tự động: To-Be cho user biết mình đã bật nhận công việc nào ---------- */
@@ -3343,6 +3343,7 @@ function render(){
     ${Array.from({length:pages},(_,i)=>`<button class="pg ${i+1===state.page?'on':''}" onclick="state.page=${i+1};render()">${i+1}</button>`).join('')}
     <button class="pg" ${state.page>=pages?'disabled':''} onclick="state.page=Math.min(${pages},state.page+1);render()">›</button>
     <select onchange="state.size=+this.value;state.page=1;render()">${[10,20,50].map(n=>`<option ${n===state.size?'selected':''} value="${n}">${n} / trang</option>`).join('')}</select>`;
+  if(typeof navSync==='function') navSync(); // URL theo màn hình (asis/14-router.js)
 }
 
 /* ---------- DETAIL ---------- */
@@ -3377,12 +3378,14 @@ function go(id){
   tbDetail(t); /*TOBE-HOOK*/
   tbAfterNav(); /*TOBE-HOOK*/
   window.scrollTo(0,0);
+  if(typeof navSync==='function') navSync(); // URL theo màn hình (asis/14-router.js)
 }
 let CUR = null; const t0 = () => CUR;
 // 11/11 (decisions D-32): To-Be truyền SĐT đã chuẩn hóa của nhóm cho panel Tài khoản gia đình và Bán hàng; As-Is giữ SĐT gốc của ticket như CI.
 const panelPhone = () => MODE==='tobe' ? (tbNorm(t0().phone)||t0().phone) : t0().phone;
 function tab(btn, name){
   [...rTabs.children].forEach(b=>b.classList.toggle('on', b===btn));
+  if(typeof navSync==='function' && !(typeof TB!=='undefined' && TB.rebuyRender)) setTimeout(navSync); // URL theo tab; Mua lại trong tab nhúng không đổi URL
   if(tbTab(name)) return; /*TOBE-HOOK*/
   if(name==='Tài khoản gia đình'){
     rPanel.innerHTML = `<div class="fam"><div>
@@ -3772,6 +3775,78 @@ APPLIED = readForm();
 meName.textContent=ME.name;
 render();
 tbInit(); /*TOBE-HOOK*/
+/* ---------- URL theo màn hình (Hưng 13/11: "làm theo best practice production") ----------
+   Không phải hành vi đã kiểm trên CI: áp cho cả As-Is và To-Be để Back/Forward, F5 và gửi link chạy đúng.
+   Dạng URL (hash, vì mockup mở bằng file:// và GitHub Pages):
+     #/tickets?page=2&size=20&status=ASSIGNED,IN_PROGRESS&q=0987…         danh sách As-Is, kèm bộ lọc đã áp dụng
+     #tobe/tickets?…                                                        danh sách To-Be ("#tobe" cũ vẫn mở được)
+     #tobe/tickets/000902?tab=chi-tiet-don-hang                              Chi tiết một ticket, kèm tab bên phải
+   Chỉ ghi giá trị khác mặc định để URL ngắn. Bộ lọc lấy theo lần bấm Tìm kiếm gần nhất (APPLIED), không theo ô đang gõ dở.
+   Mỗi thao tác chuyển màn, đổi tab, đổi trang, áp bộ lọc là một mục lịch sử (pushState). Mua lại trong tab nhúng không đổi URL. */
+var NAV = {applying:true}; // var: render() ở 13-init gọi navSync trước khi file này chạy; true tới khi navApply đầu tiên xong
+const navSlug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const NAV_KEYS = [['q','q'],['df','created_from'],['dt','created_to'],['cdf','call_from'],['cdt','call_to'],['st','status'],['ag','agent'],['fl','flow'],['ds','result'],['mine','mine']];
+function navDefaults(){
+  const t=new Date(), a=new Date(t); a.setDate(t.getDate()-29);
+  return {q:'', df:iso(a), dt:iso(t), cdf:'', cdt:'', st:[], ag:[], ds:[], mine:false,
+    fl: MODE==='tobe' ? FLOWS.map(f=>f.id) : ['PHARMA-NHAC_VOUCHER']};
+}
+const navSame = (a,b) => Array.isArray(a) ? (a.length===b.length && a.every(v=>b.includes(v))) : a===b;
+function navHash(){
+  const base = MODE==='tobe' ? '#tobe/tickets' : '#/tickets', p = new URLSearchParams();
+  if(!vDetail.classList.contains('hidden') && CUR){
+    const on = rTabs.querySelector('.on'), first = rTabs.firstElementChild;
+    if(on && on!==first) p.set('tab', navSlug(on.textContent));
+    const s = p.toString(); return base+'/'+navTicketKey(CUR)+(s?'?'+s:'');
+  }
+  const f = APPLIED || readForm(), d = navDefaults();
+  NAV_KEYS.forEach(([k,n])=>{ const v=f[k]; if(v===undefined || navSame(v,d[k])) return; p.set(n, Array.isArray(v) ? v.join(',') : (v===true?'1':v)); });
+  if(state.page>1) p.set('page', state.page);
+  if(state.size!==10) p.set('size', state.size);
+  const s = p.toString(); return base+(s?'?'+s:'');
+}
+// Mã trên URL là 6 ký tự cuối như mã đang hiển thị; trùng nhau thì dùng mã đầy đủ
+const navTicketKey = t => TICKETS.filter(x=>short(x.id)===short(t.id)).length>1 ? t.id : short(t.id);
+const navFind = k => TICKETS.find(x=>x.id===k) || (m=>m.length===1?m[0]:null)(TICKETS.filter(x=>short(x.id)===k));
+function navSync(){
+  if(!NAV || NAV.applying) return;
+  const h = navHash(); if(h===location.hash) return;
+  history.pushState(null,'',h);
+}
+function navApply(hash){
+  NAV.applying = true;
+  try{
+    const m = /^#(tobe)?\/?(tickets)?(?:\/([^?]+))?(?:\?(.*))?$/.exec(hash||'') || [];
+    const want = m[1] ? 'tobe' : 'asis', p = new URLSearchParams(m[4]||'');
+    if(want!==MODE && typeof tbSetMode==='function') tbSetMode(want);
+    if(m[3]){ // Chi tiết
+      const t = navFind(decodeURIComponent(m[3]));
+      if(t){
+        go(t.id);
+        const tb = p.get('tab') && [...rTabs.children].find(b=>navSlug(b.textContent)===p.get('tab'));
+        if(tb) tab(tb, tb.textContent);
+      } else { toast('error','Không tìm thấy ticket '+m[3]+(MODE==='tobe'?'':' ở As-Is')); if(!vDetail.classList.contains('hidden')) go(null); }
+    } else { // Danh sách: dựng lại bộ lọc từ URL, giá trị thiếu lấy mặc định
+      const d = navDefaults(), arr = n => p.has(n) ? p.get(n).split(',').filter(Boolean) : null;
+      fQ.value = p.get('q') ?? d.q;
+      fFrom.value = p.get('created_from') ?? d.df; fTo.value = p.get('created_to') ?? d.dt;
+      const cf=document.getElementById('fCdFrom'), ct=document.getElementById('fCdTo');
+      if(cf) cf.value = p.get('call_from') ?? ''; if(ct) ct.value = p.get('call_to') ?? '';
+      [['fSt','status','st'],['fAgent','agent','ag'],['fFlow','flow','fl'],['fDisp','result','ds']].forEach(([id,n,k])=>{
+        const v = arr(n) ?? d[k]; MS[id].val = v.filter(x=>MS[id].opts.some(o=>o.v===x)); MS[id].repaint(); });
+      document.getElementById('fMine').classList.toggle('on', p.get('mine')==='1');
+      syncFilters();
+      if(typeof tbInvalidate==='function') tbInvalidate();
+      APPLIED = readForm();
+      state.size = [10,20,50].includes(+p.get('size')) ? +p.get('size') : 10;
+      state.page = Math.max(1, parseInt(p.get('page'))||1);
+      if(!vDetail.classList.contains('hidden')) go(null); else render();
+    }
+  } finally { NAV.applying = false; }
+  history.replaceState(null,'',navHash()); // URL sai hoặc thiếu thì chuẩn hoá theo màn đang hiện
+}
+window.addEventListener('popstate', ()=>navApply(location.hash));
+navApply(location.hash);
 </script>
 </body>
 </html>
