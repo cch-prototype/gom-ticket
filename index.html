@@ -3565,8 +3565,8 @@ function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   const d=DISP_CATALOG.find(x=>x.code===CALL.pick);
   if(!d){ if(MODE==='tobe') tbWErr('Vui lòng chọn kết quả'); else toast('error','Vui lòng chọn kết quả'); return; } // [chưa kiểm] câu báo lỗi của widget
   const note=document.getElementById('cwNote').value.trim();
-  // UX 11/11: giữ hành vi CI (Lưu kết thúc cuộc gọi) nhưng hỏi trước để agent không cúp máy ngang khách
-  if(CALL.state==='DIALING'||CALL.state==='TALKING'){ if(MODE==='tobe' && !confirm('Lưu kết quả sẽ kết thúc cuộc gọi với khách. Tiếp tục?')) return true; callHangup(); }
+  // Như CI: Lưu kết thúc cuộc gọi luôn, không hỏi lại (Hưng 13/11 bỏ hộp hỏi "Tiếp tục?" thêm ngày 11/11 vì CI không có)
+  if(CALL.state==='DIALING'||CALL.state==='TALKING') callHangup();
   const a=CALL.attempt; Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
   Object.assign(t,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(t.version||1)+1});
   if(d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.resolution=d.resolution; t.closedAt=nowIso(); }
