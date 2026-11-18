@@ -2249,8 +2249,8 @@ const TB_PEND = [
   {id:'nodate',     kind:'def', txt:'Thứ tự giữa các nhóm: ngày hẹn gọi sớm nhất của ticket chưa xong, rồi thời gian tạo. Ticket không có ngày hẹn gọi xếp theo thời gian tạo.', src:'Hưng chốt sáng 06/11, đã ghi vào US-3 v3 (mục 5.1 dòng 8). Phần Kiro chọn thêm, chưa có trong US-3: nhóm có ngày xếp trước nhóm không có ngày.'},
   {id:'cross_def',  kind:'def', txt:'Gom khác công việc (cross_business_flow) mặc định bật.', src:'US-3 v3, bảng cài đặt grouping_policy.'},
   {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
-  {id:'order_id',   kind:'ba',  txt:'Tab Chi tiết đơn hàng của Nhắc mua thuốc mãn tính và Nhắc Voucher gia đình cần mã đơn trên ticket. Chưa biết CDE có gửi không, và với voucher là đơn nào.', src:'Hưng 12/11 sau MoM 12/11. Deep dive 05-review/2026-11-12_Deep-dive_tab-nhung-RSA-theo-cong-viec.md'},
-  {id:'order_embed', kind:'sim', txt:'Tab Chi tiết đơn hàng dựng tĩnh. Trang RSA thật chưa nhận layout=content-only (còn sidebar, header) và nút Hủy đơn vẫn bấm được khi nhúng.', src:'Kiểm trên CI RSA 12/11 (05-review/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md)'},
+  {id:'order_id',   kind:'ba',  txt:'Tab Chi tiết đơn hàng của Nhắc mua thuốc mãn tính và Nhắc Voucher gia đình cần mã đơn trên ticket. Chưa biết CDE có gửi không, và với voucher là đơn nào.', src:'Hưng 12/11 sau MoM 12/11. Deep dive 05-review/notes/2026-11-12_Deep-dive_tab-nhung-RSA-theo-cong-viec.md'},
+  {id:'order_embed', kind:'sim', txt:'Tab Chi tiết đơn hàng dựng tĩnh. Trang RSA thật chưa nhận layout=content-only (còn sidebar, header) và nút Hủy đơn vẫn bấm được khi nhúng.', src:'Kiểm trên CI RSA 12/11 (05-review/agent-runs/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md)'},
   {id:'remain',     kind:'sim', txt:'Số N trong "KH còn N ticket khác" đếm trên toàn bộ data demo, chưa áp quyền xem theo vai (Sale chỉ thấy ticket của mình cộng ticket Mới).', src:'US-3 v3, mục 5.1 dòng 7. Khung As-Is cũng chưa có phạm vi theo vai.'},
   {id:'grp_new',    kind:'chot', txt:'Ticket Mới không vào nhóm đã có người giữ. Ticket Mới cùng khách gom thành nhóm Mới riêng, chỉ có nút Nhận. Nhận xong ticket sang nhóm đang xử lý của khách (danh sách sắp lại ở lần Tìm kiếm sau). Bỏ quy định Gọi trước, Nhận sau.', src:'Hưng chốt 12/11 chiều (chat). Chưa ghi decisions.md và US-3.'},
   {id:'grp_act',    kind:'chot', txt:'Nhận, Phân công làm theo nhóm ở cột Thao tác của nhóm. Nút Xử lý chỉ ở màn Chi tiết. Ô Khách hàng, SĐT, Thao tác của nhóm canh chính giữa.', src:'Góp ý 11/11: Nhận, Phân công theo nhóm là hướng đã thống nhất, mockup cập nhật theo. decisions.md D-11 và US-3 còn ghi theo từng ticket, cần sửa.'},
@@ -3200,7 +3200,7 @@ function tbInit(){
 /* ---------- Tab nhúng "Chi tiết đơn hàng" của RSA theo công việc (Hưng 12/11, sau MoM 12/11) ----------
    Nhắc Voucher gia đình và Nhắc mua thuốc mãn tính: thêm tab Chi tiết đơn hàng (iframe RSA `/history-orders/{orderId}`),
    đứng đầu và mở sẵn. Nhắc CTKM giữ như CI, chờ BU. Tab cũ (Tài khoản gia đình, Bán hàng) giữ nguyên.
-   Nội dung là bản dựng tĩnh theo trang RSA trên CI ngày 12/11 (05-review/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md).
+   Nội dung là bản dựng tĩnh theo trang RSA trên CI ngày 12/11 (05-review/agent-runs/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md).
    Mọi số liệu là dữ liệu mẫu. Bấm dòng khác ở bảng nhóm thì tab đổi theo ticket đó. */
 const TB_ORDER_FLOWS = ['PHARMA-NHAC_THUOC_MAN_TINH', 'PHARMA-NHAC_VOUCHER'];
 const tbHasOrderTab = t => MODE==='tobe' && TB_ORDER_FLOWS.includes(t.businessFlowId);
