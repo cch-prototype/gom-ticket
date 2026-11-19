@@ -2238,7 +2238,7 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
-  {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày hẹn gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
+  {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
   {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
   {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
   {id:'norm',       kind:'dev', txt:'Chuẩn hoá SĐT bằng cột riêng kèm backfill ticket cũ: bỏ khoảng trắng, dấu chấm, dấu gạch; đầu số +84 hoặc 84 đổi thành 0. Sau chuẩn hoá không phải 10 số bắt đầu bằng 0 thì coi như không có SĐT, hiện row riêng.', src:'US-3 v3 mục 6.2, dev đề xuất. Backend CCH hiện chưa chuẩn hoá khi lưu (RAI 06/11). Khung chuẩn hoá ở FE. SĐT mẫu của mockup BU có 8 số, nên khung đổi sang 10 số khi ở To-Be (xem tbDemoPhone).'},
@@ -2246,7 +2246,7 @@ const TB_PEND = [
   {id:'listapi',    kind:'sim', txt:'Thứ tự gom và phân trang do API danh sách trả về. Backend chưa có, khung xếp ở FE.', src:'Dev 06/11: API danh sách hiện chưa nhận tiêu chí sắp xếp.'},
   {id:'mine',       kind:'dev', txt:'Nhãn "Của tôi" trên ticket mình đang giữ.', src:'US-3 v3, dev đề xuất.'},
   {id:'rowkeep',    kind:'dev', txt:'Sau mỗi thao tác chỉ cập nhật đúng row đó, không xếp lại nhóm cho tới khi bấm Tìm kiếm.', src:'US-3 v3, dev đề xuất.'},
-  {id:'nodate',     kind:'def', txt:'Thứ tự giữa các nhóm: ngày hẹn gọi sớm nhất của ticket chưa xong, rồi thời gian tạo. Ticket không có ngày hẹn gọi xếp theo thời gian tạo.', src:'Hưng chốt sáng 06/11, đã ghi vào US-3 v3 (mục 5.1 dòng 8). Phần Kiro chọn thêm, chưa có trong US-3: nhóm có ngày xếp trước nhóm không có ngày.'},
+  {id:'nodate',     kind:'def', txt:'Thứ tự giữa các nhóm: ngày cần gọi sớm nhất của ticket chưa xong, rồi thời gian tạo. Ticket không có ngày cần gọi xếp theo thời gian tạo.', src:'Hưng chốt sáng 06/11, đã ghi vào US-3 v3 (mục 5.1 dòng 8). Phần Kiro chọn thêm, chưa có trong US-3: nhóm có ngày xếp trước nhóm không có ngày.'},
   {id:'cross_def',  kind:'def', txt:'Gom khác công việc (cross_business_flow) mặc định bật.', src:'US-3 v3, bảng cài đặt grouping_policy.'},
   {id:'cross_off',  kind:'ba',  txt:'Công việc tắt gom khác công việc: ticket của công việc đó thành nhóm riêng, xếp ngay sau nhóm chính cùng SĐT.', src:'BA suy ra, chưa ai xác nhận. US-3 có ghi chú trong trang.'},
   {id:'order_id',   kind:'ba',  txt:'Tab Chi tiết đơn hàng của Nhắc mua thuốc mãn tính và Nhắc Voucher gia đình cần mã đơn trên ticket. Chưa biết CDE có gửi không, và với voucher là đơn nào.', src:'Hưng 12/11 sau MoM 12/11. Deep dive 05-review/notes/2026-11-12_Deep-dive_tab-nhung-RSA-theo-cong-viec.md'},
@@ -2287,7 +2287,7 @@ const TBT = {
   colActions: 'Thao tác',
   newTag: 'Vừa giao',
   noData: 'Không có dữ liệu',
-  cdLabel: 'Ngày hẹn gọi',
+  cdLabel: 'Ngày cần gọi', // Hưng 19/11 sau MoM 18/11: đổi từ Ngày hẹn gọi
   cdErrOrder: 'Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc',
 
   // ---- Nút của nhóm: Nhận, Phân công ----
@@ -2543,6 +2543,11 @@ function tbDemoPhone(p){ return /^\d{8}$/.test(String(p)) ? '0900'+String(p).sli
 // khi được Nhận hoặc Phân công thì khoá đổi, ticket tự sang nhóm đang xử lý của khách.
 function tbKey(t){ const n=tbNorm(t.phone); if(!n) return 'solo|'+t.id; return t.tenant+'|'+n+'|'+(TB.cross[t.businessFlowId]===false ? t.businessFlowId : '*')+(t.status==='OPEN'?'|new':''); }
 const tbT = iso => iso ? new Date(iso).getTime() : Infinity;
+// MoM 18/11: ticket đã gom hiển thị 1 ngày cần gọi = ngày gần nhất của các ticket chưa xong; nhóm đã xong hết thì lấy ngày gần nhất của cả nhóm.
+// Ngày hết hạn vẫn theo từng ticket con.
+function tbGroupDate(ts){ const pick = a => a.map(t=>tbT(t.callScheduledDate)).filter(isFinite);
+  const d = pick(ts.filter(t=>t.status!=='CLOSED')), all = d.length ? d : pick(ts); return all.length ? Math.min(...all) : null; }
+const tbGroupDateTxt = ts => { const d = tbGroupDate(ts); return d===null ? '—' : vn(new Date(d).toISOString()); };
 // Trong nhóm: CTKM, thuốc mãn tính, voucher; cùng công việc thì ngày cần gọi, rồi ngày tạo
 function tbInGroup(a,b){
   const fa=TB_FLOW_ORDER.indexOf(a.businessFlowId), fb=TB_FLOW_ORDER.indexOf(b.businessFlowId);
@@ -2735,7 +2740,7 @@ function tbCols(){
   if(TB.cols) return TB.cols;
   const act = COLUMNS[COLUMNS.length-1];
   // Góp ý 11/11: một cột Thao tác cấp nhóm (Gọi, Nhận, Phân công), bỏ Thao tác từng ticket và nút Xử lý khỏi Danh sách
-  // 19/11: thêm cột Ngày hẹn gọi ngay trước Thời gian hết hạn, theo US-02 C26-2007 REQ-002 (SRC-011). CI v8.6.31 chưa có cột này nên As-Is giữ nguyên.
+  // 19/11: thêm cột Ngày cần gọi ngay trước Thời gian hết hạn, theo US-02 C26-2007 REQ-002 (SRC-011). CI v8.6.31 chưa có cột này nên As-Is giữ nguyên.
   const base = COLUMNS.slice(0,-1), at = base.findIndex(c=>c.h==='Thời gian hết hạn');
   base.splice(at, 0, {h:TBT.cdLabel, w:130, r:t=>vn(t.callScheduledDate)});
   return TB.cols = [...base, {h:TBT.colActions, w:280, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
@@ -2751,6 +2756,10 @@ function tbRow(g,t,i,gi){
       const grouped = !g.key.startsWith('solo|') && g.tickets.length>=2;
       if(grouped) return i>0 ? '' : `<td ${at} rowspan="${gN}">${tbGroupActs(g)}</td>`;
       return `<td ${at}${rs(n)}>${tbGroupActs({key:g.key, tickets:[t]})}</td>`;
+    }
+    if(c.h===TBT.cdLabel && !g.key.startsWith('solo|') && g.tickets.length>=2){ // MoM 18/11: nhóm hiển thị 1 ngày cần gọi (ngày gần nhất), ô gộp theo cả nhóm
+      if(i>0) return '';
+      return `<td ${at.replace('class="','class="tb-gc ')} rowspan="${gN}">${tbGroupDateTxt(g.tickets)}</td>`;
     }
     if(ci===1 || ci===2){ // Khách hàng, SĐT: ô gộp theo cả nhóm (tổng số dòng nội dung), chỉ vẽ ở dòng đầu của nhóm
       if(i>0) return '';
@@ -2799,14 +2808,14 @@ function tbPaintGroup(t){
   const col = !!TB.gCollapsed && !(MODE==='tobe' && CALL.state!=='IDLE' && TB.pending && TB.pending.key===key); // đang gọi chung thì luôn mở bảng để chọn kết quả
   g.classList.remove('hidden');
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?TBT.chipViewing:''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
-  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?TBT.groupOpenTip:TBT.groupCloseTip}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">${TBT.groupTitle(grp.length)} · SĐT ${maskPhone(tbNorm(t.phone))}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
-  const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ngày hẹn gọi','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
+  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?TBT.groupOpenTip:TBT.groupCloseTip}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">${TBT.groupTitle(grp.length)} · SĐT ${maskPhone(tbNorm(t.phone))} · ${TBT.cdLabel} ${tbGroupDateTxt(grp)}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
+  const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
     + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?TBT.rowViewingTip:TBT.rowPickTip}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
       <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}${copyIc(x.externalRef,'mã tham chiếu')}</td>
       <td class="nd">${tbContent(x)}</td>
       <td><span class="tag st-${x.status}">${STATUS[x.status]}</span></td>
-      <td>${resultOf(x).label}</td><td>${vn(x.callScheduledDate)}</td><td>${vnt(x.expiredTime)}</td>
+      <td>${resultOf(x).label}</td><td>${vnt(x.expiredTime)}</td>
       <td class="act">${(TB.inGroupTable=true, actions(x))}</td></tr>`).join('') + `</tbody></table>`;
   TB.inGroupTable = false;
   g.innerHTML = head + table;
@@ -2819,7 +2828,7 @@ function tbToggleGroup(){
 function tbDetail(t){
   const g = document.getElementById('tbGroup'), b = document.getElementById('tbBanner');
   if(MODE!=='tobe'){ g.classList.add('hidden'); b.classList.add('hidden'); return; }
-  document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; if(dt.textContent==='Thời gian hẹn gọi') dt.textContent='Ngày hẹn gọi'; }); // thống nhất label với US-3
+  document.querySelectorAll('#dInfo dt').forEach(dt=>{ if(dt.textContent==='Cập nhật lần cuối') dt.textContent='Cập nhật gần nhất'; if(dt.textContent==='Thời gian hẹn gọi') dt.textContent=TBT.cdLabel; }); // MoM 18/11: Ngày cần gọi
   const key = tbKey(t), grp = TICKETS.filter(x=>tbKey(x)===key && (tbCanSee(x) || x.id===t.id)).sort(tbInGroup);
   TB.curId = t.id;
   tbPaintGroup(t);
@@ -2828,7 +2837,7 @@ function tbDetail(t){
     da.innerHTML = `<span class="tb-callhd">${tbGroupActs({key, tickets:grp, hd:true})}</span>`;
   }
   // 11/11: nhóm từ 2 ticket thì bỏ thông tin đã có trong bảng "Ticket của khách hàng"
-  const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu','Ngày hẹn gọi','Thời gian hết hạn']; // 11/11: giữ Kết quả xử lý, Ghi chú như CI
+  const dup = grp.length>1, drop = ['Công việc','Mã tham chiếu',TBT.cdLabel,'Thời gian hết hạn']; // ngày cần gọi của nhóm hiện trên tiêu đề bảng nhóm (MoM 18/11) // 11/11: giữ Kết quả xử lý, Ghi chú như CI
   document.querySelectorAll('#dInfo dt').forEach(dt=>{ const hide = dup && drop.includes(dt.textContent); dt.style.display = hide?'none':''; if(dt.nextElementSibling) dt.nextElementSibling.style.display = hide?'none':''; });
   document.getElementById('dItems').style.display = dup ? 'none' : '';
   tbInfoAll(t, grp, dup); /*TOBE-HOOK*/
@@ -2984,7 +2993,7 @@ function tbPaintBar(){
   document.getElementById('tbBar').innerHTML =
    `<div class="tb-bar-row"><b class="tb-title">To-Be: gom ticket</b>
       <span>Gom theo SĐT ${tbBadge('gkey')}</span>
-      <span>Nhóm xếp theo ngày hẹn gọi sớm nhất, rồi ngày tạo ${tbBadge('nodate')}</span>
+      <span>Nhóm xếp theo ngày cần gọi sớm nhất, rồi ngày tạo ${tbBadge('nodate')}</span>
       <span>Phân trang kéo dài đủ nhóm ${tbBadge('page')}</span>
       <a onclick="document.getElementById('tbPend').scrollIntoView({behavior:'smooth'})">Điểm chưa chốt (${TB_PEND.length})</a></div>
     <div class="tb-bar-row"><span>${TBT.crossLabel} ${tbBadge('cross_def')} ${tbBadge('cross_off')}: ${cross}</span>
