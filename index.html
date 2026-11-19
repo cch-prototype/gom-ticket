@@ -2735,7 +2735,10 @@ function tbCols(){
   if(TB.cols) return TB.cols;
   const act = COLUMNS[COLUMNS.length-1];
   // Góp ý 11/11: một cột Thao tác cấp nhóm (Gọi, Nhận, Phân công), bỏ Thao tác từng ticket và nút Xử lý khỏi Danh sách
-  return TB.cols = [...COLUMNS.slice(0,-1), {h:TBT.colActions, w:280, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
+  // 19/11: thêm cột Ngày hẹn gọi ngay trước Thời gian hết hạn, theo US-02 C26-2007 REQ-002 (SRC-011). CI v8.6.31 chưa có cột này nên As-Is giữ nguyên.
+  const base = COLUMNS.slice(0,-1), at = base.findIndex(c=>c.h==='Thời gian hết hạn');
+  base.splice(at, 0, {h:TBT.cdLabel, w:130, r:t=>vn(t.callScheduledDate)});
+  return TB.cols = [...base, {h:TBT.colActions, w:280, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
 }
 const tbFixCls = (c,cs) => c.fix==='r' ? ' fr'+(cs.find(x=>x.fix==='r')===c?' fr-first':'') : fixCls(c);
 function tbRow(g,t,i,gi){
