@@ -3202,12 +3202,14 @@ function tbInit(){
 }
 /* ---------- Tab nhúng "Chi tiết đơn hàng" của RSA theo công việc (Hưng 12/11, sau MoM 12/11) ----------
    Nhắc Voucher gia đình và Nhắc mua thuốc mãn tính: thêm tab Chi tiết đơn hàng (iframe RSA `/history-orders/{orderId}`),
-   đứng đầu và mở sẵn. Nhắc CTKM giữ như CI, chờ BU. Tab cũ (Tài khoản gia đình, Bán hàng) giữ nguyên.
+   đứng đầu và mở sẵn. Nhắc CTKM giữ như CI, chờ BU. Tab Bán hàng giữ nguyên; tab Tài khoản gia đình chỉ có ở Nhắc Voucher gia đình (Hưng 19/11).
    Nội dung là bản dựng tĩnh theo trang RSA trên CI ngày 12/11 (05-review/agent-runs/2026-11-12_QC-CI_RSA-lich-su-va-chi-tiet-don-hang.md).
    Mọi số liệu là dữ liệu mẫu. Bấm dòng khác ở bảng nhóm thì tab đổi theo ticket đó. */
 const TB_ORDER_FLOWS = ['PHARMA-NHAC_THUOC_MAN_TINH', 'PHARMA-NHAC_VOUCHER'];
 const tbHasOrderTab = t => MODE==='tobe' && TB_ORDER_FLOWS.includes(t.businessFlowId);
-function tbTabs(flow, t){ return tbHasOrderTab(t) ? [TBT.orderTab, ...flow.tabs] : [...flow.tabs]; }
+// Hưng 19/11 (sau MoM 18/11): To-Be chỉ Nhắc Voucher gia đình có tab Tài khoản gia đình. As-Is giữ như CI.
+const tbFlowTabs = (flow, t) => MODE==='tobe' && t.businessFlowId!=='PHARMA-NHAC_VOUCHER' ? flow.tabs.filter(n => n!=='Tài khoản gia đình') : [...flow.tabs];
+function tbTabs(flow, t){ return tbHasOrderTab(t) ? [TBT.orderTab, ...tbFlowTabs(flow, t)] : tbFlowTabs(flow, t); }
 // Số giả nhưng cố định theo mã ticket, để chụp màn hình và test không đổi giữa các lần mở
 function tbSeed(s){ let h = 7; for(const c of String(s)) h = (h*31 + c.charCodeAt(0)) >>> 0; return h; }
 const tbMoney = n => n.toLocaleString('en-US') + ' ₫';
