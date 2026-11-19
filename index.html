@@ -2468,21 +2468,18 @@ const TOBE_EXTRA = [
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'18/11/2026'}]},
     callScheduledDate:null, createdAt:'2026-11-03T10:00:00Z', updatedAt:'2026-11-03T10:00:00Z'}),
   // ===== Bổ sung 09/11 (Hưng): đủ case để bấm thử. Ngày dựng quanh mốc 09/11/2026, tự dời theo ngày mở trang (tbShiftDates).
-  // Hai ticket cùng công việc khác ngày cần gọi; CTKM ngày muộn nhưng voucher ngày sớm (CTKM vẫn nằm trên, cả nhóm được đẩy lên theo ngày voucher)
+  // MoM 18/11: CDE gom 1 ticket - 1 khách hàng - 1 kịch bản, nên mỗi khách chỉ có 1 ticket cho mỗi công việc; SKU/voucher nằm chung trong ticket.
+  // CTKM ngày muộn nhưng voucher ngày sớm (CTKM vẫn nằm trên, cả nhóm được đẩy lên theo ngày voucher). Thuốc mãn tính 2 SKU khác ngày mua trong 1 ticket.
   mk(911,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_CTKM', status:'ASSIGNED',
     businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'19/10/2026'},{name:'EFFERALGAN 500MG HỘP 16 VIÊN', date:'19/10/2026'}]},
     callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-06T02:00:00Z', updatedAt:'2026-11-06T02:00:00Z'}),
-  mk(912,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    businessData:{items:[{name:'Losartan 50mg x 30 viên', date:'19/10/2026'}]}, callScheduledDate:'2026-11-14T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-02T02:00:00Z', updatedAt:'2026-11-02T02:00:00Z'}),
   mk(913,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    businessData:{items:[{name:'Glucophage 850mg x 60 viên', date:'12/10/2026'}]}, callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-15T16:59:59Z', createdAt:'2026-11-05T02:00:00Z', updatedAt:'2026-11-05T02:00:00Z'}),
+    businessData:{items:[{name:'Glucophage 850mg x 60 viên', date:'12/10/2026'},{name:'Losartan 50mg x 30 viên', date:'19/10/2026'}]}, callScheduledDate:'2026-11-07T17:00:00Z', expiredTime:'2026-11-15T16:59:59Z', createdAt:'2026-11-05T02:00:00Z', updatedAt:'2026-11-05T02:00:00Z'}),
   mk(914,{_tobe:true, customerName:'Đặng Minh Tâm', phone:'0905111222', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 100,000Đ khi tiêm Zona', date:'30/11/2026'}]}, callScheduledDate:'2026-11-06T17:00:00Z', expiredTime:'2026-11-30T16:59:59Z', createdAt:'2026-11-01T02:00:00Z', updatedAt:'2026-11-01T02:00:00Z'}),
-  // Lọc theo một công việc: thấy 2 dòng nhưng nút Gọi ghi "Cho 3 ticket", ô Khách hàng ghi "KH còn 1 ticket khác"
+  // Lọc theo một công việc: thấy 1 dòng nhưng nút Gọi ghi "Cho 2 ticket", ô Khách hàng ghi "KH còn 1 ticket khác". Voucher có 2 voucher trong 1 ticket.
   mk(921,{_tobe:true, customerName:'Lý Thu Hằng', phone:'0938222333', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'25/11/2026'}]}, callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-25T16:59:59Z', createdAt:'2026-11-04T03:00:00Z', updatedAt:'2026-11-04T03:00:00Z'}),
-  mk(922,{_tobe:true, customerName:'Lý Thu Hằng', phone:'0938222333', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
-    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'28/11/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-28T16:59:59Z', createdAt:'2026-11-06T03:00:00Z', updatedAt:'2026-11-06T03:00:00Z'}),
+    businessData:{items:[{name:'TK Gia Đình - Giảm ngay 50,000Đ khi tiêm Cúm Mùa', date:'25/11/2026'},{name:'TK Gia Đình - Giảm ngay 200,000Đ khi tiêm HPV', date:'28/11/2026'}]}, callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-25T16:59:59Z', createdAt:'2026-11-04T03:00:00Z', updatedAt:'2026-11-04T03:00:00Z'}),
   mk(923,{_tobe:true, customerName:'Lý Thu Hằng', phone:'0938222333', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
     businessData:{items:[{name:'Amlodipin 5mg x 30 viên', date:'15/10/2026'}]}, callScheduledDate:'2026-11-10T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-05T03:00:00Z', updatedAt:'2026-11-05T03:00:00Z'}),
   // Cùng SĐT với nhóm đang xử lý: ticket Mới đứng nhóm riêng có nút Nhận; Nhận xong sang nhóm đang xử lý (Hưng 12/11 chiều)
@@ -2506,14 +2503,12 @@ const TOBE_EXTRA = [
   mk(952,{_tobe:true, customerName:'Mai Thị Thảo', phone:'0922666777', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'CLOSED',
     dispositionLabel:'Không có nhu cầu', dispositionCode:'Không có nhu cầu', resolution:'NO_SALE', closedAt:'2026-11-06T04:05:00Z', attemptCount:1,
     businessData:{items:[{name:'Losartan 50mg x 30 viên', date:'09/10/2026'}]}, callScheduledDate:'2026-11-05T17:00:00Z', expiredTime:'2026-11-13T16:59:59Z', createdAt:'2026-10-31T06:00:00Z', updatedAt:'2026-11-06T04:05:00Z'}),
-  // Nhóm 4 ticket nằm vắt qua ranh giới trang (10 ticket mỗi trang): trang kéo dài cho đủ nhóm, không cắt
+  // Nhóm 3 ticket nằm vắt qua ranh giới trang (10 ticket mỗi trang): trang kéo dài cho đủ nhóm, không cắt
   mk(961,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_CTKM', status:'OPEN', ...NOASG,
     businessData:{campID:'CAMP-CTKM-202611', items:[{name:'PANADOL EXTRA HỘP 120 VIÊN', date:'14/10/2026'}]},
     callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-07T07:00:00Z', updatedAt:'2026-11-07T07:00:00Z'}),
   mk(962,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    businessData:{items:[{name:'Bisoprolol 5mg x 30 viên', date:'14/10/2026'},{name:'Aspirin 81mg x 30 viên', date:'14/10/2026'}]}, callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-03T07:00:00Z', updatedAt:'2026-11-03T07:00:00Z'}),
-  mk(963,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_THUOC_MAN_TINH', status:'ASSIGNED',
-    businessData:{items:[{name:'Glucophage 850mg x 60 viên', date:'18/10/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-22T16:59:59Z', createdAt:'2026-11-04T07:00:00Z', updatedAt:'2026-11-04T07:00:00Z'}),
+    businessData:{items:[{name:'Bisoprolol 5mg x 30 viên', date:'14/10/2026'},{name:'Aspirin 81mg x 30 viên', date:'14/10/2026'},{name:'Glucophage 850mg x 60 viên', date:'18/10/2026'}]}, callScheduledDate:'2026-11-09T17:00:00Z', expiredTime:'2026-11-18T16:59:59Z', createdAt:'2026-11-03T07:00:00Z', updatedAt:'2026-11-03T07:00:00Z'}),
   mk(964,{_tobe:true, customerName:'Bùi Quang Huy', phone:'0977333444', businessFlowId:'PHARMA-NHAC_VOUCHER', status:'ASSIGNED',
     businessData:{items:[{name:'TK Gia Đình - Giảm ngay 100,000Đ khi tiêm Zona', date:'29/11/2026'}]}, callScheduledDate:'2026-11-11T17:00:00Z', expiredTime:'2026-11-29T16:59:59Z', createdAt:'2026-11-02T07:00:00Z', updatedAt:'2026-11-02T07:00:00Z'})
 ];
@@ -2808,7 +2803,7 @@ function tbPaintGroup(t){
   const col = !!TB.gCollapsed && !(MODE==='tobe' && CALL.state!=='IDLE' && TB.pending && TB.pending.key===key); // đang gọi chung thì luôn mở bảng để chọn kết quả
   g.classList.remove('hidden');
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?TBT.chipViewing:''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
-  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?TBT.groupOpenTip:TBT.groupCloseTip}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">${TBT.groupTitle(grp.length)} · SĐT ${maskPhone(tbNorm(t.phone))} · ${TBT.cdLabel} ${tbGroupDateTxt(grp)}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
+  const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?TBT.groupOpenTip:TBT.groupCloseTip}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">${TBT.groupTitle(grp.length)} · SĐT ${maskPhone(tbNorm(t.phone))}${tbGroupDate(grp)===null ? '' : ` · ${TBT.cdLabel} ${tbGroupDateTxt(grp)}`}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
   const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
     + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?TBT.rowViewingTip:TBT.rowPickTip}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
