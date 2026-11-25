@@ -449,6 +449,20 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-on #dActs > .btn + .btn{margin-left:8px} /* 12/11: Gọi thành nút đơn, cách nút bên cạnh */
 .tb-od-empty{padding:60px 20px;text-align:center;color:var(--muted)}
 @media (max-width:1200px){.tb-od-grid{grid-template-columns:1fr}}
+/* MoM 19/11: lọc nhanh theo Công việc, bộ lọc giờ phút */
+.tb-quick{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.tb-qlab{font-size:12.5px;color:var(--muted)}
+.tb-qchip{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:16px;padding:4px 12px;font-size:12.5px;cursor:pointer}
+.tb-qchip.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.tb-on .filters .tb-ftime{grid-column:span 2}
+.tb-ftime .dr{display:flex;align-items:center;gap:6px}
+.tb-ftime input[type=datetime-local]{flex:1;min-width:0}
+.st-NO_ANSWER_1{background:#fff7e6;color:#d46b08;border:1px solid #d46b08}
+.st-NO_ANSWER{background:#f5f5f5;color:#595959;border:1px solid #8c8c8c}
+.st-CONNECTED{background:#f6ffed;color:#389e0d;border:1px solid #52c41a}
+.tb-kq,.tb-note{width:100%;height:30px;border:1px solid var(--line);border-radius:6px;padding:0 6px;font:inherit;font-size:12.5px;background:#fff}
+.tb-kq.empty{color:var(--muted)}
+.tb-lock{color:var(--muted)}
 /*TOBE:END css*/
 /* Trang Chi tiết phóng theo chữ chính 14px như Danh sách (Hưng 09/11). Tag trạng thái, công việc giữ 12px như Danh sách. */
 #vDetail{font-size:14px}
@@ -2186,6 +2200,7 @@ const flowName = id => (FLOWS.find(f=>f.id===id)||{}).name||id;
    Ghi chú = resolutionNote → closeNote → dispositionNote của lượt gọi. (Vì vậy ghi chú popup Xử lý bị che bởi ghi chú widget.) */
 function resultOf(t){
   const at=(typeof ATTEMPTS!=='undefined' && ATTEMPTS[t.id])||[], n=at[at.length-1]||{}, r=at[at.length-2]||{};
+  if(MODE==='tobe') return tbResultOf(t,n,r); /*TOBE-HOOK: MoM 19/11 chỉ hiện kết quả thuộc bộ mới*/
   return {label: t.dispositionLabel||n.dispositionLabel||r.dispositionLabel||'—', note: t.resolutionNote||t.closeNote||n.dispositionNote||r.dispositionNote||'—'};
 }
 const flowOf = t => FLOWS.find(f=>f.id===t.businessFlowId)||{cls:'flow'};
@@ -2210,14 +2225,14 @@ function actions(t){
     const busy = BUSY.has(t.id);
     out.push(`<button class="btn pri btn-claim" data-act="claim" data-id="${t.id}" ${locked||busy?'disabled':''} ${locked?'title="Đang bật nhận phiếu tự động cho loại công việc này"':''}>${busy?'…':'Nhận'}</button>`);
   }
-  const canCall = s!=='OPEN' && s!=='CLOSED' && (!SIM.isManager || t.assignedAgentId===ME.id);
+  const canCall = s!=='OPEN' && !tbDone(t) && (!SIM.isManager || t.assignedAgentId===ME.id);
   if(canCall){
     // CI: disable khi đang có cuộc gọi, chưa đăng nhập tổng đài, hoặc đang xử lý thao tác khác
     const dis = !SIM.mptLoggedIn ? ' disabled title="Chưa đăng nhập tổng đài"' : (CALL.state!=='IDLE' ? ' disabled title="Đang có cuộc gọi"' : '');
     out.push(`<span class="btn pri split${dis?' is-dis':''}"><span data-act="call" data-id="${t.id}">Gọi</span><em data-act="calldd" data-id="${t.id}" title="Gọi số cố định">▾</em></span>`);
     if(cp.manual_close) out.push(`<button class="btn pri" data-act="resolve" data-id="${t.id}"${dis}>Xử lý</button>`);
   }
-  if(SIM.isManager && rp.manual_assign && s!=='CLOSED')
+  if(SIM.isManager && rp.manual_assign && !tbDone(t))
     out.push(`<button class="btn" data-act="${s==='OPEN'||!t.assignedAgentId?'assign':'reassign'}" data-id="${t.id}">${s==='OPEN'||!t.assignedAgentId ? 'Phân công' : 'Phân công lại'}</button>`);
   tbActions(t,out); /*TOBE-HOOK*/
   tbActionsPost(t,out); /*TOBE-HOOK*/
@@ -2238,7 +2253,8 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
-  {id:'proc_time', kind:'sim', txt:'Cột Thời gian xử lý (lúc agent mở ticket lần đầu) đang là dữ liệu mẫu: Data Model chưa có trường này. Thời gian hoàn thành lấy closed_at.', src:'MoM workshop BU 19/11, mục 2'},
+  {id:'st_flow', kind:'ba', txt:'Trạng thái đổi lúc cuộc gọi kết thúc: khách nghe máy thì Kết nối thành công; không nghe lần đầu thì Không nghe máy lần 1; không nghe từ lần thứ hai thì Không nghe máy. MoM chỉ liệt kê trạng thái, chưa ghi cách chuyển.', src:'MoM workshop BU 19/11, mục 3'},
+  {id:'proc_time', kind:'sim', txt:'Thời gian xử lý ghi lúc agent mở Chi tiết ticket lần đầu; ticket có sẵn trong dữ liệu mẫu lấy giờ phân công + 12 phút. Data Model chưa có trường này. Thời gian hoàn thành lấy closed_at.', src:'MoM workshop BU 19/11, mục 2'},
   {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
   {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
   {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
@@ -2288,6 +2304,15 @@ const TBT = {
   colActions: 'Thao tác',
   newTag: 'Vừa giao',
   noData: 'Không có dữ liệu',
+  lockMsg: 'Kết quả "Khách hàng không muốn bị làm phiền" đã khoá, không sửa được',
+  kqPick: 'Chọn kết quả',
+  notePh: 'Nhập ghi chú',
+  kqSaved: 'Đã lưu kết quả xử lý',
+  noteSaved: 'Đã lưu ghi chú',
+  colAsgAt: 'Thời gian phân công',
+  quickLabel: 'Công việc:',
+  quickAll: 'Tất cả',
+  timeErrOrder: 'Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc',
   colProcAt: 'Thời gian xử lý', // MoM 19/11: thời điểm agent mở ticket lần đầu
   colDoneAt: 'Thời gian hoàn thành', // MoM 19/11: thời điểm ticket chuyển sang Hoàn thành
   cdLabel: 'Ngày cần gọi', // Hưng 19/11 sau MoM 18/11: đổi từ Ngày hẹn gọi
@@ -2544,7 +2569,7 @@ const tbT = iso => iso ? new Date(iso).getTime() : Infinity;
 // MoM 18/11: ticket đã gom hiển thị 1 ngày cần gọi = ngày gần nhất của các ticket chưa xong; nhóm đã xong hết thì lấy ngày gần nhất của cả nhóm.
 // Ngày hết hạn vẫn theo từng ticket con.
 function tbGroupDate(ts){ const pick = a => a.map(t=>tbT(t.callScheduledDate)).filter(isFinite);
-  const d = pick(ts.filter(t=>t.status!=='CLOSED')), all = d.length ? d : pick(ts); return all.length ? Math.min(...all) : null; }
+  const d = pick(ts.filter(t=>!tbDone(t))), all = d.length ? d : pick(ts); return all.length ? Math.min(...all) : null; }
 const tbGroupDateTxt = ts => { const d = tbGroupDate(ts); return d===null ? '—' : vn(new Date(d).toISOString()); };
 // Trong nhóm: CTKM, thuốc mãn tính, voucher; cùng công việc thì ngày cần gọi, rồi ngày tạo
 function tbInGroup(a,b){
@@ -2569,7 +2594,7 @@ function tbBuild(){
   rows.forEach(t=>{ const k=tbKey(t); if(!map.has(k)) map.set(k,[]); map.get(k).push(t); });
   let groups = [...map.entries()].map(([key,ts])=>{
     ts.sort(tbInGroup);
-    const dates = ts.filter(t=>t.status!=='CLOSED').map(t=>tbT(t.callScheduledDate)).filter(isFinite);
+    const dates = ts.filter(t=>!tbDone(t)).map(t=>tbT(t.callScheduledDate)).filter(isFinite);
     const shown = new Set(ts.map(t=>t.id));
     const hidden = key.startsWith('solo|') ? 0 : TICKETS.filter(x=>tbKey(x)===key && !shown.has(x.id) && tbCanSee(x)).length;
     return {key, tickets:ts, hidden, norm:tbNorm(ts[0].phone), date:dates.length?Math.min(...dates):null, created:Math.min(...ts.map(t=>tbT(t.createdAt)))};
@@ -2599,7 +2624,7 @@ function tbPages(groups,size){
 }
 
 /* ---------- Danh sách To-Be ---------- */
-const tbIsMine = t => t.assignedAgentId===ME.id && t.status!=='CLOSED';
+const tbIsMine = t => t.assignedAgentId===ME.id && !tbDone(t);
 const tbMine = t => ''; // Bỏ nhãn "Của tôi" (Hưng 06/11): hệ thống tự phân công, agent chỉ thấy ticket của mình
 function tbCustCell(g){
   const nm = g.tickets.map(t=>t.customerName).find(Boolean) || '—';
@@ -2611,7 +2636,7 @@ const tbPhoneCell = g => g.norm ? `<span class="mask">${maskPhone(g.norm)}</span
 // Gọi theo nhóm (Hưng chốt 06/11): một lần Gọi tính cho mọi ticket mình giữ trong nhóm, Xử lý vẫn bấm từng ticket.
 // Nút Gọi nằm trong cột "Gọi" cố định bên phải, ngay trước Thao tác (tiêu đề Thao tác trải hai cột). Nhóm từ 2 dòng gộp ô theo nhóm.
 // Dòng riêng và nhóm một dòng có nút Gọi ở chính dòng đó. Bỏ nút Gọi khỏi ô Thao tác ở To-Be.
-const tbCallable = x => x.assignedAgentId===ME.id && x.status!=='OPEN' && x.status!=='CLOSED';
+const tbCallable = x => x.assignedAgentId===ME.id && x.status!=='OPEN' && !tbDone(x);
 // Gọi chung chỉ tính ticket thuộc công việc đang nhận tự động (Hưng 09/11, decisions D-22).
 // Nhóm không có ticket nào như vậy thì tính mọi ticket mình giữ, để ticket nhận tay vẫn gọi được (Đề xuất, chờ Hưng).
 function tbCallScope(key){
@@ -2647,7 +2672,7 @@ function tbCallBtn(g){
 const tbAutoLock = x => auto.on && auto.flows.includes(x.businessFlowId);
 const tbClaimable = ts => ts.filter(x=>x.status==='OPEN' && ((flowOf(x).operationConfig||{}).routing_policy||{}).self_claim_enabled && !tbAutoLock(x));
 const tbAutoOnly = ts => { const o = ts.filter(x=>x.status==='OPEN'); return o.length>0 && o.every(tbAutoLock); };
-const tbAssignable = ts => SIM.isManager ? ts.filter(x=>x.status!=='CLOSED' && ((flowOf(x).operationConfig||{}).routing_policy||{}).manual_assign) : [];
+const tbAssignable = ts => SIM.isManager ? ts.filter(x=>!tbDone(x) && ((flowOf(x).operationConfig||{}).routing_policy||{}).manual_assign) : [];
 function tbGroupActs(g){
   // Danh sách giữ nguyên thứ tự tới lần Tìm kiếm sau (TB.snap). Nhận xong thì khoá của ticket đã đổi (bỏ '|new'), nên lấy khoá hiện tại.
   if(!g.key.startsWith('solo|')) g = {...g, key: tbKey(g.tickets[0])};
@@ -2734,9 +2759,9 @@ function tbActionsPost(t,out){
   for(let i=out.length-1;i>=0;i--) if(/data-act="(claim|assign|reassign)"|tb-autotag/.test(out[i])) out.splice(i,1);
 }
 // Cột Gọi chỉ có ở To-Be: chèn trước Thao tác, cố định bên phải. COLUMNS gốc không đổi nên As-Is giữ nguyên.
-// Thời gian hoàn thành = closed_at (Data Model). Thời gian xử lý: schema chưa có trường, khung dùng dữ liệu mẫu (MÔ PHỎNG).
-const tbDoneAt = t => t.status==='CLOSED' ? (t.closedAt || t.updatedAt) : null;
-const tbProcAt = t => (t.status==='IN_PROGRESS' || t.status==='CLOSED') && t.assignedAt ? new Date(Date.parse(t.assignedAt)+12*60e3).toISOString() : null;
+// Thời gian hoàn thành = closed_at (Data Model): lúc ticket vào Không nghe máy hoặc Kết nối thành công (MoM 19/11).
+const tbDoneAt = t => tbDone(t) ? (t.closedAt || t.updatedAt) : null;
+const tbProcAt = t => t.processedAt || null; // MoM 19/11: lúc agent mở ticket lần đầu (tbOnOpen). Data Model chưa có trường này.
 function tbCols(){
   if(TB.cols) return TB.cols;
   const act = COLUMNS[COLUMNS.length-1];
@@ -2744,7 +2769,9 @@ function tbCols(){
   // 19/11: thêm cột Ngày cần gọi ngay trước Thời gian hết hạn, theo US-02 C26-2007 REQ-002 (SRC-011). CI v8.6.31 chưa có cột này nên As-Is giữ nguyên.
   // MoM workshop 19/11 mục 2: bỏ Thời gian tạo, Cập nhật gần nhất; thêm Thời gian xử lý, Thời gian hoàn thành; Ngày cần gọi ngay sau Nội dung.
   // Đề xuất: Thời gian xử lý và Thời gian hoàn thành đặt sau Thời gian phân công, xếp theo trình tự thời gian (MoM không nói vị trí).
-  const base = COLUMNS.slice(0,-1).filter(c=>c.h!=='Thời gian tạo' && c.h!=='Cập nhật gần nhất');
+  const base = COLUMNS.slice(0,-1).filter(c=>c.h!=='Thời gian tạo' && c.h!=='Cập nhật gần nhất')
+    .map(c=>c.h==='Trạng thái' ? {...c, w:170} : c) // MoM 19/11: nhãn trạng thái dài hơn (Kết nối thành công)
+    .map(c=>c.h==='Kết quả xử lý' ? {...c, w:210, r:tbKqCell} : c.h==='Ghi chú' ? {...c, w:240, r:tbNoteCell} : c); // MoM 19/11: sửa ngay trên dòng
   base.splice(base.findIndex(c=>c.h==='Nội dung')+1, 0, {h:TBT.cdLabel, w:130, r:t=>vn(t.callScheduledDate)});
   base.splice(base.findIndex(c=>c.h==='Thời gian phân công')+1, 0,
     {h:TBT.colProcAt, w:150, r:t=>{ const d=tbProcAt(t); return d ? vnt(d) : '—'; }},
@@ -2785,6 +2812,7 @@ function tbRow(g,t,i,gi){
   return `<tr class="tb-g${gi%2}${i===0?' tb-first':''}${fresh}">${cells}</tr>`+more;
 }
 function renderToBe(){
+  if(typeof tbQuickPaint==='function') tbQuickPaint(); // MoM 19/11: nút lọc nhanh theo Công việc theo bộ lọc đang áp
   const cs = tbCols();
   cols.innerHTML = cs.map(c=>`<col${c.w?` style="width:${c.w}px"`:''}>`).join('');
   cols.parentElement.style.width = cs.reduce((n,c)=>n+(c.w||0),0)+'px';
@@ -2866,7 +2894,7 @@ function tbActions(t,out){
     const k = out.findIndex(h=>h.includes('data-act="claim"') && h.includes('nhận phiếu tự động'));
     if(k>=0) out.splice(k,1);
   }
-  if(MODE!=='tobe' || t.assignedAgentId!==ME.id || t.status==='CLOSED' || t.status==='OPEN') return;
+  if(MODE!=='tobe' || t.assignedAgentId!==ME.id || tbDone(t) || t.status==='OPEN') return;
   if(((flowOf(t).operationConfig||{}).closure_policy||{}).manual_close) return; // đã có nút theo rule gốc
   if(!TB.called.has(tbKey(t))) return;
   const dis = !SIM.mptLoggedIn ? ` disabled title="${TBT.notLoggedIn}"` : (CALL.state!=='IDLE' ? ` disabled title="${TBT.inCall}"` : '');
@@ -2969,7 +2997,8 @@ function tbPaintCallTB(t){
   // 12/11: thân khung chia 2 cột như CI: Kịch bản gợi ý bên trái, Kết quả + Ghi chú + Lưu bên phải
   const scr = `<div><div class="cw-h">${TBT.cwScriptTitle}</div><div class="cw-script tbw-script">${has.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}${missLine}</div></div>`;
   const codes = ALLOWED[t.businessFlowId]||[];
-  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('');
+  const lk = tbLocked(t); // MoM 19/11: kết quả "Khách hàng không muốn bị làm phiền" khoá, không cho sửa
+  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c||(lk&&d.label===TB_LOCK)?'on':''}"${lk?' disabled':''} title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('') + (lk?`<div class="cw-err">${TBT.lockMsg}</div>`:'');
   const res = `<div><div class="cw-h">${TBT.cwResTitle}</div>
       <div class="cw-for">${TBT.cwForOne(short(t.id), flowName(t.businessFlowId), list.length-1)}</div>
       <div class="cw-chips">${chips}</div>
@@ -3066,19 +3095,54 @@ function tbMoveDate(on){
   }
   if(box.nextElementSibling!==cd) box.after(cd); // luôn đứng ngay sau ô Ngày tạo, kể cả khi Ngày tạo đổi chỗ
   cd.classList.toggle('hidden', !on);
+  // MoM workshop 19/11 mục 2: thêm bộ lọc Thời gian phân công và Thời gian xử lý, chọn được giờ và phút. Đề xuất: đặt ngay sau Ngày cần gọi.
+  let prev = cd;
+  [['tbAsgBox','fAsg',TBT.colAsgAt],['tbPrcBox','fPrc',TBT.colProcAt]].forEach(([bid,p,lab])=>{
+    let b = document.getElementById(bid);
+    if(!b){ b = document.createElement('div'); b.id = bid; b.className = 'tb-fdate tb-ftime';
+      b.innerHTML = `<label>${lab}</label><span class="dr"><input type="datetime-local" id="${p}From"><span>→</span><input type="datetime-local" id="${p}To"></span><div id="${p}Err" class="dr-err"></div>`; }
+    if(prev.nextElementSibling!==b) prev.after(b); prev = b;
+    b.classList.toggle('hidden', !on);
+  });
+  // MoM workshop 19/11 mục 2: lọc nhanh theo Công việc. Đề xuất: hàng nút ngay trên bảng, bấm là lọc luôn, đồng bộ với ô lọc Công việc.
+  let qk = document.getElementById('tbQuick');
+  if(!qk){ qk = document.createElement('div'); qk.id = 'tbQuick'; qk.className = 'tb-quick'; document.getElementById('tbBar').after(qk); }
+  qk.classList.toggle('hidden', !on);
+  if(on) tbQuickPaint();
+}
+function tbQuickPaint(){
+  const qk = document.getElementById('tbQuick'); if(!qk) return;
+  const cur = [...(APPLIED||readForm()).fl], all = cur.length===0 || cur.length===FLOWS.length;
+  const btn = (on, txt, js) => `<button class="tb-qchip${on?' on':''}" onclick="${js}">${txt}</button>`;
+  qk.innerHTML = `<span class="tb-qlab">${TBT.quickLabel}</span>` + btn(all, TBT.quickAll, "tbQuick(null)")
+    + FLOWS.map(f=>btn(!all && cur.length===1 && cur[0]===f.id, f.name, `tbQuick('${f.id}')`)).join('');
+}
+function tbQuick(id){
+  MS.fFlow.val = id ? [id] : FLOWS.map(f=>f.id); MS.fFlow.repaint(); syncFilters(); applyFilters();
 }
 // Bộ lọc Ngày cần gọi: rỗng = không lọc; có lọc thì ticket không có ngày cần gọi bị loại. Áp khi bấm Tìm kiếm, như các ô khác.
-function tbReadForm(f){ const a=document.getElementById('fCdFrom'), b=document.getElementById('fCdTo'); f.cdf = a ? a.value : ''; f.cdt = b ? b.value : ''; return f; }
+function tbReadForm(f){ const v = id => { const x=document.getElementById(id); return x ? x.value : ''; };
+  f.cdf = v('fCdFrom'); f.cdt = v('fCdTo'); f.af = v('fAsgFrom'); f.at = v('fAsgTo'); f.pf = v('fPrcFrom'); f.pt = v('fPrcTo'); return f; }
 function tbCdValid(f){
   const e=document.getElementById('fCdErr'); if(e) e.textContent='';
   if(MODE==='tobe' && f.cdf && f.cdt && f.cdf>f.cdt){ e.textContent=TBT.cdErrOrder; return false; }
+  for(const [p,a,b] of [['fAsg',f.af,f.at],['fPrc',f.pf,f.pt]]){ const x=document.getElementById(p+'Err'); if(x) x.textContent='';
+    if(MODE==='tobe' && a && b && a>b){ x.textContent=TBT.timeErrOrder; return false; } }
   return true;
 }
-function tbCdReset(){ ['fCdFrom','fCdTo','fCdErr'].forEach(id=>{ const x=document.getElementById(id); if(x){ if('value' in x) x.value=''; else x.textContent=''; } }); }
+function tbCdReset(){ ['fCdFrom','fCdTo','fCdErr','fAsgFrom','fAsgTo','fAsgErr','fPrcFrom','fPrcTo','fPrcErr'].forEach(id=>{ const x=document.getElementById(id); if(x){ if('value' in x) x.value=''; else x.textContent=''; } }); }
 function tbCdOk(t,f,vnDay){
+  if(!tbTimeOk(t,f)) return false;
   if(MODE!=='tobe' || (!f.cdf && !f.cdt)) return true;
   const d = vnDay(t.callScheduledDate); if(!d) return false;
   return (!f.cdf || d>=f.cdf) && (!f.cdt || d<=f.cdt);
+}
+// Lọc theo giờ phút VN; có lọc thì ticket chưa có giá trị bị loại. Thời gian xử lý là dữ liệu mẫu (tbProcAt).
+const tbVnMin = iso => iso ? new Date(Date.parse(iso)+7*3600e3).toISOString().slice(0,16) : '';
+function tbTimeOk(t,f){
+  if(MODE!=='tobe') return true;
+  const inR = (v,a,b) => (!a && !b) || (v && (!a || v>=a) && (!b || v<=b));
+  return inR(tbVnMin(t.assignedAt), f.af, f.at) && inR(tbVnMin(tbProcAt(t)), f.pf, f.pt);
 }
 function tbSetMode(m){
   if(!TOBE_ENABLED || m===MODE) return;
@@ -3089,7 +3153,9 @@ function tbSetMode(m){
     TB.phoneBak = new Map(); // SĐT mẫu 8 số của mockup BU -> 10 số, chỉ trong To-Be
     TICKETS.forEach(t=>{ if(!t._tobe){ const np=tbDemoPhone(t.phone); if(np!==t.phone){ TB.phoneBak.set(t,t.phone); t.phone=np; } } });
     MS.fFlow.val = FLOWS.map(f=>f.id); MS.fFlow.repaint();
+    tbStatusSwap(true); // MoM 19/11: bộ Trạng thái và Kết quả xử lý mới
   } else { // về As-Is: gỡ data minh họa, trả bộ lọc công việc như cũ
+    tbStatusSwap(false);
     if(TB.phoneBak){ TB.phoneBak.forEach((old,t)=>{ t.phone=old; }); TB.phoneBak=null; }
     for(let i=TICKETS.length-1;i>=0;i--) if(TICKETS[i]._tobe) TICKETS.splice(i,1);
     MS.fFlow.val = TB.savedFlows || MS.fFlow.val; MS.fFlow.repaint();
@@ -3316,6 +3382,106 @@ function tbAfterTab(name){
   if(ship) ship.insertAdjacentHTML('beforeend', `<div class="tb-rb-addr">${T.rebuyAddr}</div>`);
   rPanel.insertAdjacentHTML('afterbegin', `<div class="tb-rb-banner">${T.rebuyBanner} <a onclick="tbRebuyReset()">${T.rebuyReset}</a></div>`);
 }
+/* ---------- MoM workshop BU 19/11 mục 3: bộ Trạng thái và Kết quả xử lý của To-Be ----------
+   Trạng thái: Mới, Đã phân công, Đang xử lý, Không nghe máy lần 1, Không nghe máy, Kết nối thành công. Hai trạng thái cuối là kết thúc.
+   Kết quả xử lý: 4 giá trị. Cập nhật Kết quả xử lý không đổi Trạng thái, không đổi Thời gian xử lý.
+   "Khách hàng không muốn bị làm phiền": khoá, không cho sửa. Ba kết quả còn lại agent được sửa.
+   Đề xuất (MoM không ghi): trạng thái đổi lúc cuộc gọi kết thúc. Khách nghe máy → Kết nối thành công.
+   Không nghe máy lần đầu → Không nghe máy lần 1. Không nghe máy từ lần thứ hai → Không nghe máy.
+   As-Is giữ 4 trạng thái và danh sách kết quả như CI. */
+const TB_ST = {NO_ANSWER_1:'Không nghe máy lần 1', NO_ANSWER:'Không nghe máy', CONNECTED:'Kết nối thành công'};
+const TB_ST_ORDER = ['OPEN','ASSIGNED','IN_PROGRESS','NO_ANSWER_1','NO_ANSWER','CONNECTED'];
+const AS_ST_ORDER = ['OPEN','ASSIGNED','IN_PROGRESS','CLOSED'];
+const tbDone = t => ['CLOSED','NO_ANSWER','CONNECTED'].includes(t.status);
+const TB_LOCK = 'Khách hàng không muốn bị làm phiền';
+const tbLocked = t => MODE==='tobe' && t.dispositionLabel===TB_LOCK;
+const TB_CODES = ['DA_CHOT_DON','KHONG_CO_NHU_CAU','KH_CAN_NHAC_THEM','KH_KHONG_MUON_LAM_PHIEN'];
+const tbDispLabel = c => DISP_CATALOG.find(d=>d.code===c).label;
+function tbOpts(id, arr){ const m = MS[id], o = m.opts; o.splice(0, o.length, ...arr); m.val = m.val.filter(v=>arr.some(a=>a.v===v)); m.repaint(); }
+function tbStatusSwap(on){
+  if(on){
+    Object.assign(STATUS, TB_ST);
+    if(!DISP_CATALOG.some(d=>d.code==='KH_KHONG_MUON_LAM_PHIEN')) // DISP_CATALOG khai báo ở asis/06, nạp sau file này nên thêm lúc vào To-Be
+      DISP_CATALOG.push({code:'KH_KHONG_MUON_LAM_PHIEN', label:TB_LOCK, behavior:'LOCK', resolution:'', src:'MoM workshop BU 19/11 mục 3 (khoá, không cho sửa)'});
+    TB.allowBak = TB.allowBak || JSON.parse(JSON.stringify(ALLOWED));
+    TB.dispBak = TB.dispBak || MS.fDisp.opts.map(o=>({...o}));
+    Object.keys(ALLOWED).forEach(k=>{ ALLOWED[k] = [...TB_CODES]; });
+    const ok = TB_CODES.map(tbDispLabel);
+    TB.dataBak = new Map(); // dữ liệu mẫu đổi sang bộ mới khi vào To-Be, trả lại khi về As-Is
+    TICKETS.forEach(t=>{
+      const l = t.dispositionLabel; let st = t.status, lab = l;
+      if(l==='Không nghe máy lần 1'){ st = 'NO_ANSWER_1'; lab = undefined; }
+      else if(l==='Không nghe máy'){ st = 'NO_ANSWER'; lab = undefined; }
+      else if(t.status==='CLOSED') st = 'CONNECTED';
+      if(lab==='KH cần nhắc thêm') lab = 'KH cân nhắc thêm';
+      if(lab && !ok.includes(lab)) lab = undefined; // Voucher hết hạn, Đã tư vấn: không còn trong bộ kết quả mới
+      if(st!==t.status || lab!==l){ TB.dataBak.set(t, {status:t.status, dispositionCode:t.dispositionCode, dispositionLabel:l});
+        t.status = st; t.dispositionLabel = lab; t.dispositionCode = lab; }
+    });
+    // Dữ liệu mẫu: ticket đã qua bước Đã phân công coi như agent đã mở lúc phân công + 12 phút (MÔ PHỎNG)
+    TICKETS.forEach(t=>{ if(!t.processedAt && t.assignedAt && !['OPEN','ASSIGNED'].includes(t.status)) t.processedAt = new Date(Date.parse(t.assignedAt)+12*60e3).toISOString(); });
+    tbOpts('fSt', TB_ST_ORDER.map(k=>({v:k, l:STATUS[k]})));
+    tbOpts('fDisp', ok.map(l=>({v:l, l})));
+  } else {
+    if(TB.allowBak) Object.keys(TB.allowBak).forEach(k=>{ ALLOWED[k] = [...TB.allowBak[k]]; });
+    TICKETS.forEach(t=>{ const b = TB.dataBak && TB.dataBak.get(t);
+      if(b) Object.assign(t, b);
+      else if(t.status==='NO_ANSWER_1') t.status = 'IN_PROGRESS';
+      else if(t.status==='NO_ANSWER' || t.status==='CONNECTED') t.status = 'CLOSED'; });
+    TB.dataBak = null;
+    tbOpts('fSt', AS_ST_ORDER.map(k=>({v:k, l:STATUS[k]})));
+    if(TB.dispBak) tbOpts('fDisp', TB.dispBak);
+  }
+}
+// Kết quả xử lý trên Danh sách và Chi tiết: chỉ lấy giá trị thuộc bộ 4 kết quả; "Không nghe máy lần 1" giờ là trạng thái.
+function tbResultOf(t,n,r){
+  const ok = TB_CODES.map(tbDispLabel), l = [t.dispositionLabel, n.dispositionLabel, r.dispositionLabel].find(x=>x && ok.includes(x));
+  return {label: l||'—', note: t.resolutionNote||t.closeNote||n.dispositionNote||r.dispositionNote||'—'};
+}
+// MoM 19/11: Thời gian xử lý = lúc agent mở ticket lần đầu (mở màn Chi tiết, kể cả mở do bấm Gọi). Ghi một lần, không đổi về sau.
+function tbOnOpen(t){ if(MODE==='tobe' && t && !t.processedAt && t.assignedAgentId===ME.id) t.processedAt = nowIso(); }
+/* MoM 19/11: chọn Kết quả xử lý (dropdown) và nhập Ghi chú ngay trên dòng ticket ở Danh sách, thay popup Xử lý.
+   Đề xuất: sửa được khi ticket do mình giữ và đã qua bước Đã phân công; chọn xong lưu ngay, ghi chú lưu khi rời ô hoặc Enter. */
+const tbCanEdit = t => MODE==='tobe' && t.assignedAgentId===ME.id && !['OPEN','ASSIGNED'].includes(t.status);
+function tbKqCell(t){
+  const cur = resultOf(t).label;
+  if(tbLocked(t)) return `<span class="tb-lock" title="${tbEsc(TBT.lockMsg)}">🔒 ${tbEsc(cur)}</span>`;
+  if(!tbCanEdit(t)) return tbEsc(cur);
+  const has = cur!=='—';
+  return `<select class="tb-kq${has?'':' empty'}" onchange="tbInlineKq('${t.id}',this.value)">${has?'':`<option value="">${TBT.kqPick}</option>`}`
+    + TB_CODES.map(c=>{ const l=tbDispLabel(c); return `<option value="${c}"${l===cur?' selected':''}>${l}</option>`; }).join('') + `</select>`;
+}
+function tbNoteCell(t){
+  const cur = resultOf(t).note, v = cur==='—' ? '' : cur;
+  if(!tbCanEdit(t) || tbLocked(t)) return `<span title="${tbEsc(cur)}">${tbEsc(cur)}</span>`;
+  return `<input class="tb-note" maxlength="500" placeholder="${TBT.notePh}" value="${tbEsc(v)}" onkeydown="if(event.key==='Enter')this.blur()" onchange="tbInlineNote('${t.id}',this.value)">`;
+}
+function tbInlineKq(id, code){
+  const t = byId(id), d = DISP_CATALOG.find(x=>x.code===code); if(!t || !d || tbLocked(t)) return;
+  Object.assign(t, {dispositionCode:d.label, dispositionLabel:d.label, resolution:d.resolution, resolutionSource:'AGENT', updatedAt:nowIso(), version:(t.version||1)+1});
+  const last = (ATTEMPTS[t.id]||[]).slice(-1)[0]; if(last && !last.dispositionCode){ last.dispositionCode=d.code; last.dispositionLabel=d.label; last.dispositionBehavior=d.behavior; }
+  tbOnResult(t); // trạng thái và Thời gian xử lý giữ nguyên
+  toast('success', TBT.kqSaved); render();
+}
+function tbInlineNote(id, v){
+  const t = byId(id); if(!t || tbLocked(t)) return;
+  t.resolutionNote = v.trim(); t.closeNote = undefined; t.updatedAt = nowIso();
+  toast('success', TBT.noteSaved); render();
+}
+// Gọi từ callHangup (As-Is). Cuộc gọi chung: áp cho mọi ticket mình giữ trong nhóm.
+const tbMissed = a => a.status==='ENDED' && !(a.connected!==undefined ? a.connected : a.talkDurationSec>0);
+function tbOnHangup(connected){
+  if(MODE!=='tobe') return;
+  const at = CALL.attempt; if(at) at.connected = !!connected;
+  const ids = CALL.grpIds && CALL.grpIds.size ? [...CALL.grpIds] : [CALL.ticketId];
+  ids.map(byId).filter(Boolean).forEach(x=>{
+    if(tbDone(x)) return;
+    const miss = (ATTEMPTS[x.id]||[]).filter(tbMissed).length;
+    x.status = connected ? 'CONNECTED' : (miss>=2 ? 'NO_ANSWER' : 'NO_ANSWER_1');
+    if(tbDone(x)) x.closedAt = nowIso();
+    x.updatedAt = nowIso();
+  });
+}
 /* ---------- LIST ---------- */
 const state = {page:1, size:10};
 /* CI: thay đổi ô lọc chỉ đổi form; danh sách chỉ lọc lại khi bấm Tìm kiếm (hoặc Enter).
@@ -3347,7 +3513,7 @@ function filtered(){
     // CI test 06/11: tìm theo SĐT ra kết quả; tìm theo Mã YC 6 ký tự đang hiển thị KHÔNG ra (lỗi đã ghi QC). Khung làm giống: chỉ khớp SĐT hoặc mã đầy đủ.
     (!q || t.phone.includes(q) || t.id.toLowerCase()===q) &&
     ok(st,t.status) && ok(ag,t.assignedAgentId) && ok(fl,t.businessFlowId) &&
-    ok(ds,t.dispositionCode) && (!f.df || vnDay(t.createdAt)>=f.df) && (!f.dt || vnDay(t.createdAt)<=f.dt) && (!mine || (t.assignedAgentId===ME.id && t.status!=='CLOSED')) && tbCdOk(t,f,vnDay)); /*TOBE-HOOK*/
+    ok(ds,t.dispositionCode) && (!f.df || vnDay(t.createdAt)>=f.df) && (!f.dt || vnDay(t.createdAt)<=f.dt) && (!mine || (t.assignedAgentId===ME.id && !tbDone(t))) && tbCdOk(t,f,vnDay)); /*TOBE-HOOK*/
 }
 function render(){
   if(MODE==='tobe') return renderToBe(); /*TOBE-HOOK*/
@@ -3374,6 +3540,7 @@ function go(id){
   vList.classList.toggle('hidden', !!id); vDetail.classList.toggle('hidden', !id);
   if(!id){ render(); tbAfterNav(); /*TOBE-HOOK*/ return; }
   const t = CUR = TICKETS.find(x=>x.id===id), flow = FLOWS.find(f=>f.id===t.businessFlowId);
+  tbOnOpen(t); /*TOBE-HOOK: MoM 19/11 ghi Thời gian xử lý lần mở đầu tiên*/
   dCode.innerHTML = 'Mã yêu cầu  '+short(t.id)+copyIc(t.id,'mã yêu cầu');
   dStatus.innerHTML = `<span class="tag st-${t.status}">${STATUS[t.status]}</span>`;
   dActs.innerHTML = actions(t).replace('Nhận','Nhận');
@@ -3537,7 +3704,7 @@ function paintAsg(){
 function confirmAssign(){
   if(ASG.group && tbConfirmAssignGroup()) return; /*TOBE-HOOK*/
   const {t, mode, pick} = ASG; if(!t||!pick) return;
-  if(t.status==='CLOSED'){ toast('error', mode==='reassign'?'Yêu cầu đã đóng, không thể phân công lại':'Yêu cầu đã đóng, không thể phân công'); return; }
+  if(tbDone(t)){ toast('error', mode==='reassign'?'Yêu cầu đã đóng, không thể phân công lại':'Yêu cầu đã đóng, không thể phân công'); return; }
   if(CALL.state!=='IDLE' && CALL.ticketId===t.id){ toast('error','Yêu cầu đang có cuộc gọi ra. Vui lòng thử lại sau'); return; }
   mAsg.classList.add('hidden');
   withBusy(t.id, ()=>{
@@ -3571,6 +3738,7 @@ function callHangup(){ // Hủy gọi
   if(CALL.state!=='DIALING' && CALL.state!=='TALKING') return;
   const a=CALL.attempt; a.status='ENDED'; a.endedAt=nowIso();
   a.talkDurationSec = Math.round((Date.now()-CALL.t0)/1000); a.callResult='HANDLED';
+  tbOnHangup(CALL.state==='TALKING'); /*TOBE-HOOK: MoM 19/11 trạng thái theo kết quả cuộc gọi*/
   clearInterval(CALL.timer); CALL.state='ENDED'; paintCall(); refresh();
 }
 function callFail(){ // makeCall lỗi sau khi đã tạo attempt → attempt nằm lại ở DIALING
@@ -3583,6 +3751,7 @@ function callClose(){ clearInterval(CALL.timer); Object.assign(CALL,{state:'IDLE
 function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   const t=byId(CALL.ticketId); if(!t) return;
   if(tbWidgetSave(t)) return; /*TOBE-HOOK*/
+  if(tbLocked(t)){ tbWErr(TBT.lockMsg); return; } /*TOBE-HOOK: MoM 19/11*/
   const d=DISP_CATALOG.find(x=>x.code===CALL.pick);
   if(!d){ if(MODE==='tobe') tbWErr('Vui lòng chọn kết quả'); else toast('error','Vui lòng chọn kết quả'); return; } // [chưa kiểm] câu báo lỗi của widget
   const note=document.getElementById('cwNote').value.trim();
@@ -3592,7 +3761,7 @@ function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   if(live && MODE!=='tobe') callHangup();
   const a=CALL.attempt; Object.assign(a,{dispositionCode:d.code, dispositionLabel:d.label, dispositionBehavior:d.behavior, dispositionNote:note});
   Object.assign(t,{dispositionCode:d.label, dispositionLabel:d.label, resolutionSource:'DISPOSITION', resolutionNote:note, updatedAt:nowIso(), version:(t.version||1)+1});
-  if(d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.resolution=d.resolution; t.closedAt=nowIso(); }
+  if(MODE!=='tobe' && d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; /*TOBE-HOOK: MoM 19/11 kết quả không đổi trạng thái*/ t.resolution=d.resolution; t.closedAt=nowIso(); }
   tbOnResult(t); /*TOBE-HOOK*/
   if(live && MODE==='tobe'){ CALL.saved = {label:d.label, id:t.id, at:nowIso()}; CALL.err=null; // không hiện dòng xác nhận trong khung (Hưng 13/11 14:20 bỏ); báo bằng thông báo góc màn hình như các thao tác khác trên CI (Hưng 13/11 14:33)
     toast('success', TBT.cwSavedToast); CALL.note=note; paintCall(); refresh(); return; }
@@ -3645,6 +3814,7 @@ function paintCall(){
 /* ---------- Xử lý ---------- */
 let RES = {t:null};
 function openResolve(t, fromDetail){
+  if(tbLocked(t)){ toast('error', TBT.lockMsg); return; } /*TOBE-HOOK: MoM 19/11*/
   RES = {t};
   const shown = fromDetail ? t.id : t.id.slice(0,4)+'****'+t.id.slice(-4); // CI test 06/11: từ danh sách che mã, từ Detail hiện đủ
   mResTicket.innerHTML = `Ticket: <strong>${shown}</strong> — ${t.customerName||'—'}`;
@@ -3665,7 +3835,7 @@ function confirmResolve(){
     t.dispositionLabel = d ? d.label : t.dispositionLabel;
     t.resolution = d ? d.resolution : ''; t.resolutionSource='AGENT';
     t.closeNote = note; // CI: popup ghi closeNote; ô "Ghi chú" ở Detail vẫn hiện resolutionNote (ghi chú từ widget) → lệch, đã báo QC
-    if(!d || d.behavior.startsWith('CLOSE_')){ t.status='CLOSED'; t.closedAt=nowIso(); }
+    if(MODE!=='tobe' && (!d || d.behavior.startsWith('CLOSE_'))){ t.status='CLOSED'; t.closedAt=nowIso(); } /*TOBE-HOOK: MoM 19/11 kết quả không đổi trạng thái*/
     t.updatedAt=nowIso(); t.version=(t.version||1)+1;
     const last=(ATTEMPTS[t.id]||[]).slice(-1)[0];
     if(last && !last.dispositionCode && d){ last.dispositionCode=d.code; last.dispositionLabel=d.label; last.dispositionBehavior=d.behavior; }
@@ -3810,10 +3980,10 @@ tbInit(); /*TOBE-HOOK*/
    Mỗi thao tác chuyển màn, đổi tab, đổi trang, áp bộ lọc là một mục lịch sử (pushState). Mua lại trong tab nhúng không đổi URL. */
 var NAV = {applying:true}; // var: render() ở 13-init gọi navSync trước khi file này chạy; true tới khi navApply đầu tiên xong
 const navSlug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-const NAV_KEYS = [['q','q'],['df','created_from'],['dt','created_to'],['cdf','call_from'],['cdt','call_to'],['st','status'],['ag','agent'],['fl','flow'],['ds','result'],['mine','mine']];
+const NAV_KEYS = [['q','q'],['df','created_from'],['dt','created_to'],['cdf','call_from'],['cdt','call_to'],['af','assign_from'],['at','assign_to'],['pf','process_from'],['pt','process_to'],['st','status'],['ag','agent'],['fl','flow'],['ds','result'],['mine','mine']];
 function navDefaults(){
   const t=new Date(), a=new Date(t); a.setDate(t.getDate()-29);
-  return {q:'', df:iso(a), dt:iso(t), cdf:'', cdt:'', st:[], ag:[], ds:[], mine:false,
+  return {q:'', df:iso(a), dt:iso(t), cdf:'', cdt:'', af:'', at:'', pf:'', pt:'', st:[], ag:[], ds:[], mine:false,
     fl: MODE==='tobe' ? FLOWS.map(f=>f.id) : ['PHARMA-NHAC_VOUCHER']};
 }
 const navSame = (a,b) => Array.isArray(a) ? (a.length===b.length && a.every(v=>b.includes(v))) : a===b;
@@ -3857,6 +4027,7 @@ function navApply(hash){
       fFrom.value = p.get('created_from') ?? d.df; fTo.value = p.get('created_to') ?? d.dt;
       const cf=document.getElementById('fCdFrom'), ct=document.getElementById('fCdTo');
       if(cf) cf.value = p.get('call_from') ?? ''; if(ct) ct.value = p.get('call_to') ?? '';
+      [['fAsgFrom','assign_from'],['fAsgTo','assign_to'],['fPrcFrom','process_from'],['fPrcTo','process_to']].forEach(([id,n])=>{ const x=document.getElementById(id); if(x) x.value = p.get(n) ?? ''; }); /*TOBE-HOOK*/
       [['fSt','status','st'],['fAgent','agent','ag'],['fFlow','flow','fl'],['fDisp','result','ds']].forEach(([id,n,k])=>{
         const v = arr(n) ?? d[k]; MS[id].val = v.filter(x=>MS[id].opts.some(o=>o.v===x)); MS[id].repaint(); });
       document.getElementById('fMine').classList.toggle('on', p.get('mine')==='1');
