@@ -2238,6 +2238,7 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
+  {id:'proc_time', kind:'sim', txt:'Cột Thời gian xử lý (lúc agent mở ticket lần đầu) đang là dữ liệu mẫu: Data Model chưa có trường này. Thời gian hoàn thành lấy closed_at.', src:'MoM workshop BU 19/11, mục 2'},
   {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
   {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
   {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
@@ -2287,6 +2288,8 @@ const TBT = {
   colActions: 'Thao tác',
   newTag: 'Vừa giao',
   noData: 'Không có dữ liệu',
+  colProcAt: 'Thời gian xử lý', // MoM 19/11: thời điểm agent mở ticket lần đầu
+  colDoneAt: 'Thời gian hoàn thành', // MoM 19/11: thời điểm ticket chuyển sang Hoàn thành
   cdLabel: 'Ngày cần gọi', // Hưng 19/11 sau MoM 18/11: đổi từ Ngày hẹn gọi
   cdErrOrder: 'Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc',
 
@@ -2731,13 +2734,21 @@ function tbActionsPost(t,out){
   for(let i=out.length-1;i>=0;i--) if(/data-act="(claim|assign|reassign)"|tb-autotag/.test(out[i])) out.splice(i,1);
 }
 // Cột Gọi chỉ có ở To-Be: chèn trước Thao tác, cố định bên phải. COLUMNS gốc không đổi nên As-Is giữ nguyên.
+// Thời gian hoàn thành = closed_at (Data Model). Thời gian xử lý: schema chưa có trường, khung dùng dữ liệu mẫu (MÔ PHỎNG).
+const tbDoneAt = t => t.status==='CLOSED' ? (t.closedAt || t.updatedAt) : null;
+const tbProcAt = t => (t.status==='IN_PROGRESS' || t.status==='CLOSED') && t.assignedAt ? new Date(Date.parse(t.assignedAt)+12*60e3).toISOString() : null;
 function tbCols(){
   if(TB.cols) return TB.cols;
   const act = COLUMNS[COLUMNS.length-1];
   // Góp ý 11/11: một cột Thao tác cấp nhóm (Gọi, Nhận, Phân công), bỏ Thao tác từng ticket và nút Xử lý khỏi Danh sách
   // 19/11: thêm cột Ngày cần gọi ngay trước Thời gian hết hạn, theo US-02 C26-2007 REQ-002 (SRC-011). CI v8.6.31 chưa có cột này nên As-Is giữ nguyên.
-  const base = COLUMNS.slice(0,-1), at = base.findIndex(c=>c.h==='Thời gian hết hạn');
-  base.splice(at, 0, {h:TBT.cdLabel, w:130, r:t=>vn(t.callScheduledDate)});
+  // MoM workshop 19/11 mục 2: bỏ Thời gian tạo, Cập nhật gần nhất; thêm Thời gian xử lý, Thời gian hoàn thành; Ngày cần gọi ngay sau Nội dung.
+  // Đề xuất: Thời gian xử lý và Thời gian hoàn thành đặt sau Thời gian phân công, xếp theo trình tự thời gian (MoM không nói vị trí).
+  const base = COLUMNS.slice(0,-1).filter(c=>c.h!=='Thời gian tạo' && c.h!=='Cập nhật gần nhất');
+  base.splice(base.findIndex(c=>c.h==='Nội dung')+1, 0, {h:TBT.cdLabel, w:130, r:t=>vn(t.callScheduledDate)});
+  base.splice(base.findIndex(c=>c.h==='Thời gian phân công')+1, 0,
+    {h:TBT.colProcAt, w:150, r:t=>{ const d=tbProcAt(t); return d ? vnt(d) : '—'; }},
+    {h:TBT.colDoneAt, w:160, r:t=>{ const d=tbDoneAt(t); return d ? vnt(d) : '—'; }});
   return TB.cols = [...base, {h:TBT.colActions, w:280, fix:'r', off:0, cls:'callcol tb-gc', k:'callg'}];
 }
 const tbFixCls = (c,cs) => c.fix==='r' ? ' fr'+(cs.find(x=>x.fix==='r')===c?' fr-first':'') : fixCls(c);
@@ -2762,7 +2773,7 @@ function tbRow(g,t,i,gi){
     }
     let h;
     if(ci===0) h = `<span class="link" onclick="go('${t.id}')">${short(t.id)}</span>${copyIc(t.id,'mã yêu cầu')}${TB.fresh&&TB.fresh.has(t.id)?`<span class="tb-newtag">${TBT.newTag}</span>`:''}`;
-        else if(ci===6) h = `<span class="link" onclick="go('${t.id}')">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>${copyIc(t.externalRef,'mã tham chiếu')}`; // US-3 v3: bấm Mã tham chiếu mở Chi tiết
+    else if(c.h==='Mã tham chiếu') h = `<span class="link" onclick="go('${t.id}')">${t.externalRef.length>8?short(t.externalRef):t.externalRef}</span>${copyIc(t.externalRef,'mã tham chiếu')}`; // US-3 v3: bấm Mã tham chiếu mở Chi tiết
     else h = (c.cls||'').includes('nd') ? ls[0] : c.r(t);
     return `<td ${at}${(c.cls||'').includes('nd') ? '' : rs(n)}>${h}</td>`;
   }).join('');
