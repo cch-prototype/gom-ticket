@@ -2316,6 +2316,7 @@ const TBT = {
   resetDemo: '↺ Làm lại từ đầu',
   resetTip: 'Trả dữ liệu mẫu, bộ lọc và màn hình về lúc mới mở (giống F5)',
   kqPick: 'Chọn kết quả (bắt buộc)',
+  kqPickCall: 'Chọn kết quả',
   kqNeed: 'Chưa chọn kết quả',
   kqDropped: 'Khách không bắt máy nên kết quả đã chọn trong cuộc gọi được bỏ',
   notePh: 'Nhập ghi chú',
@@ -3014,7 +3015,7 @@ function tbPaintCallTB(t){
   const codes = ALLOWED[t.businessFlowId]||[];
   const lk = tbLocked(t); // Hưng 26/11: đang gọi vẫn chọn được kết quả như CI // MoM 19/11: kết quả "Khách hàng không muốn bị làm phiền" khoá, không cho sửa
   // Chỉ tô "Khách hàng không muốn bị làm phiền" khi kết quả đó thật sự đã chọn (đã khoá); chưa bắt máy thì không tô gì
-  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c||(tbLocked(t)&&d.label===TB_LOCK)?'on':''}"${lk?' disabled':''} title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('')
+  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${tbCallPickCode(t)===c?'on':''}"${lk?' disabled':''} title="${tbEsc(d.src||'')}" onclick="tbWidgetPick('${c}')">${d.label}</button>`;}).join('')
     + (lk ? `<div class="cw-err">${TBT.lockMsg}</div>` : '');
   const res = `<div><div class="cw-h">${TBT.cwResTitle}</div>
       <div class="cw-for">${TBT.cwForOne(short(t.id), flowName(t.businessFlowId), list.length-1)}</div>
@@ -3501,7 +3502,7 @@ function tbKqCell(t){
   if(tbLocked(t)) return `<span class="tb-lock" title="${tbEsc(TBT.lockMsg)}">🔒 ${tbEsc(cur)}</span>`;
   if(!tbCanKq(t)) return cur===TBT.kqNeed ? `<span class="tb-need">${cur}</span>` : tbEsc(cur);
   const has = cur!=='—' && cur!==TBT.kqNeed;
-  return `<select class="tb-kq${has?'':' empty need'}" onchange="tbInlineKq('${t.id}',this.value)">${has?'':`<option value="">${TBT.kqPick}</option>`}`
+  return `<select class="tb-kq${has?'':' empty'}${!has&&t.status==='CONNECTED'?' need':''}" onchange="tbInlineKq('${t.id}',this.value)">${has?'':`<option value="">${t.status==='CONNECTED'?TBT.kqPick:TBT.kqPickCall}</option>`}`
     + TB_CODES.map(c=>{ const l=tbDispLabel(c); return `<option value="${c}"${l===cur?' selected':''}>${l}</option>`; }).join('') + `</select>`;
 }
 function tbNoteCell(t){
@@ -3509,16 +3510,27 @@ function tbNoteCell(t){
   if(!tbCanEdit(t) || tbLocked(t)) return `<span title="${tbEsc(cur)}">${tbEsc(cur)}</span>`;
   return `<input class="tb-note" maxlength="500" placeholder="${TBT.notePh}" value="${tbEsc(v)}" onkeydown="if(event.key==='Enter')this.blur()" onchange="tbInlineNote('${t.id}',this.value)">`;
 }
-function tbInlineKq(id, code){
+// Hưng 26/11: khung tổng đài ghi cho ticket đầu tiên; kết quả ở khung và ở dòng (hoặc khối Thông tin ticket) của ticket đó là một.
+// Bấm ở khung là lưu ngay vào ticket như chọn trên dòng; chọn trên dòng thì khung tô theo. Ticket còn lại chọn tay trên dòng của nó.
+const tbCallPickCode = t => { const d = t.dispositionLabel && DISP_CATALOG.find(x=>x.label===t.dispositionLabel); return d ? d.code : (CALL.pick||null); };
+function tbWidgetPick(c){
+  const t = byId(CALL.ticketId); if(!t) return;
+  CALL.pick = c; CALL.err = null;
+  if(MODE==='tobe') tbInlineKq(t.id, c, true);
+  paintCall();
+}
+function tbInlineKq(id, code, quiet){
   const t = byId(id), d = DISP_CATALOG.find(x=>x.code===code); if(!t || !d || tbLocked(t) || !tbCanKq(t)) return;
   Object.assign(t, {dispositionCode:d.label, dispositionLabel:d.label, resolution:d.resolution, resolutionSource:'AGENT', updatedAt:nowIso(), version:(t.version||1)+1});
   const last = (ATTEMPTS[t.id]||[]).slice(-1)[0]; if(last && !last.dispositionCode){ last.dispositionCode=d.code; last.dispositionLabel=d.label; last.dispositionBehavior=d.behavior; }
   tbOnResult(t); // trạng thái và Thời gian xử lý giữ nguyên
-  toast('success', TBT.kqSaved); refresh();
+  if(CALL.state!=='IDLE' && CALL.ticketId===id) CALL.pick = code; // đồng bộ khung tổng đài
+  if(!quiet) toast('success', TBT.kqSaved); refresh();
 }
 function tbInlineNote(id, v){
   const t = byId(id); if(!t || tbLocked(t)) return;
   t.resolutionNote = v.trim(); t.closeNote = undefined; t.updatedAt = nowIso();
+  if(CALL.state!=='IDLE' && CALL.ticketId===id){ CALL.note = v.trim(); const ne = document.getElementById('cwNote'); if(ne) ne.value = v.trim(); } // đồng bộ ghi chú ở khung
   toast('success', TBT.noteSaved); refresh();
 }
 // D-65 (BA quyết 26/11, Hưng giao): ticket đứng riêng không có bảng nhóm thì sửa Kết quả xử lý, Ghi chú ngay ở khối Thông tin ticket,
@@ -3875,7 +3887,7 @@ function paintCall(){
   const keepNote = document.getElementById('cwNote')?.value || (TBM ? CALL.note||'' : '');
   callBox.innerHTML = cwBar(t, mm, pill) + `
     <div class="cw-body"><div><div class="cw-h">📋 KỊCH BẢN GỢI Ý</div><div class="cw-script">${(TBM ? (tbScriptText(t.businessFlowId,[t])||'Chưa có kịch bản cho công việc này.') : (SCRIPTS[t.businessFlowId]||'Chưa có kịch bản cho công việc này.')).replace(/\n/g,'<br>')}</div></div>
-      <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${CALL.pick===c?'on':''}" title="${d.src}" onclick="CALL.pick='${c}';${TBM?'CALL.err=null;':''}paintCall()">${d.label}</button>`}).join('')}</div>`}
+      <div><div class="cw-h">✅ KẾT QUẢ</div>${tbWidgetMulti(t) || tbWidgetFor(t)+`<div class="cw-chips">${codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c);return `<button class="cw-chip ${(TBM ? tbCallPickCode(t)===c : CALL.pick===c)?'on':''}" title="${d.src}" onclick="${TBM ? `tbWidgetPick('${c}')` : `CALL.pick='${c}';paintCall()`}">${d.label}</button>`}).join('')}</div>`}
       <div class="cw-h" style="margin-top:10px">✍ GHI CHÚ CUỘC GỌI</div><textarea id="cwNote" rows="2" placeholder="Ghi nhanh thông tin trao đổi với khách...">${keepNote}</textarea>
       ${TBM && CALL.err?`<div class="cw-err" role="alert">${tbEsc(CALL.err)}</div>`:''}
       <button class="btn pri cw-save" onclick="callSave()">Lưu</button></div></div>`;
