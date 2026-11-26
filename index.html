@@ -3462,9 +3462,9 @@ function tbOnOpen(t){ if(MODE==='tobe' && t && !t.processedAt && t.assignedAgent
    Đề xuất: sửa được khi ticket do mình giữ và đã qua bước Đã phân công; chọn xong lưu ngay, ghi chú lưu khi rời ô hoặc Enter. */
 /* D-66 (BA quyết 26/11): Kết quả xử lý chỉ có khi khách đã bắt máy. Kết nối thành công thì bắt buộc có kết quả.
    Không nghe máy lần 1, Không nghe máy: không có kết quả (trạng thái đã là kết quả), vẫn ghi chú được. Mới, Đã phân công: chưa có gì để ghi. */
-const tbMine = t => MODE==='tobe' && t.assignedAgentId===ME.id;
-const tbCanKq = t => tbMine(t) && t.status==='CONNECTED';
-const tbCanEdit = t => tbMine(t) && ['IN_PROGRESS','NO_ANSWER_1','NO_ANSWER','CONNECTED'].includes(t.status); // ghi chú
+const tbHeld = t => MODE==='tobe' && t.assignedAgentId===ME.id;
+const tbCanKq = t => tbHeld(t) && t.status==='CONNECTED';
+const tbCanEdit = t => tbHeld(t) && ['IN_PROGRESS','NO_ANSWER_1','NO_ANSWER','CONNECTED'].includes(t.status); // ghi chú
 function tbKqCell(t){
   const cur = resultOf(t).label;
   if(tbLocked(t)) return `<span class="tb-lock" title="${tbEsc(TBT.lockMsg)}">🔒 ${tbEsc(cur)}</span>`;
@@ -3514,6 +3514,8 @@ function tbOnHangup(connected){
     if(tbDone(x)) x.closedAt = nowIso();
     x.updatedAt = nowIso();
   });
+  // D-66: khách không bắt máy thì không còn kết quả nào phải ghi, bỏ nhắc "chưa ghi kết quả"
+  if(!connected && TB.pending) ids.forEach(id=>TB.pending.ids.delete(id));
 }
 /* ---------- LIST ---------- */
 const state = {page:1, size:10};
