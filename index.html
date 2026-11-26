@@ -464,6 +464,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-gt .tb-kqc{min-width:200px}.tb-gt .tb-notec{min-width:200px}
 .tb-kq,.tb-note{width:100%;height:30px;border:1px solid var(--line);border-radius:6px;padding:0 6px;font:inherit;font-size:12.5px;background:#fff}
 .tb-on #dInfo .tb-kq,.tb-on #dInfo .tb-note{max-width:260px}
+.tb-simans{margin-left:8px;padding:2px 10px;font-size:12px;border:1px solid var(--primary);color:var(--primary);background:#fff;border-radius:6px;cursor:pointer}
 .tb-need{color:#cf1322;font-weight:600}
 .tb-kq.need{border-color:#cf1322}
 .tb-kq.empty{color:var(--muted)}
@@ -2317,7 +2318,8 @@ const TBT = {
   resetTip: 'Trả dữ liệu mẫu, bộ lọc và màn hình về lúc mới mở (giống F5)',
   kqPick: 'Chọn kết quả (bắt buộc)',
   kqNeed: 'Chưa chọn kết quả',
-  kqNoAnswer: 'Khách chưa bắt máy nên chưa có kết quả xử lý',
+  kqNoAnswer: 'Khách chưa bắt máy nên chưa chọn được kết quả. Trên mockup, bấm "khách bắt máy" ở thanh tổng đài để giả lập.',
+  simAnswer: 'Giả lập khách bắt máy',
   notePh: 'Nhập ghi chú',
   kqSaved: 'Đã lưu kết quả xử lý',
   noteSaved: 'Đã lưu ghi chú',
@@ -3013,7 +3015,9 @@ function tbPaintCallTB(t){
   const scr = `<div><div class="cw-h">${TBT.cwScriptTitle}</div><div class="cw-script tbw-script">${has.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}${missLine}</div></div>`;
   const codes = ALLOWED[t.businessFlowId]||[];
   const lk = tbLocked(t) || !tbCallKqOk(t); // D-66: khách chưa bắt máy thì khoá chọn kết quả // MoM 19/11: kết quả "Khách hàng không muốn bị làm phiền" khoá, không cho sửa
-  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c||(lk&&d.label===TB_LOCK)?'on':''}"${lk?' disabled':''} title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('') + (lk?`<div class="cw-err">${tbLocked(t)?TBT.lockMsg:TBT.kqNoAnswer}</div>`:'');
+  // Chỉ tô "Khách hàng không muốn bị làm phiền" khi kết quả đó thật sự đã chọn (đã khoá); chưa bắt máy thì không tô gì
+  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c||(tbLocked(t)&&d.label===TB_LOCK)?'on':''}"${lk?' disabled':''} title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('')
+    + (lk ? `<div class="cw-err">${tbLocked(t) ? TBT.lockMsg : TBT.kqNoAnswer}${!tbLocked(t) && CALL.state==='DIALING' ? ` <button class="btn tb-simans" onclick="callAnswer()">${TBT.simAnswer}</button>` : ''}</div>` : '');
   const res = `<div><div class="cw-h">${TBT.cwResTitle}</div>
       <div class="cw-for">${TBT.cwForOne(short(t.id), flowName(t.businessFlowId), list.length-1)}</div>
       <div class="cw-chips">${chips}</div>
