@@ -463,6 +463,8 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .tb-gt .tb-kqc{min-width:200px}.tb-gt .tb-notec{min-width:200px}
 .tb-kq,.tb-note{width:100%;height:30px;border:1px solid var(--line);border-radius:6px;padding:0 6px;font:inherit;font-size:12.5px;background:#fff}
 .tb-on #dInfo .tb-kq,.tb-on #dInfo .tb-note{max-width:260px}
+.tb-need{color:#cf1322;font-weight:600}
+.tb-kq.need{border-color:#cf1322}
 .tb-kq.empty{color:var(--muted)}
 .tb-lock{color:var(--muted)}
 /*TOBE:END css*/
@@ -2308,7 +2310,9 @@ const TBT = {
   newTag: 'Vừa giao',
   noData: 'Không có dữ liệu',
   lockMsg: 'Kết quả "Khách hàng không muốn bị làm phiền" đã khoá, không sửa được',
-  kqPick: 'Chọn kết quả',
+  kqPick: 'Chọn kết quả (bắt buộc)',
+  kqNeed: 'Chưa chọn kết quả',
+  kqNoAnswer: 'Khách chưa bắt máy nên chưa có kết quả xử lý',
   notePh: 'Nhập ghi chú',
   kqSaved: 'Đã lưu kết quả xử lý',
   noteSaved: 'Đã lưu ghi chú',
@@ -2999,8 +3003,8 @@ function tbPaintCallTB(t){
   // 12/11: thân khung chia 2 cột như CI: Kịch bản gợi ý bên trái, Kết quả + Ghi chú + Lưu bên phải
   const scr = `<div><div class="cw-h">${TBT.cwScriptTitle}</div><div class="cw-script tbw-script">${has.map(b=>`<div><b>${flowName(b.f)}</b><br>${tbScriptHtml(b)}</div>`).join('')}${missLine}</div></div>`;
   const codes = ALLOWED[t.businessFlowId]||[];
-  const lk = tbLocked(t); // MoM 19/11: kết quả "Khách hàng không muốn bị làm phiền" khoá, không cho sửa
-  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c||(lk&&d.label===TB_LOCK)?'on':''}"${lk?' disabled':''} title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('') + (lk?`<div class="cw-err">${TBT.lockMsg}</div>`:'');
+  const lk = tbLocked(t) || !tbCallKqOk(t); // D-66: khách chưa bắt máy thì khoá chọn kết quả // MoM 19/11: kết quả "Khách hàng không muốn bị làm phiền" khoá, không cho sửa
+  const chips = codes.map(c=>{const d=DISP_CATALOG.find(x=>x.code===c); return `<button class="cw-chip ${CALL.pick===c||(lk&&d.label===TB_LOCK)?'on':''}"${lk?' disabled':''} title="${tbEsc(d.src||'')}" onclick="CALL.pick='${c}';CALL.err=null;paintCall()">${d.label}</button>`;}).join('') + (lk?`<div class="cw-err">${tbLocked(t)?TBT.lockMsg:TBT.kqNoAnswer}</div>`:'');
   const res = `<div><div class="cw-h">${TBT.cwResTitle}</div>
       <div class="cw-for">${TBT.cwForOne(short(t.id), flowName(t.businessFlowId), list.length-1)}</div>
       <div class="cw-chips">${chips}</div>
@@ -3416,6 +3420,9 @@ function tbStatusSwap(on){
       else if(l==='Không nghe máy'){ st = 'NO_ANSWER'; lab = undefined; }
       else if(t.status==='CLOSED') st = 'CONNECTED';
       if(lab==='KH cần nhắc thêm') lab = 'KH cân nhắc thêm';
+      if(lab==='Đã tư vấn') lab = 'KH cân nhắc thêm'; // dữ liệu mẫu: CI có kết quả cũ, đổi sang giá trị gần nghĩa nhất
+      if(lab==='Voucher hết hạn') lab = 'Không có nhu cầu';
+      if(st!=='CONNECTED') lab = undefined; // D-66: chưa bắt máy thì không có kết quả
       if(lab && !ok.includes(lab)) lab = undefined; // Voucher hết hạn, Đã tư vấn: không còn trong bộ kết quả mới
       if(st!==t.status || lab!==l){ TB.dataBak.set(t, {status:t.status, dispositionCode:t.dispositionCode, dispositionLabel:l});
         t.status = st; t.dispositionLabel = lab; t.dispositionCode = lab; }
@@ -3446,20 +3453,24 @@ function tbStatusSwap(on){
 // Kết quả xử lý trên Danh sách và Chi tiết: chỉ lấy giá trị thuộc bộ 4 kết quả; "Không nghe máy lần 1" giờ là trạng thái.
 function tbResultOf(t,n,r){
   const ok = TB_CODES.map(tbDispLabel), l = [t.dispositionLabel, n.dispositionLabel, r.dispositionLabel].find(x=>x && ok.includes(x));
-  return {label: l||'—', note: t.resolutionNote||t.closeNote||n.dispositionNote||r.dispositionNote||'—'};
+  return {label: l || (t.status==='CONNECTED' ? TBT.kqNeed : '—'), note: t.resolutionNote||t.closeNote||n.dispositionNote||r.dispositionNote||'—'};
 }
 // MoM 19/11: Thời gian xử lý = lúc agent mở ticket lần đầu (mở màn Chi tiết, kể cả mở do bấm Gọi). Ghi một lần, không đổi về sau.
 function tbOnOpen(t){ if(MODE==='tobe' && t && !t.processedAt && t.assignedAgentId===ME.id) t.processedAt = nowIso(); }
 /* MoM 19/11: chọn Kết quả xử lý (dropdown) và nhập Ghi chú ngay trên dòng ticket ở bảng "Ticket của khách hàng" (màn Chi tiết), thay popup Xử lý.
    Hưng 26/11: dòng ticket là dòng của bảng này, không phải Danh sách. Ticket đứng riêng (không có bảng nhóm): sửa ở khối Thông tin ticket (tbInfoEdit).
    Đề xuất: sửa được khi ticket do mình giữ và đã qua bước Đã phân công; chọn xong lưu ngay, ghi chú lưu khi rời ô hoặc Enter. */
-const tbCanEdit = t => MODE==='tobe' && t.assignedAgentId===ME.id && !['OPEN','ASSIGNED'].includes(t.status);
+/* D-66 (BA quyết 26/11): Kết quả xử lý chỉ có khi khách đã bắt máy. Kết nối thành công thì bắt buộc có kết quả.
+   Không nghe máy lần 1, Không nghe máy: không có kết quả (trạng thái đã là kết quả), vẫn ghi chú được. Mới, Đã phân công: chưa có gì để ghi. */
+const tbMine = t => MODE==='tobe' && t.assignedAgentId===ME.id;
+const tbCanKq = t => tbMine(t) && t.status==='CONNECTED';
+const tbCanEdit = t => tbMine(t) && ['IN_PROGRESS','NO_ANSWER_1','NO_ANSWER','CONNECTED'].includes(t.status); // ghi chú
 function tbKqCell(t){
   const cur = resultOf(t).label;
   if(tbLocked(t)) return `<span class="tb-lock" title="${tbEsc(TBT.lockMsg)}">🔒 ${tbEsc(cur)}</span>`;
-  if(!tbCanEdit(t)) return tbEsc(cur);
-  const has = cur!=='—';
-  return `<select class="tb-kq${has?'':' empty'}" onchange="tbInlineKq('${t.id}',this.value)">${has?'':`<option value="">${TBT.kqPick}</option>`}`
+  if(!tbCanKq(t)) return cur===TBT.kqNeed ? `<span class="tb-need">${cur}</span>` : tbEsc(cur);
+  const has = cur!=='—' && cur!==TBT.kqNeed;
+  return `<select class="tb-kq${has?'':' empty need'}" onchange="tbInlineKq('${t.id}',this.value)">${has?'':`<option value="">${TBT.kqPick}</option>`}`
     + TB_CODES.map(c=>{ const l=tbDispLabel(c); return `<option value="${c}"${l===cur?' selected':''}>${l}</option>`; }).join('') + `</select>`;
 }
 function tbNoteCell(t){
@@ -3468,7 +3479,7 @@ function tbNoteCell(t){
   return `<input class="tb-note" maxlength="500" placeholder="${TBT.notePh}" value="${tbEsc(v)}" onkeydown="if(event.key==='Enter')this.blur()" onchange="tbInlineNote('${t.id}',this.value)">`;
 }
 function tbInlineKq(id, code){
-  const t = byId(id), d = DISP_CATALOG.find(x=>x.code===code); if(!t || !d || tbLocked(t)) return;
+  const t = byId(id), d = DISP_CATALOG.find(x=>x.code===code); if(!t || !d || tbLocked(t) || !tbCanKq(t)) return;
   Object.assign(t, {dispositionCode:d.label, dispositionLabel:d.label, resolution:d.resolution, resolutionSource:'AGENT', updatedAt:nowIso(), version:(t.version||1)+1});
   const last = (ATTEMPTS[t.id]||[]).slice(-1)[0]; if(last && !last.dispositionCode){ last.dispositionCode=d.code; last.dispositionLabel=d.label; last.dispositionBehavior=d.behavior; }
   tbOnResult(t); // trạng thái và Thời gian xử lý giữ nguyên
@@ -3488,6 +3499,8 @@ function tbInfoEdit(t){
     if(dt.textContent==='Kết quả xử lý') dd.innerHTML = tbKqCell(t);
     if(dt.textContent==='Ghi chú') dd.innerHTML = tbNoteCell(t); });
 }
+// D-66: Lưu kết quả ở khung tổng đài chỉ khi khách đã bắt máy (đang nói chuyện hoặc đã Kết nối thành công)
+const tbCallKqOk = t => MODE!=='tobe' || CALL.state==='TALKING' || t.status==='CONNECTED';
 // Gọi từ callHangup (As-Is). Cuộc gọi chung: áp cho mọi ticket mình giữ trong nhóm.
 const tbMissed = a => a.status==='ENDED' && !(a.connected!==undefined ? a.connected : a.talkDurationSec>0);
 function tbOnHangup(connected){
@@ -3772,6 +3785,7 @@ function callSave(){ // Lưu trong widget: kết quả đi qua tổng đài
   const t=byId(CALL.ticketId); if(!t) return;
   if(tbWidgetSave(t)) return; /*TOBE-HOOK*/
   if(tbLocked(t)){ tbWErr(TBT.lockMsg); return; } /*TOBE-HOOK: MoM 19/11*/
+  if(!tbCallKqOk(t)){ tbWErr(TBT.kqNoAnswer); return; } /*TOBE-HOOK: D-66 chưa bắt máy thì chưa có kết quả*/
   const d=DISP_CATALOG.find(x=>x.code===CALL.pick);
   if(!d){ if(MODE==='tobe') tbWErr('Vui lòng chọn kết quả'); else toast('error','Vui lòng chọn kết quả'); return; } // [chưa kiểm] câu báo lỗi của widget
   const note=document.getElementById('cwNote').value.trim();
