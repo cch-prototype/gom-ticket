@@ -2258,9 +2258,10 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
+  {id:'fresh', kind:'sim', txt:'To-Be mở ra là ticket sạch: có người giữ thì Đã phân công, chưa ai giữ thì Mới; chưa có cuộc gọi, kết quả, ghi chú. Mọi tình huống do người thử tự bấm ra. F5 hoặc Làm lại từ đầu thì về như lúc mở.', src:'Hưng 26/11'},
   {id:'cd_demo', kind:'sim', txt:'Ngày cần gọi của ticket lấy từ CI là dữ liệu mẫu: ngày tạo + 3 ngày, không trễ hơn ngày hết hạn. CI chưa có trường này.', src:'Hưng 26/11'},
   {id:'st_flow', kind:'ba', txt:'Trạng thái đổi lúc cuộc gọi kết thúc: khách nghe máy thì Kết nối thành công; không nghe lần đầu thì Không nghe máy lần 1; không nghe từ lần thứ hai thì Không nghe máy. MoM chỉ liệt kê trạng thái, chưa ghi cách chuyển.', src:'MoM workshop BU 19/11, mục 3'},
-  {id:'proc_time', kind:'sim', txt:'Thời gian xử lý ghi lúc agent mở Chi tiết ticket lần đầu; ticket có sẵn trong dữ liệu mẫu lấy giờ phân công + 12 phút. Data Model chưa có trường này. Thời gian hoàn thành lấy closed_at.', src:'MoM workshop BU 19/11, mục 2'},
+  {id:'proc_time', kind:'sim', txt:'Thời gian xử lý ghi lúc agent mở Chi tiết ticket lần đầu. Data Model chưa có trường này. Thời gian hoàn thành lấy closed_at.', src:'MoM workshop BU 19/11, mục 2'},
   {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
   {id:'call_all', kind:'chot', txt:'Gọi một lần tính cho mọi ticket mình giữ trong nhóm. Nhận, Phân công, Xử lý vẫn từng ticket. Nút Gọi nằm ở ô SĐT gộp.', src:'Hưng chốt 06/11 17:xx. Khác US-3 v3: cuộc gọi chỉ gắn một ticket, gắn một cuộc gọi vào nhiều ticket ghi là làm sau (cả CCH và MPT). Cần dev: bản ghi cuộc gọi nhiều ticket, lượt gọi tăng cho từng ticket (job đóng hết lượt C26-1194), định dạng SĐT gửi MPT.'},
   {id:'gkey',       kind:'dev', txt:'Group key cố định là SĐT, không còn là cài đặt.', src:'US-3 v3 (Change Log 06/11), dev đề xuất, BA đã ghi vào US-3. MoM 05/11 không nhắc rule này.'},
@@ -3436,8 +3437,17 @@ function tbStatusSwap(on){
       if(st!==t.status || lab!==l){ TB.dataBak.set(t, {status:t.status, dispositionCode:t.dispositionCode, dispositionLabel:l});
         t.status = st; t.dispositionLabel = lab; t.dispositionCode = lab; }
     });
-    // Dữ liệu mẫu: ticket đã qua bước Đã phân công coi như agent đã mở lúc phân công + 12 phút (MÔ PHỎNG)
-    TICKETS.forEach(t=>{ if(!t.processedAt && t.assignedAt && !['OPEN','ASSIGNED'].includes(t.status)) t.processedAt = new Date(Date.parse(t.assignedAt)+12*60e3).toISOString(); });
+    // Hưng 26/11: To-Be mở ra là ticket sạch, chưa ai đụng vào, để BU tự bấm ra từng tình huống.
+    // Có người giữ thì Đã phân công, chưa ai giữ thì Mới; xoá lịch sử cuộc gọi, kết quả, ghi chú, Thời gian xử lý, Thời gian hoàn thành. Về As-Is thì trả lại.
+    const F = ['status','dispositionCode','dispositionLabel','resolution','resolutionSource','resolutionNote','closeNote','closedAt','processedAt','attemptCount','currentAttemptId','updatedAt'];
+    TB.freshBak = new Map(); TB.attBak = {};
+    TICKETS.forEach(t=>{
+      TB.freshBak.set(t, Object.fromEntries(F.map(k=>[k, t[k]])));
+      if(ATTEMPTS[t.id]){ TB.attBak[t.id] = ATTEMPTS[t.id]; delete ATTEMPTS[t.id]; }
+      t.status = t.assignedAgentId ? 'ASSIGNED' : 'OPEN';
+      ['dispositionCode','dispositionLabel','resolution','resolutionSource','resolutionNote','closeNote','closedAt','processedAt','currentAttemptId'].forEach(k=>{ t[k] = undefined; });
+      t.attemptCount = 0; t.updatedAt = t.assignedAt || t.createdAt;
+    });
     // Dữ liệu mẫu (Hưng 26/11): ticket lấy từ CI chưa có Ngày cần gọi thì điền ngày tạo + 3 ngày, không trễ hơn ngày hết hạn (giờ VN). Về As-Is thì trả lại.
     TB.cdBak = new Map();
     const vnMid = ms => { const d = new Date(ms + 7*3600e3); d.setUTCHours(0,0,0,0); return d.getTime() - 7*3600e3; };
@@ -3449,6 +3459,9 @@ function tbStatusSwap(on){
     tbOpts('fDisp', ok.map(l=>({v:l, l})));
   } else {
     if(TB.allowBak) Object.keys(TB.allowBak).forEach(k=>{ ALLOWED[k] = [...TB.allowBak[k]]; });
+    // trả theo thứ tự ngược lúc vào: bản sạch → bản đã đổi sang bộ trạng thái mới → dữ liệu CI
+    if(TB.freshBak){ TB.freshBak.forEach((v,t)=>Object.assign(t, v)); TB.freshBak = null; }
+    if(TB.attBak){ Object.keys(ATTEMPTS).forEach(k=>{ delete ATTEMPTS[k]; }); Object.assign(ATTEMPTS, TB.attBak); TB.attBak = null; }
     TICKETS.forEach(t=>{ const b = TB.dataBak && TB.dataBak.get(t);
       if(b) Object.assign(t, b);
       else if(t.status==='NO_ANSWER_1') t.status = 'IN_PROGRESS';
