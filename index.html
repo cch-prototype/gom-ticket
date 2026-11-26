@@ -460,6 +460,7 @@ td.callcol{padding:4px 8px;font-size:0;overflow:visible}
 .st-NO_ANSWER_1{background:#fff7e6;color:#d46b08;border:1px solid #d46b08}
 .st-NO_ANSWER{background:#f5f5f5;color:#595959;border:1px solid #8c8c8c}
 .st-CONNECTED{background:#f6ffed;color:#389e0d;border:1px solid #52c41a}
+.tb-gt .tb-kqc{min-width:200px}.tb-gt .tb-notec{min-width:200px}
 .tb-kq,.tb-note{width:100%;height:30px;border:1px solid var(--line);border-radius:6px;padding:0 6px;font:inherit;font-size:12.5px;background:#fff}
 .tb-kq.empty{color:var(--muted)}
 .tb-lock{color:var(--muted)}
@@ -2359,7 +2360,7 @@ const TBT = {
   cwClose: 'Đóng',
   cwBack: 'Về màn Chi tiết ›',
   scriptNone: 'Chưa có kịch bản cho công việc này.',
-  cwForOne: (id, flow, others) => `Kết quả chọn ở đây ghi cho ticket <b>${id}</b> · ${flow}.` + (others ? ` ${others} ticket còn lại của khách: bấm Xử lý ở bảng Ticket của khách hàng.` : ''),
+  cwForOne: (id, flow, others) => `Kết quả chọn ở đây ghi cho ticket <b>${id}</b> · ${flow}.` + (others ? ` ${others} ticket còn lại của khách: chọn kết quả ngay trên dòng ở bảng Ticket của khách hàng.` : ''),
   cwResTitle: '✅ KẾT QUẢ',
   cwNotePh: 'Ghi nhanh thông tin trao đổi với khách...',
   cwSave: 'Lưu',
@@ -2771,8 +2772,7 @@ function tbCols(){
   // MoM workshop 19/11 mục 2: bỏ Thời gian tạo, Cập nhật gần nhất; thêm Thời gian xử lý, Thời gian hoàn thành; Ngày cần gọi ngay sau Nội dung.
   // Đề xuất: Thời gian xử lý và Thời gian hoàn thành đặt sau Thời gian phân công, xếp theo trình tự thời gian (MoM không nói vị trí).
   const base = COLUMNS.slice(0,-1).filter(c=>c.h!=='Thời gian tạo' && c.h!=='Cập nhật gần nhất')
-    .map(c=>c.h==='Trạng thái' ? {...c, w:170} : c) // MoM 19/11: nhãn trạng thái dài hơn (Kết nối thành công)
-    .map(c=>c.h==='Kết quả xử lý' ? {...c, w:210, r:tbKqCell} : c.h==='Ghi chú' ? {...c, w:240, r:tbNoteCell} : c); // MoM 19/11: sửa ngay trên dòng
+    .map(c=>c.h==='Trạng thái' ? {...c, w:170} : c); // MoM 19/11: nhãn trạng thái dài hơn (Kết nối thành công)
   base.splice(base.findIndex(c=>c.h==='Nội dung')+1, 0, {h:TBT.cdLabel, w:130, r:t=>vn(t.callScheduledDate)});
   base.splice(base.findIndex(c=>c.h==='Thời gian phân công')+1, 0,
     {h:TBT.colProcAt, w:150, r:t=>{ const d=tbProcAt(t); return d ? vnt(d) : '—'; }},
@@ -2844,14 +2844,14 @@ function tbPaintGroup(t){
   g.classList.remove('hidden');
   const chips = col ? `<span class="tb-gchips">${grp.map(x=>`<span class="tb-chip${x.id===t.id?' on':''}" title="${tbEsc(flowName(x.businessFlowId))}${x.id===t.id?TBT.chipViewing:''}" onclick="event.stopPropagation();${x.id===t.id?'':`go('${x.id}')`}">${short(x.id)}<span class="tag st-${x.status}">${STATUS[x.status]}</span></span>`).join('')}</span>` : '';
   const head = `<div class="tb-gh${col?' col':''}" role="button" tabindex="0" aria-expanded="${!col}" title="${col?TBT.groupOpenTip:TBT.groupCloseTip}" onclick="tbToggleGroup()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tbToggleGroup()}"><span class="tb-ght">${TBT.groupTitle(grp.length)} · SĐT ${maskPhone(tbNorm(t.phone))}${tbGroupDate(grp)===null ? '' : ` · ${TBT.cdLabel} ${tbGroupDateTxt(grp)}`}</span>${chips}<span class="tb-gar">${col?'⌃':'⌄'}</span></div>`;
-  const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Thời gian hết hạn','Thao tác'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
+  const table = col ? '' : `<table class="tb-gt"><thead><tr>${['Mã yêu cầu','Công việc','Mã tham chiếu','Nội dung','Trạng thái','Kết quả xử lý','Ghi chú','Thời gian hết hạn'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
     + grp.map(x=>`<tr class="tb-row${x.id===t.id?' tb-cur':''}${TB.pending && TB.pending.key===key && TB.pending.ids.has(x.id)?' tb-pend':''}" onclick="tbRowPick(event,'${x.id}')" tabindex="0" onkeydown="if((event.key==='Enter'||event.key===' ')&&event.target===this){event.preventDefault();tbPick('${x.id}')}" title="${x.id===t.id?TBT.rowViewingTip:TBT.rowPickTip}"${x.id===t.id?' aria-current="true"':''}><td><span class="link" onclick="event.stopPropagation();tbPick('${x.id}')">${short(x.id)}</span>${copyIc(x.id,'mã yêu cầu')}${''/* Hưng 09/11: bỏ chữ "Đang xem", giữ dòng tô nền tb-cur */}${tbMine(x)}</td>
       <td><span class="tag ${flowOf(x).cls}">${flowName(x.businessFlowId)}</span></td>
       <td>${x.externalRef.length>8?short(x.externalRef):x.externalRef}${copyIc(x.externalRef,'mã tham chiếu')}</td>
       <td class="nd">${tbContent(x)}</td>
       <td><span class="tag st-${x.status}">${STATUS[x.status]}</span></td>
-      <td>${resultOf(x).label}</td><td>${vnt(x.expiredTime)}</td>
-      <td class="act">${(TB.inGroupTable=true, actions(x))}</td></tr>`).join('') + `</tbody></table>`;
+      <td class="tb-kqc">${tbKqCell(x)}</td><td class="tb-notec">${tbNoteCell(x)}</td><td>${vnt(x.expiredTime)}</td></tr>`).join('') + `</tbody></table>`;
+  // MoM workshop BU 19/11 mục 3: chọn Kết quả xử lý và nhập Ghi chú ngay trên dòng ticket, thay popup Xử lý ở cột Thao tác (bỏ cột Thao tác)
   TB.inGroupTable = false;
   g.innerHTML = head + table;
 }
@@ -3449,7 +3449,8 @@ function tbResultOf(t,n,r){
 }
 // MoM 19/11: Thời gian xử lý = lúc agent mở ticket lần đầu (mở màn Chi tiết, kể cả mở do bấm Gọi). Ghi một lần, không đổi về sau.
 function tbOnOpen(t){ if(MODE==='tobe' && t && !t.processedAt && t.assignedAgentId===ME.id) t.processedAt = nowIso(); }
-/* MoM 19/11: chọn Kết quả xử lý (dropdown) và nhập Ghi chú ngay trên dòng ticket ở Danh sách, thay popup Xử lý.
+/* MoM 19/11: chọn Kết quả xử lý (dropdown) và nhập Ghi chú ngay trên dòng ticket ở bảng "Ticket của khách hàng" (màn Chi tiết), thay popup Xử lý.
+   Hưng 26/11: dòng ticket là dòng của bảng này, không phải Danh sách. Ticket đứng riêng (không có bảng nhóm) vẫn dùng nút Xử lý ở đầu trang.
    Đề xuất: sửa được khi ticket do mình giữ và đã qua bước Đã phân công; chọn xong lưu ngay, ghi chú lưu khi rời ô hoặc Enter. */
 const tbCanEdit = t => MODE==='tobe' && t.assignedAgentId===ME.id && !['OPEN','ASSIGNED'].includes(t.status);
 function tbKqCell(t){
@@ -3470,12 +3471,12 @@ function tbInlineKq(id, code){
   Object.assign(t, {dispositionCode:d.label, dispositionLabel:d.label, resolution:d.resolution, resolutionSource:'AGENT', updatedAt:nowIso(), version:(t.version||1)+1});
   const last = (ATTEMPTS[t.id]||[]).slice(-1)[0]; if(last && !last.dispositionCode){ last.dispositionCode=d.code; last.dispositionLabel=d.label; last.dispositionBehavior=d.behavior; }
   tbOnResult(t); // trạng thái và Thời gian xử lý giữ nguyên
-  toast('success', TBT.kqSaved); render();
+  toast('success', TBT.kqSaved); refresh();
 }
 function tbInlineNote(id, v){
   const t = byId(id); if(!t || tbLocked(t)) return;
   t.resolutionNote = v.trim(); t.closeNote = undefined; t.updatedAt = nowIso();
-  toast('success', TBT.noteSaved); render();
+  toast('success', TBT.noteSaved); refresh();
 }
 // Gọi từ callHangup (As-Is). Cuộc gọi chung: áp cho mọi ticket mình giữ trong nhóm.
 const tbMissed = a => a.status==='ENDED' && !(a.connected!==undefined ? a.connected : a.talkDurationSec>0);
