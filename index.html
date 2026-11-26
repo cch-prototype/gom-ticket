@@ -288,6 +288,7 @@ td.nd{padding:0;white-space:normal}
 /* Chế độ To-Be: mọi rule nằm trong khối này. Gỡ bằng _backup/tobe-rollback.py */
 .tb-sw{display:inline-flex;border:1px solid var(--primary);border-radius:6px;overflow:hidden}
 .tb-sw button{border:none;background:#fff;color:var(--primary);padding:4px 14px;font-weight:600}
+.tb-reset{margin-left:8px;border:1px dashed var(--primary);background:#fff;color:var(--primary);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
 .tb-sw button.on{background:var(--primary);color:#fff}
 .tb-bar{background:#fff;border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;line-height:22px}
 .tb-bar-row{display:flex;flex-wrap:wrap;gap:2px 16px;align-items:center}
@@ -2310,6 +2311,8 @@ const TBT = {
   newTag: 'Vừa giao',
   noData: 'Không có dữ liệu',
   lockMsg: 'Kết quả "Khách hàng không muốn bị làm phiền" đã khoá, không sửa được',
+  resetDemo: '↺ Làm lại từ đầu',
+  resetTip: 'Trả dữ liệu mẫu, bộ lọc và màn hình về lúc mới mở (giống F5)',
   kqPick: 'Chọn kết quả (bắt buộc)',
   kqNeed: 'Chưa chọn kết quả',
   kqNoAnswer: 'Khách chưa bắt máy nên chưa có kết quả xử lý',
@@ -3086,6 +3089,12 @@ function tbSyncUI(){
   // Bỏ khung chú thích và bảng điểm chưa chốt khỏi màn hình (Hưng 06/11). Điểm chưa chốt ghi trong file kết quả md.
   document.getElementById('tbBar').classList.add('hidden');
   document.getElementById('tbPend').classList.add('hidden');
+  // Hưng 26/11: nút làm lại từ đầu để thử lại một tình huống (tải lại trang, F5 ở To-Be về điểm xuất phát)
+  let rs = document.getElementById('tbReset'); const sw = document.getElementById('tbSw');
+  if(!rs){ rs = document.createElement('button'); rs.id = 'tbReset'; rs.className = 'tb-reset'; rs.textContent = TBT.resetDemo; rs.title = TBT.resetTip;
+    rs.onclick = () => { if(CALL.state!=='IDLE'){ toast('error', TBT.modeBusyErr); return; } location.hash = '#tobe'; location.reload(); }; }
+  if(sw.nextElementSibling!==rs) sw.after(rs);
+  rs.classList.toggle('hidden', !on);
   tbPaintSim(); tbMoveSim(on); tbAutoModalText(); if(on) tbAutoChips(); else autoChips.innerHTML='';
   tbMoveDate(on);
 }
@@ -4078,7 +4087,10 @@ function navApply(hash){
   history.replaceState(null,'',navHash()); // URL sai hoặc thiếu thì chuẩn hoá theo màn đang hiện
 }
 window.addEventListener('popstate', ()=>navApply(location.hash));
-navApply(location.hash);
+// Hưng 26/11: To-Be dùng để BU thử ý tưởng, nên F5 (tải lại) về điểm xuất phát: Danh sách To-Be, bộ lọc mặc định, dữ liệu ban đầu.
+// Mở link được gửi (không phải tải lại) vẫn mở đúng màn và bộ lọc trong link. As-Is giữ như cũ.
+const NAV_RELOAD = ((performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {}).type === 'reload'; /*TOBE-HOOK*/
+navApply(NAV_RELOAD && location.hash.startsWith('#tobe') ? '#tobe' : location.hash);
 </script>
 </body>
 </html>
