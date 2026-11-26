@@ -2258,6 +2258,7 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
+  {id:'demo_order', kind:'sim', txt:'Danh sách mockup đưa khách có 3 rồi 2 công việc lên đầu cho dễ thử gom ticket. Thứ tự thật của sản phẩm theo thời gian hết hạn sớm nhất (D-53).', src:'Hưng 26/11'},
   {id:'fresh', kind:'sim', txt:'To-Be mở ra là ticket sạch: có người giữ thì Đã phân công, chưa ai giữ thì Mới; chưa có cuộc gọi, kết quả, ghi chú. Mọi tình huống do người thử tự bấm ra. F5 hoặc Làm lại từ đầu thì về như lúc mở.', src:'Hưng 26/11'},
   {id:'cd_demo', kind:'sim', txt:'Ngày cần gọi của ticket lấy từ CI là dữ liệu mẫu: ngày tạo + 3 ngày, không trễ hơn ngày hết hạn. CI chưa có trường này.', src:'Hưng 26/11'},
   {id:'st_flow', kind:'ba', txt:'Trạng thái đổi lúc cuộc gọi kết thúc: khách nghe máy thì Kết nối thành công; không nghe lần đầu thì Không nghe máy lần 1; không nghe từ lần thứ hai thì Không nghe máy. MoM chỉ liệt kê trạng thái, chưa ghi cách chuyển.', src:'MoM workshop BU 19/11, mục 3'},
@@ -2611,7 +2612,11 @@ function tbBuild(){
     return {key, tickets:ts, hidden, norm:tbNorm(ts[0].phone), date:dates.length?Math.min(...dates):null, created:Math.min(...ts.map(t=>tbT(t.createdAt)))};
   });
   // Giữa các nhóm: ngày cần gọi sớm nhất của ticket chưa xong, rồi ngày tạo. Nhóm không có ngày xếp sau.
+  // Chỉ cho mockup (Hưng 26/11, D-69): nhóm có nhiều công việc khác nhau lên đầu (3 rồi 2 rồi 1) để BU thử gom ticket ngay trang đầu.
+  // Không phải thứ tự của sản phẩm; thứ tự sản phẩm theo D-53. Trong cùng số công việc thì giữ cách xếp cũ.
+  const nf = g => new Set(g.tickets.map(t=>t.businessFlowId)).size;
   groups.sort((a,b)=>{
+    if(nf(a)!==nf(b)) return nf(b)-nf(a);
     if((a.date===null)!==(b.date===null)) return a.date===null ? 1 : -1;
     if(a.date!==null && a.date!==b.date) return a.date-b.date;
     return a.created-b.created;
