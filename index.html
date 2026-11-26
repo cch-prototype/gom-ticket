@@ -2253,6 +2253,7 @@ const TB_KIND = {chot:'BA CHỐT, CHỜ BU', ba:'BA SUY RA', dev:'DEV ĐỀ XU�
 /* Một chỗ duy nhất khai báo điểm chưa chốt: badge, tooltip và bảng cuối trang đều đọc từ đây.
    BU chốt điểm nào thì sửa hoặc xoá dòng đó. */
 const TB_PEND = [
+  {id:'cd_demo', kind:'sim', txt:'Ngày cần gọi của ticket lấy từ CI là dữ liệu mẫu: ngày tạo + 3 ngày, không trễ hơn ngày hết hạn. CI chưa có trường này.', src:'Hưng 26/11'},
   {id:'st_flow', kind:'ba', txt:'Trạng thái đổi lúc cuộc gọi kết thúc: khách nghe máy thì Kết nối thành công; không nghe lần đầu thì Không nghe máy lần 1; không nghe từ lần thứ hai thì Không nghe máy. MoM chỉ liệt kê trạng thái, chưa ghi cách chuyển.', src:'MoM workshop BU 19/11, mục 3'},
   {id:'proc_time', kind:'sim', txt:'Thời gian xử lý ghi lúc agent mở Chi tiết ticket lần đầu; ticket có sẵn trong dữ liệu mẫu lấy giờ phân công + 12 phút. Data Model chưa có trường này. Thời gian hoàn thành lấy closed_at.', src:'MoM workshop BU 19/11, mục 2'},
   {id:'ctkm_content', kind:'chot', txt:'Mỗi dòng trong cột Nội dung là một sản phẩm hoặc một voucher kèm ngày riêng của dòng đó, theo mockup BU. Voucher hiện HSD bên phải, thuốc mãn tính và Nhắc CTKM hiện Ngày mua hàng bên phải. Ticket có nhiều dòng thì các ô còn lại của ticket gộp theo số dòng, ô Khách hàng và SĐT gộp theo cả nhóm. Phân trang vẫn đếm theo ticket. Nhắc CTKM gồm sản phẩm khách đã mua kèm Ngày mua hàng, chưa có tên CTKM, ưu đãi, ngày bắt đầu, ngày kết thúc.', src:'Hưng 10/11, theo mockup BU (đảo lại D-24: description một chuỗi). Nội dung CTKM theo tài liệu tích hợp Data Ecom (Confluence 352551627, 27/10/2026), BU chưa xác nhận. Khung dùng tên sản phẩm minh hoạ, ngày mua bằng ngày cần gọi trừ 27. Cách CDE gửi nhiều dòng qua API (một chuỗi hay danh sách) cần chốt lại.'},
@@ -3420,6 +3421,13 @@ function tbStatusSwap(on){
     });
     // Dữ liệu mẫu: ticket đã qua bước Đã phân công coi như agent đã mở lúc phân công + 12 phút (MÔ PHỎNG)
     TICKETS.forEach(t=>{ if(!t.processedAt && t.assignedAt && !['OPEN','ASSIGNED'].includes(t.status)) t.processedAt = new Date(Date.parse(t.assignedAt)+12*60e3).toISOString(); });
+    // Dữ liệu mẫu (Hưng 26/11): ticket lấy từ CI chưa có Ngày cần gọi thì điền ngày tạo + 3 ngày, không trễ hơn ngày hết hạn (giờ VN). Về As-Is thì trả lại.
+    TB.cdBak = new Map();
+    const vnMid = ms => { const d = new Date(ms + 7*3600e3); d.setUTCHours(0,0,0,0); return d.getTime() - 7*3600e3; };
+    TICKETS.forEach(t=>{ if(t.callScheduledDate || !t.createdAt) return;
+      let d = vnMid(Date.parse(t.createdAt)) + 3*864e5;
+      if(t.expiredTime) d = Math.min(d, vnMid(Date.parse(t.expiredTime)));
+      TB.cdBak.set(t, t.callScheduledDate); t.callScheduledDate = new Date(d).toISOString(); });
     tbOpts('fSt', TB_ST_ORDER.map(k=>({v:k, l:STATUS[k]})));
     tbOpts('fDisp', ok.map(l=>({v:l, l})));
   } else {
@@ -3429,6 +3437,7 @@ function tbStatusSwap(on){
       else if(t.status==='NO_ANSWER_1') t.status = 'IN_PROGRESS';
       else if(t.status==='NO_ANSWER' || t.status==='CONNECTED') t.status = 'CLOSED'; });
     TB.dataBak = null;
+    if(TB.cdBak){ TB.cdBak.forEach((v,t)=>{ t.callScheduledDate = v; }); TB.cdBak = null; }
     tbOpts('fSt', AS_ST_ORDER.map(k=>({v:k, l:STATUS[k]})));
     if(TB.dispBak) tbOpts('fDisp', TB.dispBak);
   }
