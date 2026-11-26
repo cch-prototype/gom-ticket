@@ -2316,6 +2316,10 @@ const TBT = {
   resetDemo: '↺ Làm lại từ đầu',
   resetTip: 'Trả dữ liệu mẫu, bộ lọc và màn hình về lúc mới mở (giống F5)',
   kqPick: 'Chọn kết quả (bắt buộc)',
+  lockAskTitle: 'Khoá kết quả xử lý?',
+  lockAskBody: (id, flow) => `Ticket <b>${id}</b> · ${flow} sẽ ghi kết quả <b>"Khách hàng không muốn bị làm phiền"</b>. Sau khi khoá, không ai sửa được kết quả này nữa.`,
+  lockAskNo: 'Huỷ',
+  lockAskYes: 'Xác nhận khoá',
   kqPickCall: 'Chọn kết quả',
   kqNeed: 'Chưa chọn kết quả',
   kqDropped: 'Khách không bắt máy nên kết quả đã chọn trong cuộc gọi được bỏ',
@@ -3515,12 +3519,26 @@ function tbNoteCell(t){
 const tbCallPickCode = t => { const d = t.dispositionLabel && DISP_CATALOG.find(x=>x.label===t.dispositionLabel); return d ? d.code : (CALL.pick||null); };
 function tbWidgetPick(c){
   const t = byId(CALL.ticketId); if(!t) return;
+  if(MODE==='tobe' && c==='KH_KHONG_MUON_LAM_PHIEN') return tbConfirmLock(t, ()=>{ CALL.pick = c; CALL.err = null; tbInlineKq(t.id, c, true, true); paintCall(); });
   CALL.pick = c; CALL.err = null;
   if(MODE==='tobe') tbInlineKq(t.id, c, true);
   paintCall();
 }
-function tbInlineKq(id, code, quiet){
+// D-72 (BA quyết 26/11): chọn "Khách hàng không muốn bị làm phiền" thì hỏi lại trước khi khoá, vì khoá rồi không sửa được. Huỷ thì giữ kết quả cũ.
+function tbConfirmLock(t, ok){
+  let m = document.getElementById('tbLockModal');
+  if(!m){ m = document.createElement('div'); m.id = 'tbLockModal'; m.className = 'modal hidden'; document.body.append(m); }
+  m.innerHTML = `<div class="mbox" style="width:480px"><h3>${TBT.lockAskTitle}</h3>
+    <div style="margin-bottom:14px">${TBT.lockAskBody(short(t.id), flowName(t.businessFlowId))}</div>
+    <div class="m-foot"><button class="btn" id="tbLockNo">${TBT.lockAskNo}</button><button class="btn pri" id="tbLockYes" style="background:#cf1322;border-color:#cf1322">${TBT.lockAskYes}</button></div></div>`;
+  m.classList.remove('hidden');
+  const close = () => m.classList.add('hidden');
+  m.querySelector('#tbLockNo').onclick = () => { close(); refresh(); }; // vẽ lại để ô chọn quay về giá trị cũ
+  m.querySelector('#tbLockYes').onclick = () => { close(); ok(); };
+}
+function tbInlineKq(id, code, quiet, confirmed){
   const t = byId(id), d = DISP_CATALOG.find(x=>x.code===code); if(!t || !d || tbLocked(t) || !tbCanKq(t)) return;
+  if(code==='KH_KHONG_MUON_LAM_PHIEN' && !confirmed) return tbConfirmLock(t, ()=>tbInlineKq(id, code, quiet, true));
   Object.assign(t, {dispositionCode:d.label, dispositionLabel:d.label, resolution:d.resolution, resolutionSource:'AGENT', updatedAt:nowIso(), version:(t.version||1)+1});
   const last = (ATTEMPTS[t.id]||[]).slice(-1)[0]; if(last && !last.dispositionCode){ last.dispositionCode=d.code; last.dispositionLabel=d.label; last.dispositionBehavior=d.behavior; }
   tbOnResult(t); // trạng thái và Thời gian xử lý giữ nguyên
